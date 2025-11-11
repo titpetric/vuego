@@ -1,0 +1,8 @@
+<div>
+  <ul>
+    <li v-for="(i, item) in items" :title="item.title">
+      <h1 v-html="item.title"></h1>
+      <span>index: {{i}}</span>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,3 @@
+<div v-if="show">Visible</div>
+<div v-if="hide">Hidden</div>
+<div v-if="missing">Missing</div>

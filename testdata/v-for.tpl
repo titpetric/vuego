@@ -1,0 +1,3 @@
+<ul>
+  <li v-for="item in items">{{item.name}}</li>
+</ul>

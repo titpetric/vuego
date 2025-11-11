@@ -1,0 +1,12 @@
+{
+  "lists": [
+    {
+      "title": "List A",
+      "items": ["a1","a2"]
+    },
+    {
+      "title": "List B",
+      "items": ["b1","b2","b3"]
+    }
+  ]
+}
