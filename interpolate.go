@@ -3,7 +3,6 @@ package vuego
 import (
 	"bytes"
 	"fmt"
-	"html"
 	"regexp"
 	"strings"
 )
@@ -31,7 +30,7 @@ func (v *VueGo) interpolateText(input string) string {
 		val, ok := v.scope.Resolve(expr)
 		if ok && val != nil {
 			// Escape value for HTML output
-			out.WriteString(html.EscapeString(fmt.Sprint(val)))
+			out.WriteString(fmt.Sprint(val))
 		} else {
 			out.WriteString("")
 		}
