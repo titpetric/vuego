@@ -1,0 +1,23 @@
+{
+  "store": "Tech Shop",
+  "products": [
+    {
+      "name": "Laptop",
+      "description": "High-performance laptop",
+      "price": 1299.99,
+      "inStock": true
+    },
+    {
+      "name": "Mouse",
+      "description": "Wireless optical mouse",
+      "price": 29.99,
+      "inStock": false
+    },
+    {
+      "name": "Keyboard",
+      "description": "Mechanical keyboard",
+      "price": 149.99,
+      "inStock": true
+    }
+  ]
+}

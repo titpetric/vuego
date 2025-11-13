@@ -9,18 +9,32 @@ import (
 func (v *Vue) evalCondition(node *html.Node, expr string) (bool, error) {
 	removeAttr(node, "v-if")
 
-	val, ok := v.stack.Lookup(expr)
-	if !ok {
-		return false, nil
+	// Handle negation with ! prefix
+	negated := false
+	if len(expr) > 0 && expr[0] == '!' {
+		negated = true
+		expr = expr[1:]
 	}
+
+	val, ok := v.stack.Resolve(expr)
+	if !ok {
+		return negated, nil
+	}
+
+	var result bool
 	switch b := val.(type) {
 	case bool:
-		return b, nil
+		result = b
 	case string:
-		return b != "", nil
+		result = b != ""
 	case int, int64, float64:
-		return fmt.Sprintf("%v", b) != "0", nil
+		result = fmt.Sprintf("%v", b) != "0"
 	default:
-		return val != nil, nil
+		result = val != nil
 	}
+
+	if negated {
+		return !result, nil
+	}
+	return result, nil
 }

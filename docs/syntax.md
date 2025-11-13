@@ -113,12 +113,21 @@ Bind HTML attributes to expressions using `:attr` shorthand or `v-bind:attr` syn
 
 Render elements only when the expression is truthy using the `v-if` directive.
 
+**Important:** Only a single boolean parameter is supported. Use `v-if="name"` for truthy checks or `v-if="!name"` to negate.
+
 ### Basic Usage
 
 ```html
 <div v-if="show">Visible when 'show' is true</div>
-<div v-if="hide">Hidden when 'hide' is false</div>
+<div v-if="!hide">Visible when 'hide' is false</div>
 <p v-if="user">User is logged in</p>
+```
+
+### Negation with `!`
+
+```html
+<p v-if="!disabled">This element is enabled</p>
+<div v-if="!loading">Content loaded</div>
 ```
 
 ### Checking Boolean Properties
@@ -126,6 +135,7 @@ Render elements only when the expression is truthy using the `v-if` directive.
 ```html
 <p v-if="product.inStock" class="available">In Stock</p>
 <p v-if="user.isAdmin">Admin Panel</p>
+<div v-if="!product.discontinued">Still available</div>
 ```
 
 ### Example with Data
