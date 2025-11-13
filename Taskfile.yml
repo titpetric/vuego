@@ -1,0 +1,10 @@
+---
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - goimports -w .
+      - go mod tidy
+      - go build .
+      - go test -count=1 -v .

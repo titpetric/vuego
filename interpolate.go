@@ -11,10 +11,10 @@ import (
 // {{ expr }} regex (non-greedy, no nested braces)
 var interpRe = regexp.MustCompile(`\{\{\s*([^{}\s][^{}]*?)\s*\}\}`)
 
-// interpolateText escapes interpolated values for HTML safety.
-func (v *VueGo) interpolateText(input string) string {
+// interpolate escapes interpolated values for HTML safety.
+func (v *Vue) interpolate(input string) (string, bool) {
 	if !strings.Contains(input, "{{") {
-		return input
+		return input, false
 	}
 
 	var out bytes.Buffer
@@ -28,7 +28,7 @@ func (v *VueGo) interpolateText(input string) string {
 		out.WriteString(input[last:start])
 
 		expr := strings.TrimSpace(input[exprStart:exprEnd])
-		val, ok := v.scope.Resolve(expr)
+		val, ok := v.stack.Resolve(expr)
 		if ok && val != nil {
 			// Escape value for HTML output
 			out.WriteString(html.EscapeString(fmt.Sprint(val)))
@@ -40,5 +40,8 @@ func (v *VueGo) interpolateText(input string) string {
 	}
 
 	out.WriteString(input[last:])
-	return out.String()
+
+	result := out.String()
+
+	return result, result != input
 }

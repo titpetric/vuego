@@ -20,16 +20,15 @@ go get github.com/titpetric/vuego
 ```
 
 ```go
-package views
-
-import (
-	"github.com/titpetric/vuego"
-)
-
-func RenderTemplate(w io.Writer, template string, data map[string]any) error {
-	return vuego.Render(w, template, data)
+var buf = bytes.Buffer
+vue := vuego.NewVue(os.DirFS("templates"))
+if err := vue.Render(&buf, "index.vuego", data); err != nil {
+	return err
 }
 ```
+
+Vuego now also supports components, for example:
+
 
 Invoke `vuego.Render(io.Writer, template string, data map[string]any) error` to render a template.
 
@@ -54,6 +53,23 @@ Vuego implements a subset of VueJS syntax:
 There's no support for other VueJS syntax.
 
 ## Examples
+
+### Components
+
+Vuego supports components, however they are defined differently than VueJS.
+
+```html
+<html>
+  <head>
+    <title>Vuego index example</title>
+  </head>
+  <body>
+    <vuego include="components/Header.vuego"></vuego>
+    <vuego include="IndexContent.vuego"></vuego>
+    <vuego include="components/Footer.vuego"></vuego>
+  </body>
+</html>
+```
 
 ### Variable interpolation
 

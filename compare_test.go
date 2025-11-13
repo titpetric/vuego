@@ -1,91 +1,44 @@
-package vuego_test
+package vuego
 
 import (
-	"encoding/json"
-	"io/fs"
-	"os"
-	"path/filepath"
+	"bytes"
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
-
-	"github.com/titpetric/vuego"
 )
-
-// TestRenderFixtures walks testdata, renders each .tpl with .json data and compares DOMs.
-func TestRenderFixtures(t *testing.T) {
-	dataDir := "testdata"
-	err := filepath.WalkDir(dataDir, func(filename string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || filepath.Ext(filename) != ".tpl" {
-			return nil
-		}
-
-		base := filename[:len(filename)-len(".tpl")]
-		jsonFile := base + ".json"
-		htmlFile := base + ".html"
-
-		t.Run(base, func(t *testing.T) {
-
-			raw, err := os.ReadFile(jsonFile)
-			assert.NoError(t, err, "reading json %s", jsonFile)
-			var data map[string]any
-			assert.NoError(t, json.Unmarshal(raw, &data), "unmarshal json %s", jsonFile)
-
-			expectedBytes, err := os.ReadFile(htmlFile)
-			assert.NoError(t, err, "reading html %s", htmlFile)
-			expected := string(expectedBytes)
-
-			tplContent, err := os.ReadFile(filename)
-			assert.NoError(t, err, "reading tpl %s", filename)
-
-			var out strings.Builder
-			// use Render which renders snippet correctly (innerHTML semantics)
-			err = vuego.Render(&out, string(tplContent), data)
-			assert.NoError(t, err, "rendering %s", filename)
-			actual := out.String()
-
-			// Compare DOMs (ignores whitespace text nodes)
-			ok := compareHTML(expected, actual)
-			if !ok {
-				// produce helpful debug output on failure
-				t.Logf("=== TEMPLATE: %s\n--- expected:\n%s\n--- actual:\n%s\n", filename, expected, actual)
-			}
-			assert.True(t, compareHTML(actual, expected), "rendered DOM did not match expected for %s", filename)
-		})
-
-		return nil
-	})
-	assert.NoError(t, err)
-}
 
 // compareHTML parses two HTML strings and returns true if their DOMs match.
 // It ignores pure-whitespace text nodes and compares attributes order-insensitively.
-func compareHTML(a, b string) bool {
-	an, err := html.Parse(strings.NewReader(a))
-	if err != nil {
-		return false
-	}
-	bn, err := html.Parse(strings.NewReader(b))
-	if err != nil {
-		return false
-	}
+func compareHTML(tb testing.TB, want, got, template, data []byte) bool {
+	an, err := html.Parse(bytes.NewReader(want))
+	require.NoError(tb, err)
+
+	bn, err := html.Parse(bytes.NewReader(got))
+	require.NoError(tb, err)
 
 	// build significant children lists for each root
 	ac := significantChildren(an)
 	bc := significantChildren(bn)
 
-	if len(ac) != len(bc) {
-		return false
-	}
-
-	for i := range ac {
-		if !compareNodeRecursive(ac[i], bc[i]) {
+	isEqual := func() bool {
+		if len(ac) != len(bc) {
 			return false
 		}
+
+		for i := range ac {
+			if !compareNodeRecursive(ac[i], bc[i]) {
+				return false
+			}
+		}
+		return true
+	}()
+
+	if !isEqual {
+		tb.Logf("\n--- template:\n%s\n--- json:\n%s\n--- expected:\n%s\n--- actual:\n%s\n", string(template), string(data), string(want), string(got))
 	}
-	return true
+	return isEqual
 }
 
 // significantChildren returns a slice of child nodes of root that are not pure-whitespace text nodes.

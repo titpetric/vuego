@@ -1,0 +1,3 @@
+<template :require="name" :require="value">
+  <button :name="name">{{ title }}</button>
+</template>

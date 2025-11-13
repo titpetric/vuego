@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-// Scope provides stack-based variable lookup and convenient typed accessors.
-type Scope struct {
+// Stack provides stack-based variable lookup and convenient typed accessors.
+type Stack struct {
 	stack []map[string]any // bottom..top, top is last element
 }
 
-// NewScope constructs a Scope with an optional initial root map (nil allowed).
-func NewScope(root map[string]any) *Scope {
-	s := &Scope{}
+// NewStack constructs a Stack with an optional initial root map (nil allowed).
+func NewStack(root map[string]any) *Stack {
+	s := &Stack{}
 	if root == nil {
 		root = map[string]any{}
 	}
@@ -21,16 +21,16 @@ func NewScope(root map[string]any) *Scope {
 	return s
 }
 
-// Push a new map as a top-most scope.
-func (s *Scope) Push(m map[string]any) {
+// Push a new map as a top-most Stack.
+func (s *Stack) Push(m map[string]any) {
 	if m == nil {
 		m = map[string]any{}
 	}
 	s.stack = append(s.stack, m)
 }
 
-// Pop the top-most scope. If only root remains it still pops to empty slice safely.
-func (s *Scope) Pop() {
+// Pop the top-most Stack. If only root remains it still pops to empty slice safely.
+func (s *Stack) Pop() {
 	if len(s.stack) == 0 {
 		return
 	}
@@ -40,8 +40,8 @@ func (s *Scope) Pop() {
 	}
 }
 
-// Set sets a key in the top-most scope.
-func (s *Scope) Set(key string, val any) {
+// Set sets a key in the top-most Stack.
+func (s *Stack) Set(key string, val any) {
 	if len(s.stack) == 0 {
 		s.stack = append(s.stack, map[string]any{})
 	}
@@ -50,7 +50,7 @@ func (s *Scope) Set(key string, val any) {
 
 // Lookup searches stack from top to bottom for a plain identifier (no dots).
 // Returns (value, true) if found.
-func (s *Scope) Lookup(name string) (any, bool) {
+func (s *Stack) Lookup(name string) (any, bool) {
 	for i := len(s.stack) - 1; i >= 0; i-- {
 		if v, ok := s.stack[i][name]; ok {
 			return v, true
@@ -64,13 +64,13 @@ func (s *Scope) Lookup(name string) (any, bool) {
 //	"user.name", "items[0].title", "mapKey.sub"
 //
 // It returns (value, true) if resolution succeeded.
-func (s *Scope) Resolve(expr string) (any, bool) {
+func (s *Stack) Resolve(expr string) (any, bool) {
 	parts := s.splitPath(expr)
 	if len(parts) == 0 {
 		return nil, false
 	}
 
-	// first part must come from scope
+	// first part must come from Stack
 	cur, ok := s.Lookup(parts[0])
 	if !ok {
 		return nil, false
@@ -138,7 +138,7 @@ func (s *Scope) Resolve(expr string) (any, bool) {
 }
 
 // GetString resolves and tries to return a string.
-func (s *Scope) GetString(expr string) (string, bool) {
+func (s *Stack) GetString(expr string) (string, bool) {
 	v, ok := s.Resolve(expr)
 	if !ok || v == nil {
 		return "", false
@@ -162,7 +162,7 @@ func (s *Scope) GetString(expr string) (string, bool) {
 }
 
 // GetInt resolves and tries to return an int (best-effort).
-func (s *Scope) GetInt(expr string) (int, bool) {
+func (s *Stack) GetInt(expr string) (int, bool) {
 	v, ok := s.Resolve(expr)
 	if !ok || v == nil {
 		return 0, false
@@ -193,7 +193,7 @@ func (s *Scope) GetInt(expr string) (int, bool) {
 }
 
 // GetSlice returns a []any for supported slice kinds. Avoids reflection by only converting known types.
-func (s *Scope) GetSlice(expr string) ([]any, bool) {
+func (s *Stack) GetSlice(expr string) ([]any, bool) {
 	v, ok := s.Resolve(expr)
 	if !ok || v == nil {
 		return nil, false
@@ -232,7 +232,7 @@ func (s *Scope) GetSlice(expr string) ([]any, bool) {
 
 // GetMap returns map[string]any or converts map[string]string to map[string]any.
 // Avoids reflection for other map types.
-func (s *Scope) GetMap(expr string) (map[string]any, bool) {
+func (s *Stack) GetMap(expr string) (map[string]any, bool) {
 	v, ok := s.Resolve(expr)
 	if !ok || v == nil {
 		return nil, false
@@ -254,7 +254,7 @@ func (s *Scope) GetMap(expr string) (map[string]any, bool) {
 // ForEach iterates over a collection at the given expr and calls fn(index,value).
 // Supports slices/arrays and map[string]any (iteration order for maps is unspecified).
 // If fn returns an error iteration is stopped and the error passed through.
-func (s *Scope) ForEach(expr string, fn func(index int, value any) error) error {
+func (s *Stack) ForEach(expr string, fn func(index int, value any) error) error {
 	v, ok := s.Resolve(expr)
 	if !ok {
 		// treat missing as no-op
@@ -321,7 +321,7 @@ func (s *Scope) ForEach(expr string, fn func(index int, value any) error) error 
 //	"items[0].name" -> ["items","0","name"]
 //	"user.name" -> ["user","name"]
 //	"a['b'].c" -> ["a","b","c"]
-func (s *Scope) splitPath(expr string) []string {
+func (s *Stack) splitPath(expr string) []string {
 	expr = strings.TrimSpace(expr)
 	if expr == "" {
 		return nil
