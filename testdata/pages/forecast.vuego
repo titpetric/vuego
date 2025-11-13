@@ -1,0 +1,7 @@
+<template>
+	<h1>Weather telemetry for {{ latitude }} lat {{ longitude }}</h1>
+
+	<p>Current weather is {{current.temperature_2m}}{{current_units.temperature_2m}}.</p>
+
+	<p>The data is updated every {{current.interval}} {{current_units.interval}}.</p>
+</template>

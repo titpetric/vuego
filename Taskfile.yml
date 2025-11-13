@@ -8,3 +8,7 @@ tasks:
       - go mod tidy
       - go build .
       - go test -count=1 -v .
+
+  test:
+    cmds:
+      - go run ./cmd/vuego testdata/pages/forecast.vuego testdata/json/forecast.json

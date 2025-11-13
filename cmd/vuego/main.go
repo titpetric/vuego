@@ -4,40 +4,42 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/titpetric/vuego"
 )
 
 func main() {
-	if len(os.Args) != 3 {
-		fmt.Fprintf(os.Stderr, "Usage: %s file.tpl file.json\n", os.Args[0])
+	if err := start(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
+	}
+}
+
+func start() error {
+	if len(os.Args) != 3 {
+		return fmt.Errorf("Usage: %s file.tpl file.json", os.Args[0])
 	}
 
 	tplFile := os.Args[1]
 	jsonFile := os.Args[2]
 
-	tplContent, err := os.ReadFile(tplFile)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading template file: %v\n", err)
-		os.Exit(1)
-	}
-
 	jsonContent, err := os.ReadFile(jsonFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading JSON file: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("reading JSON file: %w", err)
 	}
 
 	var data map[string]any
 	if err := json.Unmarshal(jsonContent, &data); err != nil {
-		fmt.Fprintf(os.Stderr, "Error parsing JSON: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("parsing JSON: %w", err)
 	}
 
-	// Render template to stdout
-	if err := vuego.Render(os.Stdout, string(tplContent), data); err != nil {
-		fmt.Fprintf(os.Stderr, "Error rendering template: %v\n", err)
-		os.Exit(1)
+	templateFS := os.DirFS(filepath.Dir(tplFile))
+	vue := vuego.NewVue(templateFS)
+
+	if err := vue.Render(os.Stdout, filepath.Base(tplFile), data); err != nil {
+		return fmt.Errorf("rendering template: %w", err)
 	}
+
+	return nil
 }

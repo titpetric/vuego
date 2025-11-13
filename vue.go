@@ -96,7 +96,38 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 					return nil, fmt.Errorf("Error loading fragment from %s: %w", name, err)
 				}
 
-				evaluated, err := v.evaluate(ctx, compDom, depth+1)
+				// Push component attributes to stack for :required validation
+				componentData := make(map[string]any)
+				for _, attr := range node.Attr {
+					if attr.Key != "include" {
+						componentData[attr.Key] = attr.Val
+					}
+				}
+				v.stack.Push(componentData)
+
+				// Validate and process template tag
+				processedDom, err := v.evalTemplate(compDom, componentData)
+				if err != nil {
+					v.stack.Pop()
+					return nil, fmt.Errorf("Error processing template in %s: %w", name, err)
+				}
+
+				evaluated, err := v.evaluate(ctx, processedDom, depth+1)
+				v.stack.Pop()
+				if err != nil {
+					return nil, err
+				}
+				result = append(result, evaluated...)
+				continue
+			}
+
+			if tag == "template" {
+				// Omit template tags at the top level
+				var childList []*html.Node
+				for c := range node.ChildNodes() {
+					childList = append(childList, c)
+				}
+				evaluated, err := v.evaluate(ctx, childList, depth+1)
 				if err != nil {
 					return nil, err
 				}

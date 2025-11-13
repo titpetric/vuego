@@ -1,3 +1,5 @@
-<footer>
-  This is the footer.
-</footer>
+<template>
+  <footer>
+    This is the footer.
+  </footer>
+</template>

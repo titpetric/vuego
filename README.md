@@ -1,105 +1,87 @@
 # vuego
 
-Vuego (pronounced "fuego") is a template engine based on the document
-object model. It is inspired by [vue.js](https://vuejs.org/) syntax and
-tries to support a subset of their template engine syntax.
+Vuego is a lightweight [Vue.js](https://vuejs.org/)-inspired template engine for Go. Render HTML templates with familiar Vue syntax - no JavaScript runtime required.
 
-The engine is implemented in pure go, without the use of javascript
-virtual machines like goja. The project was a quick attempt at achieving
-a functional subset of compatible template engine syntax but have it's
-own runtime in Go, without the complexity of virtual machines.
+The engine uses [golang.org/x/net/html](https://pkg.go.dev/golang.org/x/net/html) for HTML parsing and rendering.
 
-It's made possible thanks to [golang.org/x/net/html](https://pkg.go.dev/golang.org/x/net/html).
+## Features
 
-## Usage
+Vuego supports the following template features:
 
-To use vuego as a package:
+- **Variable interpolation** - `{{ variable }}` with nested property access
+- **Attribute binding** - `:attr="value"` or `v-bind:attr="value"`
+- **Conditional rendering** - `v-if` for showing/hiding elements
+- **List rendering** - `v-for` to iterate over arrays with optional index
+- **Raw HTML** - `v-html` for unescaped HTML content
+- **Component composition** - `<vuego include>` for reusable components
+- **Required props** - `:required` attribute for component validation
+- **Template wrapping** - `<template>` tag for component boundaries
+- **Full documents** - Support for complete HTML documents or fragments
+- **Automatic escaping** - Built-in XSS protection for interpolated values
+
+## Quick Start
+
+### As a Go Package
 
 ```bash
 go get github.com/titpetric/vuego
 ```
 
 ```go
-var buf = bytes.Buffer
-vue := vuego.NewVue(os.DirFS("templates"))
-if err := vue.Render(&buf, "index.vuego", data); err != nil {
-	return err
+package main
+
+import (
+    "os"
+    "github.com/titpetric/vuego"
+)
+
+func main() {
+    // Create filesystem from template directory
+    templateFS := os.DirFS("templates")
+    
+    // Create Vue instance
+    vue := vuego.NewVue(templateFS)
+    
+    // Render template with data
+    data := map[string]any{
+        "title": "Hello World",
+        "user": map[string]any{
+            "name": "John Doe",
+        },
+    }
+    
+    if err := vue.Render(os.Stdout, "page.vuego", data); err != nil {
+        panic(err)
+    }
 }
 ```
 
-Vuego now also supports components, for example:
-
-
-Invoke `vuego.Render(io.Writer, template string, data map[string]any) error` to render a template.
-
-You can also use vuego as a command line tool:
+### As a CLI Tool
 
 ```bash
 go install github.com/titpetric/vuego/cmd/vuego@latest
 ```
 
-Usage: `vuego file.tpl file.json` will render HTML to stdout.
-
-## Supported syntax
-
-Vuego implements a subset of VueJS syntax:
-
-- Loops with `v-for`
-- Conditions with `v-if`
-- Attributes `:attr="value"`, `v-bind`
-- Set inner HTML: `v-html`
-- Variable interpolation: `<p>Hello, {{user.name}}</p>`
-
-There's no support for other VueJS syntax.
-
-## Examples
-
-### Components
-
-Vuego supports components, however they are defined differently than VueJS.
-
-```html
-<html>
-  <head>
-    <title>Vuego index example</title>
-  </head>
-  <body>
-    <vuego include="components/Header.vuego"></vuego>
-    <vuego include="IndexContent.vuego"></vuego>
-    <vuego include="components/Footer.vuego"></vuego>
-  </body>
-</html>
+```bash
+vuego template.vuego data.json > output.html
 ```
 
-### Variable interpolation
+## Documentation
 
-Use `{{ var }}` to insert a value from the current scope.
+- **[CLI Usage](docs/cli.md)** - Command-line tool documentation with examples
+- **[Template Syntax](docs/syntax.md)** - Complete syntax reference for all features
+- **[Components](docs/components.md)** - Component composition and the `:required` attribute
+
+## Quick Examples
+
+### Variable Interpolation
 
 ```html
 <h1>{{ title }}</h1>
 <p>Hello, {{ user.name }}!</p>
 ```
 
-### Attribute binding (`:attr` / `v-bind:`)
-
-Bind attributes to expressions.
-
-```html
-<a :href="url" title="{{ tooltip }}">Link</a>
-```
-
-### Conditional rendering (`v-if`)
-
-Render elements only when the expression is truthy.
-
-```html
-<div v-if="show">Visible</div>
-<div v-if="hide">Hidden</div>
-```
-
-### List rendering (`v-for`)
-
-Iterate over arrays or slices.
+### List Rendering
 
 ```html
 <ul>
@@ -107,48 +89,20 @@ Iterate over arrays or slices.
 </ul>
 ```
 
-With index:
-
-```html
-<li v-for="(i, v) in list">{{ i }} - {{ v }}</li>
-```
-
-### Raw HTML (`v-html`)
-
-Insert unescaped HTML.
-
-```html
-<div v-html="content"></div>
-```
-
-### Full document template
-
-Supports complete HTML documents or fragments.
+### Component Composition
 
 ```html
 <html>
-  <head><title>{{ title }}</title></head>
   <body>
-    <ul>
-      <li v-for="item in items">{{ item.name }}</li>
-    </ul>
+    <vuego include="components/Header.vuego"></vuego>
+    <main>{{ content }}</main>
+    <vuego include="components/Footer.vuego"></vuego>
   </body>
 </html>
 ```
 
-## Notes
+See the [syntax documentation](docs/syntax.md) for complete examples and usage patterns.
 
-- Interpolation uses `{{ expr }}` (no `{expr}` support).  
-- `v-if`, `v-for`, `v-html`, and `v-bind` / `:attr` follow Vue-like semantics.  
-- Whitespace differences are ignored when testing or comparing DOM.
+## License
 
-Other things that this doesn't support:
-
-- expression evaluation, math, string concatenation of values
-- custom comparisons and boolean expressions in `v-if`
-
-Basic XSS security is provided with a `html.EscapeString` (quoting).
-
-This doesn't support strong typed arguments, however, one could use
-[usepzaka/structmap](https://pkg.go.dev/github.com/usepzaka/structmap)
-or other similar packages that map structs to a `map[string]any`.
+MIT

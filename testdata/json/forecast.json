@@ -1,0 +1,21 @@
+{
+  "latitude": 45.22,
+  "longitude": 13.599998,
+  "generationtime_ms": 0.043272972106933594,
+  "utc_offset_seconds": 0,
+  "timezone": "GMT",
+  "timezone_abbreviation": "GMT",
+  "elevation": 0.0,
+  "current_units": {
+    "time": "iso8601",
+    "interval": "seconds",
+    "temperature_2m": "°C",
+    "weather_code": "wmo code"
+  },
+  "current": {
+    "time": "2025-11-13T20:30",
+    "interval": 900,
+    "temperature_2m": 13.1,
+    "weather_code": 45
+  }
+}

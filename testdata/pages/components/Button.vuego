@@ -1,3 +1,3 @@
-<template :require="name" :require="value">
+<template :require="name" :require="title">
   <button :name="name">{{ title }}</button>
 </template>
