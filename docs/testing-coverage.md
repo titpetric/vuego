@@ -13,7 +13,7 @@ cover. Tests with cognitive complexity 0 would be covered by invocation.
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 | ------ | ------------------------------------ | -------- | --------- | ----- |
-| ❌      | titpetric/vuego           | 73.59%   | 315       | 988   |
+| ✅      | titpetric/vuego           | 85.82%   | 315       | 988   |
 | ❌      | titpetric/vuego/cmd/vuego | 0.00%    | 5         | 33    |
 
 ## Functions
@@ -27,15 +27,15 @@ cover. Tests with cognitive complexity 0 would be covered by invocation.
 | ✅      | titpetric/vuego           | NewStack                       | 100.00%  | 1         |
 | ✅      | titpetric/vuego           | NewVue                         | 100.00%  | 0         |
 | ✅      | titpetric/vuego           | NewVueContext                  | 100.00%  | 0         |
-| ❌      | titpetric/vuego           | Stack.ForEach                  | 18.20%   | 32        |
-| ❌      | titpetric/vuego           | Stack.GetInt                   | 0.00%    | 5         |
-| ❌      | titpetric/vuego           | Stack.GetMap                   | 0.00%    | 5         |
-| ❌      | titpetric/vuego           | Stack.GetSlice                 | 0.00%    | 11        |
-| ❌      | titpetric/vuego           | Stack.GetString                | 0.00%    | 3         |
+| ❌      | titpetric/vuego           | Stack.ForEach                  | 60.60%   | 32        |
+| ✅      | titpetric/vuego           | Stack.GetInt                   | 73.30%   | 5         |
+| ✅      | titpetric/vuego           | Stack.GetMap                   | 100.00%  | 5         |
+| ✅      | titpetric/vuego           | Stack.GetSlice                 | 100.00%  | 11        |
+| ✅      | titpetric/vuego           | Stack.GetString                | 72.70%   | 3         |
 | ✅      | titpetric/vuego           | Stack.Lookup                   | 100.00%  | 3         |
-| ✅      | titpetric/vuego           | Stack.Pop                      | 60.00%   | 2         |
+| ✅      | titpetric/vuego           | Stack.Pop                      | 80.00%   | 2         |
 | ✅      | titpetric/vuego           | Stack.Push                     | 100.00%  | 1         |
-| ❌      | titpetric/vuego           | Stack.Resolve                  | 37.20%   | 38        |
+| ✅      | titpetric/vuego           | Stack.Resolve                  | 81.40%   | 38        |
 | ✅      | titpetric/vuego           | Stack.Set                      | 66.70%   | 1         |
 | ✅      | titpetric/vuego           | Stack.splitPath                | 81.80%   | 25        |
 | ✅      | titpetric/vuego           | Vue.Render                     | 90.00%   | 2         |
