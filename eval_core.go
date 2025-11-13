@@ -3,6 +3,7 @@ package vuego
 import (
 	"fmt"
 
+	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
 )
 
@@ -14,7 +15,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 		switch node.Type {
 		case html.TextNode:
 			interpolated, _ := v.interpolate(node.Data)
-			newNode := cloneNode(node)
+			newNode := helpers.CloneNode(node)
 			newNode.Data = interpolated
 			result = append(result, newNode)
 			continue
@@ -23,7 +24,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			tag := node.Data
 
 			if tag == "vuego" {
-				name := getAttr(node, "include")
+				name := helpers.GetAttr(node, "include")
 				compDom, err := v.loader.LoadFragment(name)
 				if err != nil {
 					return nil, fmt.Errorf("error loading %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
@@ -69,14 +70,14 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				continue
 			}
 
-			if vIf := getAttr(node, "v-if"); vIf != "" {
+			if vIf := helpers.GetAttr(node, "v-if"); vIf != "" {
 				ok, err := v.evalCondition(node, vIf)
 				if err != nil || !ok {
 					continue
 				}
 			}
 
-			if vFor := getAttr(node, "v-for"); vFor != "" {
+			if vFor := helpers.GetAttr(node, "v-for"); vFor != "" {
 				loopNodes, err := v.evalFor(ctx, node, vFor, depth+1)
 				if err != nil {
 					return nil, err
@@ -91,9 +92,9 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				continue
 			}
 
-			newNode := deepCloneNode(node)
+			newNode := helpers.DeepCloneNode(node)
 
-			hasVHtml := getAttr(newNode, "v-html") != ""
+			hasVHtml := helpers.GetAttr(newNode, "v-html") != ""
 			v.evalVHtml(newNode)
 			v.evalAttributes(newNode)
 
@@ -119,9 +120,9 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			}
 
 			result = append(result, newNode)
-		default:
-			result = append(result, cloneNode(node))
-		}
+			default:
+			result = append(result, helpers.CloneNode(node))
+			}
 	}
 
 	return result, nil

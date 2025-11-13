@@ -1,4 +1,4 @@
-package vuego
+package vuego_test
 
 import (
 	"bytes"
@@ -9,12 +9,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 func TestVue_Render(t *testing.T) {
 	var buf bytes.Buffer
 
-	vue := NewVue(os.DirFS("testdata/pages"))
+	vue := vuego.NewVue(os.DirFS("testdata/pages"))
 	err := vue.Render(&buf, "Index.vuego", nil)
 	require.NoError(t, err)
 
@@ -23,7 +25,7 @@ func TestVue_Render(t *testing.T) {
 
 func TestFixtures(t *testing.T) {
 	fixtures := os.DirFS("testdata/fixtures")
-	vue := NewVue(fixtures)
+	vue := vuego.NewVue(fixtures)
 	templates, err := fs.Glob(fixtures, "*.vuego")
 	require.NoError(t, err)
 
@@ -43,7 +45,7 @@ func TestFixtures(t *testing.T) {
 		t.Run(template, func(t *testing.T) {
 			var got bytes.Buffer
 			require.NoError(t, vue.RenderFragment(&got, template, data))
-			require.True(t, compareHTML(t, want, got.Bytes(), templateBytes, dataBytes))
+			require.True(t, helpers.CompareHTML(t, want, got.Bytes(), templateBytes, dataBytes))
 		})
 	}
 }

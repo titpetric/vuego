@@ -4,6 +4,18 @@ This file contains conventions and preferences for AI agents working on this cod
 
 ## Testing
 
+### Black Box Testing Philosophy
+- **Prefer black box tests** using `package vuego_test` instead of `package vuego`
+- Tests should only interact with exported APIs, not internal implementation
+- This allows running individual test files: `go test -v stack_test.go`
+- Avoid testing internal/private functions and types directly
+
+**Why black box?**
+- Forces good API design by testing from user's perspective
+- Tests are more resilient to refactoring
+- Can run individual test files independently
+- Better documentation through examples
+
 ### Test Framework
 - Use `github.com/stretchr/testify/require` for assertions
 - **Avoid** `t.Fatal()`, `t.Error()`, and `t.Errorf()` - use testify/require instead
@@ -40,6 +52,25 @@ if err != nil {
 if got != want {
     t.Errorf("got %v, want %v", got, want)  // Don't do this
 }
+```
+
+### Running Tests
+
+See [docs/testing.md](docs/testing.md) for comprehensive testing documentation.
+
+**Quick commands:**
+```bash
+# Run all tests
+go test ./...
+
+# Run specific test file (black box tests only)
+go test -v stack_test.go
+
+# Run specific test function
+go test -v -run TestStack_Push
+
+# Full test suite with coverage
+task test
 ```
 
 ## Code Style

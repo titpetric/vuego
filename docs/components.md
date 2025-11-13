@@ -24,6 +24,7 @@ The path is relative to the filesystem root passed to `vuego.NewVue()`.
 ### Example: Including a Header Component
 
 **components/Header.vuego**
+
 ```html
 <template>
   <header>
@@ -33,6 +34,7 @@ The path is relative to the filesystem root passed to `vuego.NewVue()`.
 ```
 
 **index.vuego**
+
 ```html
 <html>
   <head>
@@ -59,12 +61,14 @@ The `<template>` tag is a wrapper element that gets omitted from the final rende
 Without a template tag, you might have multiple root elements which can complicate component structure. The template tag provides a clean wrapper that disappears during rendering.
 
 **Without template (valid but less organized):**
+
 ```html
 <h1>Title</h1>
 <p>Description</p>
 ```
 
 **With template (recommended):**
+
 ```html
 <template>
   <h1>Title</h1>
@@ -104,6 +108,7 @@ You can specify multiple required attributes:
 ### Example: Button Component with Required Props
 
 **components/Button.vuego**
+
 ```html
 <template :require="name" :require="title">
   <button :name="name">{{ title }}</button>
@@ -111,6 +116,7 @@ You can specify multiple required attributes:
 ```
 
 **Usage:**
+
 ```html
 <vuego include="components/Button.vuego" 
        name="submit-btn" 
@@ -118,11 +124,13 @@ You can specify multiple required attributes:
 ```
 
 **Rendered output:**
+
 ```html
 <button name="submit-btn">Click Me</button>
 ```
 
 **Error example (missing required prop):**
+
 ```html
 <!-- This will fail because 'name' is missing -->
 <vuego include="components/Button.vuego" title="Click Me"></vuego>
@@ -135,6 +143,7 @@ Error: `required attribute 'name' not provided`
 ### Example 1: Page Layout with Components
 
 **components/Header.vuego**
+
 ```html
 <template>
   <header>
@@ -145,6 +154,7 @@ Error: `required attribute 'name' not provided`
 ```
 
 **components/Footer.vuego**
+
 ```html
 <template>
   <footer>
@@ -154,6 +164,7 @@ Error: `required attribute 'name' not provided`
 ```
 
 **index.vuego**
+
 ```html
 <html>
   <head>
@@ -175,6 +186,7 @@ Error: `required attribute 'name' not provided`
 ### Example 2: Nested Components with Props
 
 **components/Button.vuego**
+
 ```html
 <template :require="name" :require="title">
   <button :name="name">{{ title }}</button>
@@ -182,6 +194,7 @@ Error: `required attribute 'name' not provided`
 ```
 
 **components/ButtonGroup.vuego**
+
 ```html
 <template>
   <div class="button-group">
@@ -196,6 +209,7 @@ Error: `required attribute 'name' not provided`
 ```
 
 **page.vuego**
+
 ```html
 <template>
   <div>
@@ -208,6 +222,7 @@ Error: `required attribute 'name' not provided`
 ### Example 3: Component with Dynamic Data
 
 **components/WeatherCard.vuego**
+
 ```html
 <template :require="temperature" :require="location">
   <div class="weather-card">
@@ -218,6 +233,7 @@ Error: `required attribute 'name' not provided`
 ```
 
 **forecast.vuego**
+
 ```html
 <template>
   <h1>Weather Forecast</h1>
@@ -229,6 +245,7 @@ Error: `required attribute 'name' not provided`
 ```
 
 With JSON data:
+
 ```json
 {
   "city": "San Francisco",
@@ -239,6 +256,7 @@ With JSON data:
 ```
 
 **Rendered output:**
+
 ```html
 <h1>Weather Forecast</h1>
 

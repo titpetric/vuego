@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
 )
 
@@ -44,8 +45,8 @@ func (v *Vue) evalFor(ctx VueContext, node *html.Node, expr string, depth int) (
 	var result []*html.Node
 
 	err = v.stack.ForEach(collectionName, func(index int, value any) error {
-		iterNode := deepCloneNode(node)
-		removeAttr(iterNode, "v-for")
+		iterNode := helpers.DeepCloneNode(node)
+		helpers.RemoveAttr(iterNode, "v-for")
 
 		v.stack.Push(nil)
 		defer v.stack.Pop()

@@ -3,11 +3,12 @@ package vuego
 import (
 	"fmt"
 
+	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
 )
 
 func (v *Vue) evalCondition(node *html.Node, expr string) (bool, error) {
-	removeAttr(node, "v-if")
+	helpers.RemoveAttr(node, "v-if")
 
 	// Handle negation with ! prefix
 	negated := false

@@ -426,6 +426,7 @@ See [components.md](components.md) for detailed documentation on component compo
 Vuego accepts `map[string]any` as data input. For strongly-typed data structures, you can use packages like [usepzaka/structmap](https://pkg.go.dev/github.com/usepzaka/structmap) to convert structs to maps.
 
 **Example:**
+
 ```go
 type User struct {
     Name  string
@@ -439,6 +440,7 @@ data := structmap.Map(user) // Convert to map[string]any
 ### Whitespace
 
 Whitespace handling in vuego follows these rules:
+
 - Empty text nodes (whitespace-only) are omitted from output
 - Whitespace differences are ignored when comparing DOM structures
 - Indentation is preserved within non-empty text nodes

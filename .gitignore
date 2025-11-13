@@ -1,4 +1,5 @@
 # Coverage files
+*.out
 pkg.cov
 pkg.cov.json
 go-fsck.json

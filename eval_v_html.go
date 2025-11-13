@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
 )
 
 func (v *Vue) evalVHtml(n *html.Node) error {
-	vHtmlExpr := getAttr(n, "v-html")
+	vHtmlExpr := helpers.GetAttr(n, "v-html")
 	if vHtmlExpr == "" {
 		return nil
 	}
-	removeAttr(n, "v-html")
+	helpers.RemoveAttr(n, "v-html")
 
 	val, ok := v.stack.Resolve(vHtmlExpr)
 	if !ok {
