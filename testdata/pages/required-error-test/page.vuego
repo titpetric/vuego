@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Required Attribute Test</title>
+</head>
+<body>
+  <vuego include="required-error-test/component.vuego">
+    <template :title="pageTitle" :author="pageAuthor">
+      <!-- Both attributes provided but pageAuthor is missing from data -->
+    </template>
+  </vuego>
+</body>
+</html>

@@ -74,36 +74,3 @@ func (v *Vue) evalFor(ctx VueContext, node *html.Node, expr string, depth int) (
 
 	return result, nil
 }
-
-// clone a node without sharing children/next
-func cloneNode(n *html.Node) *html.Node {
-	newNode := *n
-	newNode.FirstChild = nil
-	newNode.NextSibling = nil
-	return &newNode
-}
-
-func deepCloneNode(n *html.Node) *html.Node {
-	clone := &html.Node{
-		Type:     n.Type,
-		DataAtom: n.DataAtom,
-		Data:     n.Data,
-		Attr:     append([]html.Attribute(nil), n.Attr...),
-	}
-
-	var prev *html.Node
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		childClone := deepCloneNode(c)
-		childClone.Parent = clone
-
-		if prev == nil {
-			clone.FirstChild = childClone
-		} else {
-			prev.NextSibling = childClone
-			childClone.PrevSibling = prev
-		}
-		prev = childClone
-	}
-
-	return clone
-}

@@ -10,24 +10,51 @@ import (
 	"golang.org/x/net/html"
 )
 
+// Vue is the main template renderer for .vuego templates.
 type Vue struct {
 	loader *Component
 	stack  *Stack
 }
 
+// VueContext carries template inclusion context used during evaluation and for error reporting.
 type VueContext struct {
-	BaseDir      string
-	CurrentDir   string
-	FromFilename string
+	BaseDir        string
+	CurrentDir     string
+	FromFilename   string
+	TemplateStack  []string
 }
 
+// NewVueContext returns a VueContext initialized for the given template filename.
 func NewVueContext(fromFilename string) VueContext {
 	return VueContext{
-		CurrentDir:   path.Dir(fromFilename),
-		FromFilename: fromFilename,
+		CurrentDir:     path.Dir(fromFilename),
+		FromFilename:   fromFilename,
+		TemplateStack:  []string{fromFilename},
 	}
 }
 
+// WithTemplate returns a copy of the context extended with filename in the inclusion chain.
+func (ctx VueContext) WithTemplate(filename string) VueContext {
+	newStack := make([]string, len(ctx.TemplateStack)+1)
+	copy(newStack, ctx.TemplateStack)
+	newStack[len(ctx.TemplateStack)] = filename
+	return VueContext{
+		BaseDir:        ctx.BaseDir,
+		CurrentDir:     path.Dir(filename),
+		FromFilename:   filename,
+		TemplateStack:  newStack,
+	}
+}
+
+// FormatTemplateChain returns the template inclusion chain formatted for error messages.
+func (ctx VueContext) FormatTemplateChain() string {
+	if len(ctx.TemplateStack) <= 1 {
+		return ctx.FromFilename
+	}
+	return strings.Join(ctx.TemplateStack, " -> ")
+}
+
+// NewVue creates a new Vue backed by the given filesystem.
 func NewVue(templateFS fs.FS) *Vue {
 	return &Vue{
 		loader: NewComponent(templateFS),
@@ -35,6 +62,7 @@ func NewVue(templateFS fs.FS) *Vue {
 	}
 }
 
+// Render processes a full-page template file and writes the output to w.
 func (v *Vue) Render(w io.Writer, filename string, data map[string]any) error {
 	dom, err := v.loader.Load(filename)
 	if err != nil {
@@ -54,6 +82,7 @@ func (v *Vue) Render(w io.Writer, filename string, data map[string]any) error {
 	return v.render(w, result)
 }
 
+// RenderFragment processes a template fragment file and writes the output to w.
 func (v *Vue) RenderFragment(w io.Writer, filename string, data map[string]any) error {
 	dom, err := v.loader.LoadFragment(filename)
 	if err != nil {
@@ -71,147 +100,6 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data map[string]any) 
 	}
 
 	return v.render(w, result)
-}
-
-func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.Node, error) {
-	var result []*html.Node
-
-	for _, node := range nodes {
-
-		switch node.Type {
-		case html.TextNode:
-			interpolated, _ := v.interpolate(node.Data)
-			newNode := cloneNode(node)
-			newNode.Data = interpolated
-			result = append(result, newNode)
-			continue
-
-		case html.ElementNode:
-			tag := node.Data
-
-			if tag == "vuego" {
-				name := getAttr(node, "include")
-				compDom, err := v.loader.LoadFragment(name)
-				if err != nil {
-					return nil, fmt.Errorf("Error loading fragment from %s: %w", name, err)
-				}
-
-				// Push component attributes to stack for :required validation
-				componentData := make(map[string]any)
-				for _, attr := range node.Attr {
-					if attr.Key != "include" {
-						componentData[attr.Key] = attr.Val
-					}
-				}
-				v.stack.Push(componentData)
-
-				// Validate and process template tag
-				processedDom, err := v.evalTemplate(compDom, componentData)
-				if err != nil {
-					v.stack.Pop()
-					return nil, fmt.Errorf("Error processing template in %s: %w", name, err)
-				}
-
-				evaluated, err := v.evaluate(ctx, processedDom, depth+1)
-				v.stack.Pop()
-				if err != nil {
-					return nil, err
-				}
-				result = append(result, evaluated...)
-				continue
-			}
-
-			if tag == "template" {
-				// Omit template tags at the top level
-				var childList []*html.Node
-				for c := range node.ChildNodes() {
-					childList = append(childList, c)
-				}
-				evaluated, err := v.evaluate(ctx, childList, depth+1)
-				if err != nil {
-					return nil, err
-				}
-				result = append(result, evaluated...)
-				continue
-			}
-
-			if vIf := getAttr(node, "v-if"); vIf != "" {
-				ok, err := v.evalCondition(node, vIf)
-				if err != nil || !ok {
-					continue
-				}
-			}
-
-			if vFor := getAttr(node, "v-for"); vFor != "" {
-				loopNodes, err := v.evalFor(ctx, node, vFor, depth+1)
-				if err != nil {
-					return nil, err
-				}
-
-				for _, n := range loopNodes {
-					v.evalVHtml(n)
-					v.evalAttributes(n)
-				}
-
-				result = append(result, loopNodes...)
-				continue
-			}
-
-			newNode := deepCloneNode(node)
-
-			hasVHtml := getAttr(newNode, "v-html") != ""
-			v.evalVHtml(newNode)
-			v.evalAttributes(newNode)
-
-			if !hasVHtml {
-				var childList []*html.Node
-				for c := range node.ChildNodes() {
-					childList = append(childList, c)
-				}
-
-				newChildren, err := v.evaluate(ctx, childList, depth+1)
-				if err != nil {
-					return nil, err
-				}
-
-				newNode.FirstChild = nil
-				for i, c := range newChildren {
-					if i == 0 {
-						newNode.FirstChild = c
-					} else {
-						newChildren[i-1].NextSibling = c
-					}
-				}
-			}
-
-			result = append(result, newNode)
-		default:
-			result = append(result, cloneNode(node))
-		}
-	}
-
-	return result, nil
-}
-
-// Helper to get attribute
-func getAttr(n *html.Node, key string) string {
-	for _, a := range n.Attr {
-		if a.Key == key {
-			return a.Val
-		}
-	}
-	return ""
-}
-
-func removeAttr(n *html.Node, key string) {
-	var attrs []html.Attribute
-	for _, a := range n.Attr {
-		if a.Key == key {
-			continue
-		}
-		attrs = append(attrs, a)
-	}
-	n.Attr = attrs
 }
 
 func (v *Vue) render(w io.Writer, nodes []*html.Node) error {

@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestVue(t *testing.T) {
+func TestVue_Render(t *testing.T) {
 	var buf bytes.Buffer
 
 	vue := NewVue(os.DirFS("testdata/pages"))

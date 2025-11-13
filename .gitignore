@@ -1,0 +1,7 @@
+# Coverage files
+pkg.cov
+pkg.cov.json
+go-fsck.json
+
+# Build artifacts
+vuego

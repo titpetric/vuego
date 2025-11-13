@@ -1,6 +1,11 @@
 ---
 version: "3"
 
+vars:
+  goversion:
+    sh: go env GOVERSION
+  toolchain: '{{.goversion}}+auto'
+
 tasks:
   default:
     cmds:
@@ -10,5 +15,28 @@ tasks:
       - go test -count=1 -v .
 
   test:
+    desc: "Run tests and collect coverage"
+    env:
+      GOTOOLCHAIN: '{{.toolchain}}'
+    cmds:
+      - go test -failfast -race -count=1 -cover -coverpkg=./... -coverprofile=pkg.cov ./...
+
+  cover:
+    desc: "Show source coverage"
+    cmds:
+      - go-fsck extract . --include-sources
+      - go-fsck docs > docs/api.md
+      - go tool cover -func=pkg.cov | summary coverfunc --json > pkg.cov.json
+      - go-fsck extract --pretty-json ./...
+      - go-fsck coverage -c pkg.cov.json -o go-fsck.json
+      - go-fsck coverage --template=docs/testing-coverage.md.tpl -v > docs/testing-coverage.md
+      - perl -pi -e 's/github.com\/titpetric/titpetric/g' docs/testing-coverage.md
+
+  uncover:
+    desc: "Show uncovered source"
+    cmd: uncover pkg.cov
+
+  render:
+    desc: "Render a vuego template"
     cmds:
       - go run ./cmd/vuego testdata/pages/forecast.vuego testdata/json/forecast.json
