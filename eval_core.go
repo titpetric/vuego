@@ -14,7 +14,10 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 
 		switch node.Type {
 		case html.TextNode:
-			interpolated, _ := v.interpolate(node.Data)
+			interpolated, err := v.interpolate(ctx, node.Data)
+			if err != nil {
+				return nil, fmt.Errorf("in %s: %w", ctx.FormatTemplateChain(), err)
+			}
 			newNode := helpers.CloneNode(node)
 			newNode.Data = interpolated
 			result = append(result, newNode)
@@ -37,18 +40,18 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 						componentData[attr.Key] = attr.Val
 					}
 				}
-				v.stack.Push(componentData)
+				ctx.stack.Push(componentData)
 
 				// Validate and process template tag
-				processedDom, err := v.evalTemplate(compDom, componentData)
+				processedDom, err := v.evalTemplate(ctx, compDom, componentData)
 				if err != nil {
-					v.stack.Pop()
+					ctx.stack.Pop()
 					return nil, fmt.Errorf("error in %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
 				}
 
 				childCtx := ctx.WithTemplate(name)
 				evaluated, err := v.evaluate(childCtx, processedDom, depth+1)
-				v.stack.Pop()
+				ctx.stack.Pop()
 				if err != nil {
 					return nil, err
 				}
@@ -71,7 +74,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			}
 
 			if vIf := helpers.GetAttr(node, "v-if"); vIf != "" {
-				ok, err := v.evalCondition(node, vIf)
+				ok, err := v.evalCondition(ctx, node, vIf)
 				if err != nil || !ok {
 					continue
 				}
@@ -84,8 +87,8 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				}
 
 				for _, n := range loopNodes {
-					v.evalVHtml(n)
-					v.evalAttributes(n)
+					v.evalVHtml(ctx, n)
+					v.evalAttributes(ctx, n)
 				}
 
 				result = append(result, loopNodes...)
@@ -95,8 +98,8 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			newNode := helpers.DeepCloneNode(node)
 
 			hasVHtml := helpers.GetAttr(newNode, "v-html") != ""
-			v.evalVHtml(newNode)
-			v.evalAttributes(newNode)
+			v.evalVHtml(ctx, newNode)
+			v.evalAttributes(ctx, newNode)
 
 			if !hasVHtml {
 				var childList []*html.Node

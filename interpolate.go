@@ -12,9 +12,9 @@ import (
 var interpRe = regexp.MustCompile(`\{\{\s*([^{}\s][^{}]*?)\s*\}\}`)
 
 // interpolate escapes interpolated values for HTML safety.
-func (v *Vue) interpolate(input string) (string, bool) {
+func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 	if !strings.Contains(input, "{{") {
-		return input, false
+		return input, nil
 	}
 
 	var out bytes.Buffer
@@ -28,8 +28,26 @@ func (v *Vue) interpolate(input string) (string, bool) {
 		out.WriteString(input[last:start])
 
 		expr := strings.TrimSpace(input[exprStart:exprEnd])
-		val, ok := v.stack.Resolve(expr)
-		if ok && val != nil {
+
+		var val any
+		var err error
+
+		// Check if expression contains pipe (filter chain) or is a function call
+		if strings.Contains(expr, "|") || isFunctionCall(expr) {
+			pipe := parsePipeExpr(expr)
+			val, err = v.evalPipe(ctx, pipe)
+			if err != nil {
+				return "", fmt.Errorf("in expression '{{ %s }}': %w", expr, err)
+			}
+		} else {
+			var ok bool
+			val, ok = ctx.stack.Resolve(expr)
+			if !ok {
+				val = nil
+			}
+		}
+
+		if val != nil {
 			// Escape value for HTML output
 			out.WriteString(html.EscapeString(fmt.Sprint(val)))
 		} else {
@@ -41,7 +59,5 @@ func (v *Vue) interpolate(input string) (string, bool) {
 
 	out.WriteString(input[last:])
 
-	result := out.String()
-
-	return result, result != input
+	return out.String(), nil
 }

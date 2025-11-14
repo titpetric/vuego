@@ -1,7 +1,6 @@
 # vuego
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/vuego.svg)](https://pkg.go.dev/github.com/titpetric/vuego)
-[![Coverage](https://img.shields.io/badge/coverage-84.70%25-brightgreen.svg)](https://github.com/titpetric/vuego)
+[![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/vuego.svg)](https://pkg.go.dev/github.com/titpetric/vuego) [![Coverage](https://img.shields.io/badge/coverage-84.70%25-brightgreen.svg)](https://github.com/titpetric/vuego)
 
 Vuego is a lightweight [Vue.js](https://vuejs.org/)-inspired template engine for Go. Render HTML templates with familiar Vue syntax - no JavaScript runtime required.
 
@@ -33,8 +32,6 @@ Try VueGo in your browser! The interactive playground lets you experiment with t
 # go run github.com/titpetric/vuego/cmd/vuego-playground
 2025/11/14 20:07:31 VueGo Playground starting on http://localhost:3000
 ```
-
-See [cmd/vuego-playground/README.md](cmd/vuego-playground/README.md) for deployment options.
 
 ## Documentation
 

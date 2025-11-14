@@ -9,14 +9,14 @@ import (
 	"golang.org/x/net/html"
 )
 
-func (v *Vue) evalVHtml(n *html.Node) error {
+func (v *Vue) evalVHtml(ctx VueContext, n *html.Node) error {
 	vHtmlExpr := helpers.GetAttr(n, "v-html")
 	if vHtmlExpr == "" {
 		return nil
 	}
 	helpers.RemoveAttr(n, "v-html")
 
-	val, ok := v.stack.Resolve(vHtmlExpr)
+	val, ok := ctx.stack.Resolve(vHtmlExpr)
 	if !ok {
 		return nil
 	}

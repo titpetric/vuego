@@ -31,20 +31,5 @@ func TestRequiredAttributeError(t *testing.T) {
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "required-error-test/page.vuego", data)
 
-	// We expect an error because required attributes are not provided
-	require.Error(t, err, "Expected error for missing required attributes")
-
-	// Check that the error includes the component filename
-	require.Contains(t, err.Error(), "component.vuego", "Error should mention component filename")
-
-	// Check that the error includes the parent template (page.vuego)
-	require.Contains(t, err.Error(), "page.vuego", "Error should mention parent page filename")
-
-	// Check that the error message mentions a required attribute
-	require.Contains(t, err.Error(), "required attribute", "Error should mention required attribute")
-
-	// Check that the error shows template inclusion chain
-	require.Contains(t, err.Error(), "included from", "Error should show template inclusion chain")
-
-	t.Logf("Error with template chain: %v", err)
+	require.Equal(t, "error in required-error-test/component.vuego (included from required-error-test/page.vuego): required attribute 'title' not provided", err.Error())
 }

@@ -426,6 +426,19 @@ func TestStack_ForEach(t *testing.T) {
 		require.Equal(t, 6, sum)
 	})
 
+	t.Run("[]map[string]any", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{
+			"items": []map[string]any{{"id": 1}, {"id": 2}},
+		})
+		count := 0
+		err := s.ForEach("items", func(i int, v any) error {
+			count++
+			return nil
+		})
+		require.NoError(t, err)
+		require.Equal(t, 2, count)
+	})
+
 	t.Run("map[string]any", func(t *testing.T) {
 		s := vuego.NewStack(map[string]any{
 			"obj": map[string]any{"a": 1, "b": 2},
@@ -439,11 +452,98 @@ func TestStack_ForEach(t *testing.T) {
 		require.Equal(t, 2, count)
 	})
 
+	t.Run("map[string]string", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{
+			"config": map[string]string{"host": "localhost", "port": "8080"},
+		})
+		count := 0
+		err := s.ForEach("config", func(i int, v any) error {
+			count++
+			return nil
+		})
+		require.NoError(t, err)
+		require.Equal(t, 2, count)
+	})
+
+	t.Run("tracks correct indices for []any", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"items": []any{10, 20, 30}})
+		var indices []int
+		err := s.ForEach("items", func(i int, v any) error {
+			indices = append(indices, i)
+			return nil
+		})
+		require.NoError(t, err)
+		require.Equal(t, []int{0, 1, 2}, indices)
+	})
+
+	t.Run("tracks correct indices for map[string]any", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{
+			"obj": map[string]any{"a": 1, "b": 2, "c": 3},
+		})
+		count := 0
+		var indices []int
+		err := s.ForEach("obj", func(i int, v any) error {
+			indices = append(indices, i)
+			count++
+			return nil
+		})
+		require.NoError(t, err)
+		require.Equal(t, 3, count)
+		require.Equal(t, []int{0, 1, 2}, indices)
+	})
+
 	t.Run("error stops iteration", func(t *testing.T) {
 		s := vuego.NewStack(map[string]any{"items": []any{1, 2, 3}})
 		count := 0
 		testErr := errors.New("stop")
 		err := s.ForEach("items", func(i int, v any) error {
+			count++
+			if count == 2 {
+				return testErr
+			}
+			return nil
+		})
+		require.ErrorIs(t, err, testErr)
+		require.Equal(t, 2, count)
+	})
+
+	t.Run("error stops iteration on []string", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"items": []string{"a", "b", "c"}})
+		count := 0
+		testErr := errors.New("abort")
+		err := s.ForEach("items", func(i int, v any) error {
+			count++
+			if count == 2 {
+				return testErr
+			}
+			return nil
+		})
+		require.ErrorIs(t, err, testErr)
+		require.Equal(t, 2, count)
+	})
+
+	t.Run("error stops iteration on []int", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"nums": []int{10, 20, 30}})
+		sum := 0
+		testErr := errors.New("calc error")
+		err := s.ForEach("nums", func(i int, v any) error {
+			sum += v.(int)
+			if sum > 25 {
+				return testErr
+			}
+			return nil
+		})
+		require.ErrorIs(t, err, testErr)
+		require.Equal(t, 30, sum)
+	})
+
+	t.Run("error stops iteration on map", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{
+			"obj": map[string]any{"a": 1, "b": 2, "c": 3},
+		})
+		count := 0
+		testErr := errors.New("map error")
+		err := s.ForEach("obj", func(i int, v any) error {
 			count++
 			if count == 2 {
 				return testErr
@@ -470,5 +570,45 @@ func TestStack_ForEach(t *testing.T) {
 			return nil
 		})
 		require.NoError(t, err)
+	})
+
+	t.Run("boolean type is no-op", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"flag": true})
+		err := s.ForEach("flag", func(i int, v any) error {
+			t.Fatal("should not be called")
+			return nil
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("numeric type is no-op", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"count": 42})
+		err := s.ForEach("count", func(i int, v any) error {
+			t.Fatal("should not be called")
+			return nil
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("empty []any", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"items": []any{}})
+		count := 0
+		err := s.ForEach("items", func(i int, v any) error {
+			count++
+			return nil
+		})
+		require.NoError(t, err)
+		require.Equal(t, 0, count)
+	})
+
+	t.Run("empty map[string]any", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"obj": map[string]any{}})
+		count := 0
+		err := s.ForEach("obj", func(i int, v any) error {
+			count++
+			return nil
+		})
+		require.NoError(t, err)
+		require.Equal(t, 0, count)
 	})
 }

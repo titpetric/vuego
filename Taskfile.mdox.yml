@@ -6,6 +6,7 @@ version: "3"
 
 vars:
   folder: docs
+  files: README.md AGENTS.md
 
 tasks:
   default:
@@ -16,12 +17,12 @@ tasks:
   fmt:
     desc: "Run mdox to format markdowns"
     cmds:
-      - mdox fmt -l --no-soft-wraps $(find {{.folder}} -name '*.md')
+      - mdox fmt -l --no-soft-wraps $(find {{.folder}} -name '*.md') {{.files}}
 
   lint:
     desc: "Run vale to lint language"
     cmds:
-      - mdox fmt --check --no-soft-wraps $(find {{.folder}} -name '*.md')
+      - mdox fmt --check --no-soft-wraps $(find {{.folder}} -name '*.md') {{.files}}
       - docker run --rm -v $(pwd):/docs -w /docs jdkato/vale .
 
   setup:

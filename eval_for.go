@@ -44,24 +44,24 @@ func (v *Vue) evalFor(ctx VueContext, node *html.Node, expr string, depth int) (
 
 	var result []*html.Node
 
-	err = v.stack.ForEach(collectionName, func(index int, value any) error {
+	err = ctx.stack.ForEach(collectionName, func(index int, value any) error {
 		iterNode := helpers.DeepCloneNode(node)
 		helpers.RemoveAttr(iterNode, "v-for")
 
-		v.stack.Push(nil)
-		defer v.stack.Pop()
+		ctx.stack.Push(nil)
+		defer ctx.stack.Pop()
 
 		switch len(vars) {
 		case 1:
-			v.stack.Set(vars[0], value)
+			ctx.stack.Set(vars[0], value)
 		case 2:
-			v.stack.Set(vars[0], index)
-			v.stack.Set(vars[1], value)
+			ctx.stack.Set(vars[0], index)
+			ctx.stack.Set(vars[1], value)
 		default:
 			return fmt.Errorf("v-for variables must be 1 or 2, got %d", len(vars))
 		}
 
-		evaluated, err := v.evaluate(ctx, []*html.Node{iterNode}, depth) // Use iterNode instead of node█
+		evaluated, err := v.evaluate(ctx, []*html.Node{iterNode}, depth)
 		if err != nil {
 			return err
 		}

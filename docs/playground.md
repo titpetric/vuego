@@ -142,6 +142,5 @@ We could add support for the local filesystem which could serve as a document ro
 
 ## See Also
 
-- [VueGo Playground README](../cmd/vuego-playground/README.md) - Deployment guide
 - [FuncMap & Filters](funcmap.md) - Available filters
 - [Template Syntax](syntax.md) - Full syntax reference

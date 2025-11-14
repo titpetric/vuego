@@ -7,7 +7,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-func (v *Vue) evalAttributes(n *html.Node) error {
+func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 	if n.Type != html.ElementNode {
 		return nil
 	}
@@ -20,7 +20,7 @@ func (v *Vue) evalAttributes(n *html.Node) error {
 		switch {
 		case strings.HasPrefix(key, ":"):
 			boundName := strings.TrimPrefix(key, ":")
-			valResolved, _ := v.stack.Resolve(val)
+			valResolved, _ := ctx.stack.Resolve(val)
 			newAttrs = append(newAttrs, html.Attribute{
 				Key: boundName,
 				Val: fmt.Sprintf("%v", valResolved),
@@ -28,7 +28,7 @@ func (v *Vue) evalAttributes(n *html.Node) error {
 
 		case strings.HasPrefix(key, "v-bind:"):
 			boundName := strings.TrimPrefix(key, "v-bind:")
-			valResolved, _ := v.stack.Resolve(val)
+			valResolved, _ := ctx.stack.Resolve(val)
 			newAttrs = append(newAttrs, html.Attribute{
 				Key: boundName,
 				Val: fmt.Sprintf("%v", valResolved),
@@ -36,7 +36,11 @@ func (v *Vue) evalAttributes(n *html.Node) error {
 
 		default:
 			// run interpolation on normal attributes
-			interpolated, _ := v.interpolate(val)
+			interpolated, err := v.interpolate(ctx, val)
+			if err != nil {
+				// For now, use original value on error in attributes
+				interpolated = val
+			}
 			newAttrs = append(newAttrs, html.Attribute{
 				Key: key,
 				Val: interpolated,

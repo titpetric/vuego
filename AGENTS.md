@@ -22,21 +22,24 @@ This file contains conventions and preferences for AI agents working on this cod
 - Use `t.Logf()` for informational output
 
 ### Test Naming Convention
+
 Follow the pattern `Test[Receiver_]Function`:
 - Methods: `TestVue_Render`, `TestStack_Push`, `TestComponent_Load`
 - Functions: `TestNewVue`, `TestParseFor`
 - Descriptive tests: `TestRequiredAttributeError`, `TestFixtures`
 
 **Examples:**
+
 ```go
-func TestVue_Render(t *testing.T) { /* tests (*Vue).Render */ }
+func TestVue_Render(t *testing.T)    { /* tests (*Vue).Render */ }
 func TestStack_Resolve(t *testing.T) { /* tests (*Stack).Resolve */ }
-func TestNewVue(t *testing.T) { /* tests NewVue constructor */ }
+func TestNewVue(t *testing.T)        { /* tests NewVue constructor */ }
 ```
 
 ### Assertion Examples
 
 **Good:**
+
 ```go
 require.NoError(t, err)
 require.Equal(t, expected, actual)
@@ -44,13 +47,25 @@ require.Contains(t, str, substring)
 require.True(t, condition, "optional message")
 ```
 
+**Error message assertions:**
+
+```go
+// Good: Assert on complete error message
+require.Equal(t, "in test.html: in expression '{{ items | double }}': double(): cannot convert argument 0 from []string to int", err.Error())
+
+// Avoid: Multiple partial assertions on error
+require.Contains(t, err.Error(), "double()") // Don't decompose errors
+require.Contains(t, err.Error(), "cannot convert")
+```
+
 **Avoid:**
+
 ```go
 if err != nil {
-    t.Fatal(err)  // Don't do this
+	t.Fatal(err) // Don't do this
 }
 if got != want {
-    t.Errorf("got %v, want %v", got, want)  // Don't do this
+	t.Errorf("got %v, want %v", got, want) // Don't do this
 }
 ```
 
@@ -59,6 +74,7 @@ if got != want {
 See [docs/testing.md](docs/testing.md) for comprehensive testing documentation.
 
 **Quick commands:**
+
 ```bash
 # Run all tests
 go test ./...
@@ -81,6 +97,7 @@ task test
 - Be concise but descriptive
 
 **Examples:**
+
 ```go
 // Vue is the main template renderer.
 type Vue struct { ... }
@@ -99,6 +116,7 @@ func (v *Vue) Render(w io.Writer, filename string, data map[string]any) error { 
 - Make errors actionable and clear
 
 **Examples:**
+
 ```go
 return fmt.Errorf("error loading %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
 return fmt.Errorf("required attribute '%s' not provided", attrName)
@@ -112,6 +130,7 @@ return fmt.Errorf("required attribute '%s' not provided", attrName)
 ## Build and Check Commands
 
 To verify code changes:
+
 ```bash
 go test ./...
 go build ./...

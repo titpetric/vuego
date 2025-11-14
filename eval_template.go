@@ -11,7 +11,7 @@ import (
 // If a `<template>` element has a :required attribute, the value must be provided.
 // A template element may repeat `:required` as needed. If a value is not provided,
 // template evaluation fails with an error that needs to be bubbled up preventing render.
-func (v *Vue) evalTemplate(nodes []*html.Node, componentData map[string]any) ([]*html.Node, error) {
+func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map[string]any) ([]*html.Node, error) {
 	// If no nodes, return empty
 	if len(nodes) == 0 {
 		return nodes, nil
