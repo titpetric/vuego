@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/stretchr/testify/require"
 	"github.com/titpetric/vuego"
@@ -48,4 +49,27 @@ func TestFixtures(t *testing.T) {
 			require.True(t, helpers.CompareHTML(t, want, got.Bytes(), templateBytes, dataBytes))
 		})
 	}
+}
+
+func TestVue_Escaping(t *testing.T) {
+	const template = "template.vuego"
+
+	templateFS := &fstest.MapFS{
+		template: {Data: []byte(`<div data-tooltip="{{value}}"></div>`)},
+	}
+	data := map[string]any{
+		"value": "A & B",
+	}
+
+	vue := vuego.NewVue(templateFS)
+
+	want := []byte(`<div data-tooltip="A &amp; B"></div>`)
+
+	t.Run(template, func(t *testing.T) {
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.True(t, helpers.CompareHTML(t, want, got.Bytes(), nil, nil))
+
+		t.Logf("-- Escape result: %s", got.String())
+	})
 }

@@ -18,18 +18,18 @@ type Vue struct {
 
 // VueContext carries template inclusion context used during evaluation and for error reporting.
 type VueContext struct {
-	BaseDir        string
-	CurrentDir     string
-	FromFilename   string
-	TemplateStack  []string
+	BaseDir       string
+	CurrentDir    string
+	FromFilename  string
+	TemplateStack []string
 }
 
 // NewVueContext returns a VueContext initialized for the given template filename.
 func NewVueContext(fromFilename string) VueContext {
 	return VueContext{
-		CurrentDir:     path.Dir(fromFilename),
-		FromFilename:   fromFilename,
-		TemplateStack:  []string{fromFilename},
+		CurrentDir:    path.Dir(fromFilename),
+		FromFilename:  fromFilename,
+		TemplateStack: []string{fromFilename},
 	}
 }
 
@@ -39,10 +39,10 @@ func (ctx VueContext) WithTemplate(filename string) VueContext {
 	copy(newStack, ctx.TemplateStack)
 	newStack[len(ctx.TemplateStack)] = filename
 	return VueContext{
-		BaseDir:        ctx.BaseDir,
-		CurrentDir:     path.Dir(filename),
-		FromFilename:   filename,
-		TemplateStack:  newStack,
+		BaseDir:       ctx.BaseDir,
+		CurrentDir:    path.Dir(filename),
+		FromFilename:  filename,
+		TemplateStack: newStack,
 	}
 }
 

@@ -120,9 +120,9 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			}
 
 			result = append(result, newNode)
-			default:
+		default:
 			result = append(result, helpers.CloneNode(node))
-			}
+		}
 	}
 
 	return result, nil
