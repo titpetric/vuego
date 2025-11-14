@@ -11,12 +11,12 @@ vue := vuego.NewVue(templateFS)
 
 // Add custom functions
 vue.Funcs(vuego.FuncMap{
-    "greet": func(v string) string {
-        return "Hello, " + v
-    },
-    "multiply": func(v int, factor int) int {
-        return v * factor
-    },
+	"greet": func(v string) string {
+		return "Hello, " + v
+	},
+	"multiply": func(v int, factor int) int {
+		return v * factor
+	},
 })
 ```
 
@@ -67,21 +67,25 @@ VueGo comes with several built-in utility functions:
 ### String Functions
 
 - **`upper`** - Converts string to uppercase
+
   ```html
   {{ name | upper }}  <!-- "john" -> "JOHN" -->
   ```
 
 - **`lower`** - Converts string to lowercase
+
   ```html
   {{ name | lower }}  <!-- "JOHN" -> "john" -->
   ```
 
 - **`title`** - Title-cases string
+
   ```html
   {{ name | title }}  <!-- "john doe" -> "John Doe" -->
   ```
 
 - **`trim`** - Removes leading and trailing whitespace
+
   ```html
   {{ text | trim }}  <!-- "  hello  " -> "hello" -->
   ```
@@ -89,17 +93,20 @@ VueGo comes with several built-in utility functions:
 ### Utility Functions
 
 - **`default(fallback)`** - Returns fallback value if input is nil or empty
+
   ```html
   {{ name | default("Anonymous") }}
   ```
 
 - **`len`** - Returns length of string, array, or map
+
   ```html
   {{ items | len }}
   <div v-if="len(items)">Has items</div>
   ```
 
 - **`escape`** - HTML-escapes the value
+
   ```html
   {{ userInput | escape }}
   ```
@@ -107,6 +114,7 @@ VueGo comes with several built-in utility functions:
 ### Date/Time Functions
 
 - **`formatTime(layout)`** - Formats time.Time using Go layout format
+
   ```html
   {{ timestamp | formatTime("2006-01-02 15:04:05") }}
   {{ timestamp | formatTime("Jan 2, 2006") }}
@@ -118,13 +126,13 @@ VueGo comes with several built-in utility functions:
 
 ```go
 vue.Funcs(vuego.FuncMap{
-    "reverse": func(s string) string {
-        runes := []rune(s)
-        for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-            runes[i], runes[j] = runes[j], runes[i]
-        }
-        return string(runes)
-    },
+	"reverse": func(s string) string {
+		runes := []rune(s)
+		for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+			runes[i], runes[j] = runes[j], runes[i]
+		}
+		return string(runes)
+	},
 })
 ```
 
@@ -136,12 +144,12 @@ vue.Funcs(vuego.FuncMap{
 
 ```go
 vue.Funcs(vuego.FuncMap{
-    "truncate": func(s string, max int) string {
-        if len(s) > max {
-            return s[:max] + "..."
-        }
-        return s
-    },
+	"truncate": func(s string, max int) string {
+		if len(s) > max {
+			return s[:max] + "..."
+		}
+		return s
+	},
 })
 ```
 
@@ -153,9 +161,9 @@ vue.Funcs(vuego.FuncMap{
 
 ```go
 vue.Funcs(vuego.FuncMap{
-    "currency": func(amount float64) string {
-        return fmt.Sprintf("$%.2f", amount)
-    },
+	"currency": func(amount float64) string {
+		return fmt.Sprintf("$%.2f", amount)
+	},
 })
 ```
 
@@ -167,14 +175,14 @@ vue.Funcs(vuego.FuncMap{
 
 ```go
 vue.Funcs(vuego.FuncMap{
-    "slugify": func(v string) string {
-        s := strings.ToLower(v)
-        s = strings.ReplaceAll(s, " ", "-")
-        return s
-    },
-    "prefix": func(v string, pre string) string {
-        return pre + v
-    },
+	"slugify": func(v string) string {
+		s := strings.ToLower(v)
+		s = strings.ReplaceAll(s, " ", "-")
+		return s
+	},
+	"prefix": func(v string, pre string) string {
+		return pre + v
+	},
 })
 ```
 
@@ -203,8 +211,7 @@ func(v any) any                          // Generic any type
 - String literals in templates are parsed as their natural type (numbers, bools, strings)
 - Values from template data retain their original types (*time.Time, custom structs, etc.)
 
-**Error Handling:**
-When a function returns an error (second return value), template rendering fails with a descriptive error message including the template filename and function name.
+**Error Handling:** When a function returns an error (second return value), template rendering fails with a descriptive error message including the template filename and function name.
 
 ## Error Messages
 

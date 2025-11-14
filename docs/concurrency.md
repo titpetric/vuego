@@ -8,9 +8,9 @@ The `*Vue` instance is **immutable after setup**, making it naturally thread-saf
 
 ```go
 vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{
-    "formatDate": func(t *time.Time) string {
-        return t.Format("2006-01-02")
-    },
+	"formatDate": func(t *time.Time) string {
+		return t.Format("2006-01-02")
+	},
 })
 
 // Safe to call from multiple goroutines
@@ -25,17 +25,17 @@ Each call to `Render()` or `RenderFragment()` creates its own `VueContext` with 
 
 ```go
 type Vue struct {
-    templateFS fs.FS    // Read-only after initialization
-    loader     *Component // Read-only after initialization
-    funcMap    FuncMap    // Read-only after Funcs()
+	templateFS fs.FS      // Read-only after initialization
+	loader     *Component // Read-only after initialization
+	funcMap    FuncMap    // Read-only after Funcs()
 }
 
 type VueContext struct {
-    stack         *Stack      // Request-scoped!
-    BaseDir       string
-    CurrentDir    string
-    FromFilename  string
-    TemplateStack []string
+	stack         *Stack // Request-scoped!
+	BaseDir       string
+	CurrentDir    string
+	FromFilename  string
+	TemplateStack []string
 }
 ```
 
@@ -47,21 +47,21 @@ type VueContext struct {
 
 ```go
 func main() {
-    vue := vuego.NewVue(os.DirFS("templates")).Funcs(vuego.FuncMap{
-        "formatTime": formatTime,
-    })
+	vue := vuego.NewVue(os.DirFS("templates")).Funcs(vuego.FuncMap{
+		"formatTime": formatTime,
+	})
 
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        data := map[string]any{
-            "user": getCurrentUser(r),
-            "timestamp": time.Now(),
-        }
-        
-        // Safe - each request gets its own context
-        vue.Render(w, "index.html", data)
-    })
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]any{
+			"user":      getCurrentUser(r),
+			"timestamp": time.Now(),
+		}
 
-    http.ListenAndServe(":8080", nil)
+		// Safe - each request gets its own context
+		vue.Render(w, "index.html", data)
+	})
+
+	http.ListenAndServe(":8080", nil)
 }
 ```
 
@@ -69,28 +69,28 @@ func main() {
 
 ```go
 func renderMultiplePages(vue *vuego.Vue, pages []Page) []string {
-    results := make([]string, len(pages))
-    var wg sync.WaitGroup
+	results := make([]string, len(pages))
+	var wg sync.WaitGroup
 
-    for i, page := range pages {
-        wg.Add(1)
-        go func(idx int, p Page) {
-            defer wg.Done()
-            
-            var buf bytes.Buffer
-            data := map[string]any{
-                "title": p.Title,
-                "content": p.Content,
-            }
-            
-            // Safe - each goroutine gets its own context
-            vue.Render(&buf, "page.html", data)
-            results[idx] = buf.String()
-        }(i, page)
-    }
+	for i, page := range pages {
+		wg.Add(1)
+		go func(idx int, p Page) {
+			defer wg.Done()
 
-    wg.Wait()
-    return results
+			var buf bytes.Buffer
+			data := map[string]any{
+				"title":   p.Title,
+				"content": p.Content,
+			}
+
+			// Safe - each goroutine gets its own context
+			vue.Render(&buf, "page.html", data)
+			results[idx] = buf.String()
+		}(i, page)
+	}
+
+	wg.Wait()
+	return results
 }
 ```
 

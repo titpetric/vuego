@@ -1,6 +1,9 @@
 ---
 version: "3"
 
+includes:
+  mdox: ./Taskfile.mdox.yml
+
 vars:
   goversion:
     sh: go env GOVERSION
@@ -15,11 +18,9 @@ tasks:
       - go mod tidy
 
   default:
-    deps:
-      - fmt
+    desc: "Run the playground server"
     cmds:
-      - go build .
-      - go test -count=1 -v .
+      - go run ./cmd/vuego-playground
 
   test:
     desc: "Run tests and collect coverage"
@@ -49,3 +50,8 @@ tasks:
     desc: "Render a vuego template"
     cmds:
       - go run ./cmd/vuego testdata/pages/forecast.vuego testdata/json/forecast.json
+
+  bench:
+    desc: "Run benchmarks with multiple CPU configurations"
+    cmds:
+      - go test -bench=. -benchmem -cpu 1,2,4 .

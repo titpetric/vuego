@@ -121,6 +121,7 @@ Contains full page templates and components for integration testing:
 - Error case validation (e.g., `required-error-test/`)
 
 ### `testdata/json/`
+
 Contains complex JSON data files for realistic rendering scenarios.
 
 ## Writing Tests
@@ -139,11 +140,11 @@ All assertions use `github.com/stretchr/testify/require`:
 
 ```go
 func TestVue_Render(t *testing.T) {
-    vue := vuego.NewVue(os.DirFS("testdata/pages"))
-    var buf bytes.Buffer
-    err := vue.Render(&buf, "Index.vuego", nil)
-    require.NoError(t, err)
-    require.Contains(t, buf.String(), "expected content")
+	vue := vuego.NewVue(os.DirFS("testdata/pages"))
+	var buf bytes.Buffer
+	err := vue.Render(&buf, "Index.vuego", nil)
+	require.NoError(t, err)
+	require.Contains(t, buf.String(), "expected content")
 }
 ```
 

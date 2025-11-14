@@ -14,28 +14,28 @@ go get github.com/titpetric/vuego
 package main
 
 import (
-    "os"
-    "github.com/titpetric/vuego"
+	"github.com/titpetric/vuego"
+	"os"
 )
 
 func main() {
-    // Create filesystem from template directory
-    templateFS := os.DirFS("templates")
-    
-    // Create Vue instance
-    vue := vuego.NewVue(templateFS)
-    
-    // Render template with data
-    data := map[string]any{
-        "title": "Hello World",
-        "user": map[string]any{
-            "name": "John Doe",
-        },
-    }
-    
-    if err := vue.Render(os.Stdout, "page.vuego", data); err != nil {
-        panic(err)
-    }
+	// Create filesystem from template directory
+	templateFS := os.DirFS("templates")
+
+	// Create Vue instance
+	vue := vuego.NewVue(templateFS)
+
+	// Render template with data
+	data := map[string]any{
+		"title": "Hello World",
+		"user": map[string]any{
+			"name": "John Doe",
+		},
+	}
+
+	if err := vue.Render(os.Stdout, "page.vuego", data); err != nil {
+		panic(err)
+	}
 }
 ```
 

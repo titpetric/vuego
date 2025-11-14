@@ -37,11 +37,13 @@ in template.vuego: in expression '{{ items | double }}':
 ### Testing a New Filter
 
 1. Write your template:
+
 ```html
 <p>{{ price | currency }}</p>
 ```
 
 2. Add data:
+
 ```json
 {
   "price": 19.99
@@ -60,6 +62,7 @@ in template.vuego: in expression '{{ items | double }}':
 ### Prototyping Components
 
 1. Design your component structure:
+
 ```html
 <div class="card">
   <h2>{{ title }}</h2>
@@ -93,6 +96,7 @@ curl -X POST http://localhost:8080/api/render \
 ```
 
 Response:
+
 ```json
 {
   "html": "<p>Hello!</p>"
@@ -134,11 +138,7 @@ Develop templates faster:
 3. **Fragment Rendering**: Uses `RenderFragment()` (no `<html>` wrapper)
 4. **No State**: Each render is independent
 
-We could add support for the local filesystem which could serve as a
-document root for vuego templates. This would enable vuego components on
-the playground. It's also possible to construct a virtual filesystem and
-manage a package of json+vuego templates and any additional assets like
-CSS and JS.
+We could add support for the local filesystem which could serve as a document root for vuego templates. This would enable vuego components on the playground. It's also possible to construct a virtual filesystem and manage a package of json+vuego templates and any additional assets like CSS and JS.
 
 ## See Also
 

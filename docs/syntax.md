@@ -36,6 +36,7 @@ Access nested object properties using dot notation:
 ### Example with Data
 
 **Template:**
+
 ```html
 <template>
   <h1>{{ title }}</h1>
@@ -45,6 +46,7 @@ Access nested object properties using dot notation:
 ```
 
 **Data:**
+
 ```json
 {
   "title": "Dashboard",
@@ -56,6 +58,7 @@ Access nested object properties using dot notation:
 ```
 
 **Output:**
+
 ```html
 <h1>Dashboard</h1>
 <p>Welcome, John Doe!</p>
@@ -83,6 +86,7 @@ Bind HTML attributes to expressions using `:attr` shorthand or `v-bind:attr` syn
 ### Example with Data
 
 **Template:**
+
 ```html
 <template>
   <a :href="link.url" :target="link.target">{{ link.text }}</a>
@@ -91,6 +95,7 @@ Bind HTML attributes to expressions using `:attr` shorthand or `v-bind:attr` syn
 ```
 
 **Data:**
+
 ```json
 {
   "link": {
@@ -104,6 +109,7 @@ Bind HTML attributes to expressions using `:attr` shorthand or `v-bind:attr` syn
 ```
 
 **Output:**
+
 ```html
 <a href="https://example.com" target="_blank">Visit Example</a>
 <img src="/logo.png" alt="Company Logo">
@@ -141,6 +147,7 @@ Render elements only when the expression is truthy using the `v-if` directive.
 ### Example with Data
 
 **Template:**
+
 ```html
 <template>
   <h1>Product: {{ product.name }}</h1>
@@ -151,6 +158,7 @@ Render elements only when the expression is truthy using the `v-if` directive.
 ```
 
 **Data:**
+
 ```json
 {
   "product": {
@@ -164,6 +172,7 @@ Render elements only when the expression is truthy using the `v-if` directive.
 ```
 
 **Output:**
+
 ```html
 <h1>Product: Laptop</h1>
 <p>Sale Price: $999</p>
@@ -222,6 +231,7 @@ Access the index and value using tuple syntax:
 ### Example with Data
 
 **Template:**
+
 ```html
 <template>
   <h1>{{ store }} - Products</h1>
@@ -235,6 +245,7 @@ Access the index and value using tuple syntax:
 ```
 
 **Data:**
+
 ```json
 {
   "store": "Tech Shop",
@@ -256,6 +267,7 @@ Access the index and value using tuple syntax:
 ```
 
 **Output:**
+
 ```html
 <h1>Tech Shop - Products</h1>
 <div>
@@ -295,6 +307,7 @@ Insert unescaped HTML content using the `v-html` directive.
 ### Example with Data
 
 **Template:**
+
 ```html
 <template>
   <div class="article">
@@ -305,6 +318,7 @@ Insert unescaped HTML content using the `v-html` directive.
 ```
 
 **Data:**
+
 ```json
 {
   "title": "My Article",
@@ -313,6 +327,7 @@ Insert unescaped HTML content using the `v-html` directive.
 ```
 
 **Output:**
+
 ```html
 <div class="article">
   <h1>My Article</h1>
@@ -429,8 +444,8 @@ Vuego accepts `map[string]any` as data input. For strongly-typed data structures
 
 ```go
 type User struct {
-    Name  string
-    Email string
+	Name  string
+	Email string
 }
 
 user := User{Name: "John", Email: "john@example.com"}

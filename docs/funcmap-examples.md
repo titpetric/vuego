@@ -8,21 +8,22 @@ This document shows advanced usage of FuncMap with typed arguments and reflectio
 
 ```go
 vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{
-    "formatDate": func(t *time.Time) string {
-        if t == nil {
-            return ""
-        }
-        return t.Format("January 2, 2006")
-    },
+	"formatDate": func(t *time.Time) string {
+		if t == nil {
+			return ""
+		}
+		return t.Format("January 2, 2006")
+	},
 })
 
 now := time.Now()
 data := map[string]any{
-    "timestamp": &now,
+	"timestamp": &now,
 }
 ```
 
 Template:
+
 ```html
 <p>{{ timestamp | formatDate }}</p>
 <!-- Output: January 15, 2024 -->
@@ -32,16 +33,17 @@ Template:
 
 ```go
 vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{
-    "add": func(a, b int) int {
-        return a + b
-    },
-    "multiply": func(a, b int) int {
-        return a * b
-    },
+	"add": func(a, b int) int {
+		return a + b
+	},
+	"multiply": func(a, b int) int {
+		return a * b
+	},
 })
 ```
 
 Template:
+
 ```html
 <p>{{ add(5, 3) }}</p>          <!-- 8 -->
 <p>{{ multiply(4, 7) }}</p>     <!-- 28 -->
@@ -54,9 +56,9 @@ VueGo automatically converts between compatible types:
 
 ```go
 vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{
-    "repeat": func(s string, times int) string {
-        return strings.Repeat(s, times)
-    },
+	"repeat": func(s string, times int) string {
+		return strings.Repeat(s, times)
+	},
 })
 ```
 
@@ -75,16 +77,16 @@ Template:
 
 ```go
 vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{
-    "join": func(sep string, parts ...string) string {
-        return strings.Join(parts, sep)
-    },
-    "sum": func(numbers ...int) int {
-        total := 0
-        for _, n := range numbers {
-            total += n
-        }
-        return total
-    },
+	"join": func(sep string, parts ...string) string {
+		return strings.Join(parts, sep)
+	},
+	"sum": func(numbers ...int) int {
+		total := 0
+		for _, n := range numbers {
+			total += n
+		}
+		return total
+	},
 })
 ```
 
@@ -104,12 +106,12 @@ Functions can return errors; they're silently ignored:
 
 ```go
 vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{
-    "divide": func(a, b int) (int, error) {
-        if b == 0 {
-            return 0, errors.New("division by zero")
-        }
-        return a / b, nil
-    },
+	"divide": func(a, b int) (int, error) {
+		if b == 0 {
+			return 0, errors.New("division by zero")
+		}
+		return a / b, nil
+	},
 })
 ```
 
@@ -146,6 +148,7 @@ data := map[string]any{
 ```
 
 Template:
+
 ```html
 <p>{{ user | fullName }}</p>
 <!-- Output: John Doe -->
@@ -155,15 +158,15 @@ Template:
 
 ```go
 vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{
-    "double": func(n int) int {
-        return n * 2
-    },
-    "toString": func(n int) string {
-        return strconv.Itoa(n)
-    },
-    "prefix": func(s string, p string) string {
-        return p + s
-    },
+	"double": func(n int) int {
+		return n * 2
+	},
+	"toString": func(n int) string {
+		return strconv.Itoa(n)
+	},
+	"prefix": func(s string, p string) string {
+		return p + s
+	},
 })
 ```
 
@@ -180,22 +183,22 @@ Functions can access data from the template context:
 
 ```go
 vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{
-    "relativeTime": func(t time.Time, now time.Time) string {
-        diff := now.Sub(t)
-        hours := int(diff.Hours())
-        if hours < 1 {
-            return "just now"
-        } else if hours < 24 {
-            return fmt.Sprintf("%d hours ago", hours)
-        }
-        return fmt.Sprintf("%d days ago", hours/24)
-    },
+	"relativeTime": func(t time.Time, now time.Time) string {
+		diff := now.Sub(t)
+		hours := int(diff.Hours())
+		if hours < 1 {
+			return "just now"
+		} else if hours < 24 {
+			return fmt.Sprintf("%d hours ago", hours)
+		}
+		return fmt.Sprintf("%d days ago", hours/24)
+	},
 })
 
 now := time.Now()
 data := map[string]any{
-    "publishedAt": now.Add(-3 * time.Hour),
-    "now": now,
+	"publishedAt": now.Add(-3 * time.Hour),
+	"now":         now,
 }
 ```
 

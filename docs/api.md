@@ -25,7 +25,7 @@ type FuncMap map[string]any
 ```go
 // Stack provides stack-based variable lookup and convenient typed accessors.
 type Stack struct {
-	stack []map[string]any	// bottom..top, top is last element
+	stack []map[string]any // bottom..top, top is last element
 }
 ```
 
@@ -33,9 +33,9 @@ type Stack struct {
 // Vue is the main template renderer for .vuego templates.
 // After initialization, Vue is safe for concurrent use by multiple goroutines.
 type Vue struct {
-	templateFS	fs.FS
-	loader		*Component
-	funcMap		FuncMap
+	templateFS fs.FS
+	loader     *Component
+	funcMap    FuncMap
 }
 ```
 
@@ -43,11 +43,11 @@ type Vue struct {
 // VueContext carries template inclusion context and request-scoped state used during evaluation.
 // Each render operation gets its own VueContext, making concurrent rendering safe.
 type VueContext struct {
-	stack		*Stack
-	BaseDir		string
-	CurrentDir	string
-	FromFilename	string
-	TemplateStack	[]string
+	stack         *Stack
+	BaseDir       string
+	CurrentDir    string
+	FromFilename  string
+	TemplateStack []string
 }
 ```
 
@@ -82,7 +82,7 @@ type VueContext struct {
 DefaultFuncMap returns a FuncMap with built-in utility functions
 
 ```go
-func DefaultFuncMap () FuncMap
+func DefaultFuncMap() FuncMap
 ```
 
 ### NewComponent
@@ -90,7 +90,7 @@ func DefaultFuncMap () FuncMap
 NewComponent creates a Component backed by fs.
 
 ```go
-func NewComponent (fs fs.FS) *Component
+func NewComponent(fs fs.FS) *Component
 ```
 
 ### NewStack
@@ -98,16 +98,15 @@ func NewComponent (fs fs.FS) *Component
 NewStack constructs a Stack with an optional initial root map (nil allowed).
 
 ```go
-func NewStack (root map[string]any) *Stack
+func NewStack(root map[string]any) *Stack
 ```
 
 ### NewVue
 
-NewVue creates a new Vue backed by the given filesystem.
-The returned Vue is safe for concurrent use by multiple goroutines.
+NewVue creates a new Vue backed by the given filesystem. The returned Vue is safe for concurrent use by multiple goroutines.
 
 ```go
-func NewVue (templateFS fs.FS) *Vue
+func NewVue(templateFS fs.FS) *Vue
 ```
 
 ### NewVueContext
@@ -115,17 +114,15 @@ func NewVue (templateFS fs.FS) *Vue
 NewVueContext returns a VueContext initialized for the given template filename with initial data.
 
 ```go
-func NewVueContext (fromFilename string, data map[string]any) VueContext
+func NewVueContext(fromFilename string, data map[string]any) VueContext
 ```
 
 ### ForEach
 
-ForEach iterates over a collection at the given expr and calls fn(index,value).
-Supports slices/arrays and map[string]any (iteration order for maps is unspecified).
-If fn returns an error iteration is stopped and the error passed through.
+ForEach iterates over a collection at the given expr and calls fn(index,value). Supports slices/arrays and map[string]any (iteration order for maps is unspecified). If fn returns an error iteration is stopped and the error passed through.
 
 ```go
-func (*Stack) ForEach (expr string, fn func(index int, value any) error) error
+func (*Stack) ForEach(expr string, fn func(index int, value any) error) error
 ```
 
 ### GetInt
@@ -133,16 +130,15 @@ func (*Stack) ForEach (expr string, fn func(index int, value any) error) error
 GetInt resolves and tries to return an int (best-effort).
 
 ```go
-func (*Stack) GetInt (expr string) (int, bool)
+func (*Stack) GetInt(expr string) (int, bool)
 ```
 
 ### GetMap
 
-GetMap returns map[string]any or converts map[string]string to map[string]any.
-Avoids reflection for other map types.
+GetMap returns map[string]any or converts map[string]string to map[string]any. Avoids reflection for other map types.
 
 ```go
-func (*Stack) GetMap (expr string) (map[string]any, bool)
+func (*Stack) GetMap(expr string) (map[string]any, bool)
 ```
 
 ### GetSlice
@@ -150,7 +146,7 @@ func (*Stack) GetMap (expr string) (map[string]any, bool)
 GetSlice returns a []any for supported slice kinds. Avoids reflection by only converting known types.
 
 ```go
-func (*Stack) GetSlice (expr string) ([]any, bool)
+func (*Stack) GetSlice(expr string) ([]any, bool)
 ```
 
 ### GetString
@@ -158,16 +154,15 @@ func (*Stack) GetSlice (expr string) ([]any, bool)
 GetString resolves and tries to return a string.
 
 ```go
-func (*Stack) GetString (expr string) (string, bool)
+func (*Stack) GetString(expr string) (string, bool)
 ```
 
 ### Lookup
 
-Lookup searches stack from top to bottom for a plain identifier (no dots).
-Returns (value, true) if found.
+Lookup searches stack from top to bottom for a plain identifier (no dots). Returns (value, true) if found.
 
 ```go
-func (*Stack) Lookup (name string) (any, bool)
+func (*Stack) Lookup(name string) (any, bool)
 ```
 
 ### Pop
@@ -175,7 +170,7 @@ func (*Stack) Lookup (name string) (any, bool)
 Pop the top-most Stack. If only root remains it still pops to empty slice safely.
 
 ```go
-func (*Stack) Pop ()
+func (*Stack) Pop()
 ```
 
 ### Push
@@ -183,19 +178,21 @@ func (*Stack) Pop ()
 Push a new map as a top-most Stack.
 
 ```go
-func (*Stack) Push (m map[string]any)
+func (*Stack) Push(m map[string]any)
 ```
 
 ### Resolve
 
 Resolve resolves dotted/bracketed expression paths like:
 
-	"user.name", "items[0].title", "mapKey.sub"
+```
+"user.name", "items[0].title", "mapKey.sub"
+```
 
 It returns (value, true) if resolution succeeded.
 
 ```go
-func (*Stack) Resolve (expr string) (any, bool)
+func (*Stack) Resolve(expr string) (any, bool)
 ```
 
 ### Set
@@ -203,7 +200,7 @@ func (*Stack) Resolve (expr string) (any, bool)
 Set sets a key in the top-most Stack.
 
 ```go
-func (*Stack) Set (key string, val any)
+func (*Stack) Set(key string, val any)
 ```
 
 ### Funcs
@@ -211,25 +208,23 @@ func (*Stack) Set (key string, val any)
 Funcs sets custom template functions. Returns the Vue instance for chaining.
 
 ```go
-func (*Vue) Funcs (funcMap FuncMap) *Vue
+func (*Vue) Funcs(funcMap FuncMap) *Vue
 ```
 
 ### Render
 
-Render processes a full-page template file and writes the output to w.
-Render is safe to call concurrently from multiple goroutines.
+Render processes a full-page template file and writes the output to w. Render is safe to call concurrently from multiple goroutines.
 
 ```go
-func (*Vue) Render (w io.Writer, filename string, data map[string]any) error
+func (*Vue) Render(w io.Writer, filename string, data map[string]any) error
 ```
 
 ### RenderFragment
 
-RenderFragment processes a template fragment file and writes the output to w.
-RenderFragment is safe to call concurrently from multiple goroutines.
+RenderFragment processes a template fragment file and writes the output to w. RenderFragment is safe to call concurrently from multiple goroutines.
 
 ```go
-func (*Vue) RenderFragment (w io.Writer, filename string, data map[string]any) error
+func (*Vue) RenderFragment(w io.Writer, filename string, data map[string]any) error
 ```
 
 ### Load
@@ -237,7 +232,7 @@ func (*Vue) RenderFragment (w io.Writer, filename string, data map[string]any) e
 Load parses a full HTML document from the given filename.
 
 ```go
-func (Component) Load (filename string) ([]*html.Node, error)
+func (Component) Load(filename string) ([]*html.Node, error)
 ```
 
 ### LoadFragment
@@ -245,7 +240,7 @@ func (Component) Load (filename string) ([]*html.Node, error)
 LoadFragment parses a template fragment; if the file is a full document, it falls back to Load.
 
 ```go
-func (Component) LoadFragment (filename string) ([]*html.Node, error)
+func (Component) LoadFragment(filename string) ([]*html.Node, error)
 ```
 
 ### Stat
@@ -253,7 +248,7 @@ func (Component) LoadFragment (filename string) ([]*html.Node, error)
 Stat checks that filename exists in the component filesystem.
 
 ```go
-func (Component) Stat (filename string) error
+func (Component) Stat(filename string) error
 ```
 
 ### FormatTemplateChain
@@ -261,7 +256,7 @@ func (Component) Stat (filename string) error
 FormatTemplateChain returns the template inclusion chain formatted for error messages.
 
 ```go
-func (VueContext) FormatTemplateChain () string
+func (VueContext) FormatTemplateChain() string
 ```
 
 ### WithTemplate
@@ -269,7 +264,5 @@ func (VueContext) FormatTemplateChain () string
 WithTemplate returns a copy of the context extended with filename in the inclusion chain.
 
 ```go
-func (VueContext) WithTemplate (filename string) VueContext
+func (VueContext) WithTemplate(filename string) VueContext
 ```
-
-

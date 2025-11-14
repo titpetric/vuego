@@ -350,23 +350,23 @@ package main
 import (
 	"os"
 	"path/filepath"
-	
+
 	"github.com/titpetric/vuego"
 )
 
 func main() {
 	// Create filesystem from template directory
 	templateFS := os.DirFS("templates")
-	
+
 	// Create Vue instance
 	vue := vuego.NewVue(templateFS)
-	
+
 	// Prepare data
 	data := map[string]any{
 		"title": "Hello",
-		"name": "World",
+		"name":  "World",
 	}
-	
+
 	// Render to stdout
 	vue.Render(os.Stdout, "page.vuego", data)
 }
