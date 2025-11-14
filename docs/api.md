@@ -16,6 +16,13 @@ type Component struct {
 ```
 
 ```go
+// FuncMap is a map of function names to functions, similar to text/template's FuncMap.
+// Functions can have any number of parameters and must return 1 or 2 values.
+// If 2 values are returned, the second must be an error.
+type FuncMap map[string]any
+```
+
+```go
 // Stack provides stack-based variable lookup and convenient typed accessors.
 type Stack struct {
 	stack []map[string]any	// bottom..top, top is last element
@@ -24,15 +31,19 @@ type Stack struct {
 
 ```go
 // Vue is the main template renderer for .vuego templates.
+// After initialization, Vue is safe for concurrent use by multiple goroutines.
 type Vue struct {
-	loader	*Component
-	stack	*Stack
+	templateFS	fs.FS
+	loader		*Component
+	funcMap		FuncMap
 }
 ```
 
 ```go
-// VueContext carries template inclusion context used during evaluation and for error reporting.
+// VueContext carries template inclusion context and request-scoped state used during evaluation.
+// Each render operation gets its own VueContext, making concurrent rendering safe.
 type VueContext struct {
+	stack		*Stack
 	BaseDir		string
 	CurrentDir	string
 	FromFilename	string
@@ -42,10 +53,11 @@ type VueContext struct {
 
 ## Function symbols
 
+- `func DefaultFuncMap () FuncMap`
 - `func NewComponent (fs fs.FS) *Component`
 - `func NewStack (root map[string]any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
-- `func NewVueContext (fromFilename string) VueContext`
+- `func NewVueContext (fromFilename string, data map[string]any) VueContext`
 - `func (*Stack) ForEach (expr string, fn func(index int, value any) error) error`
 - `func (*Stack) GetInt (expr string) (int, bool)`
 - `func (*Stack) GetMap (expr string) (map[string]any, bool)`
@@ -56,6 +68,7 @@ type VueContext struct {
 - `func (*Stack) Push (m map[string]any)`
 - `func (*Stack) Resolve (expr string) (any, bool)`
 - `func (*Stack) Set (key string, val any)`
+- `func (*Vue) Funcs (funcMap FuncMap) *Vue`
 - `func (*Vue) Render (w io.Writer, filename string, data map[string]any) error`
 - `func (*Vue) RenderFragment (w io.Writer, filename string, data map[string]any) error`
 - `func (Component) Load (filename string) ([]*html.Node, error)`
@@ -63,6 +76,14 @@ type VueContext struct {
 - `func (Component) Stat (filename string) error`
 - `func (VueContext) FormatTemplateChain () string`
 - `func (VueContext) WithTemplate (filename string) VueContext`
+
+### DefaultFuncMap
+
+DefaultFuncMap returns a FuncMap with built-in utility functions
+
+```go
+func DefaultFuncMap () FuncMap
+```
 
 ### NewComponent
 
@@ -83,6 +104,7 @@ func NewStack (root map[string]any) *Stack
 ### NewVue
 
 NewVue creates a new Vue backed by the given filesystem.
+The returned Vue is safe for concurrent use by multiple goroutines.
 
 ```go
 func NewVue (templateFS fs.FS) *Vue
@@ -90,10 +112,10 @@ func NewVue (templateFS fs.FS) *Vue
 
 ### NewVueContext
 
-NewVueContext returns a VueContext initialized for the given template filename.
+NewVueContext returns a VueContext initialized for the given template filename with initial data.
 
 ```go
-func NewVueContext (fromFilename string) VueContext
+func NewVueContext (fromFilename string, data map[string]any) VueContext
 ```
 
 ### ForEach
@@ -184,9 +206,18 @@ Set sets a key in the top-most Stack.
 func (*Stack) Set (key string, val any)
 ```
 
+### Funcs
+
+Funcs sets custom template functions. Returns the Vue instance for chaining.
+
+```go
+func (*Vue) Funcs (funcMap FuncMap) *Vue
+```
+
 ### Render
 
 Render processes a full-page template file and writes the output to w.
+Render is safe to call concurrently from multiple goroutines.
 
 ```go
 func (*Vue) Render (w io.Writer, filename string, data map[string]any) error
@@ -195,6 +226,7 @@ func (*Vue) Render (w io.Writer, filename string, data map[string]any) error
 ### RenderFragment
 
 RenderFragment processes a template fragment file and writes the output to w.
+RenderFragment is safe to call concurrently from multiple goroutines.
 
 ```go
 func (*Vue) RenderFragment (w io.Writer, filename string, data map[string]any) error

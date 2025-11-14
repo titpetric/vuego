@@ -6,12 +6,7 @@ The project uses [Task](https://taskfile.dev) for common development workflows. 
 
 ### `task` (default)
 
-Runs the full development workflow:
-
-- Formats code with `goimports`
-- Tidies dependencies with `go mod tidy`
-- Builds the package
-- Runs all tests with verbose output
+Starts the VueGo playground web server on http://localhost:8080
 
 ### `task test`
 
