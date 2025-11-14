@@ -16,6 +16,7 @@ tasks:
       - goimports -w .
       - go fmt ./...
       - go mod tidy
+      - task: mdox:fmt
 
   default:
     desc: "Run the playground server"
