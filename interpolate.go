@@ -32,24 +32,10 @@ func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 		var val any
 		var err error
 
-		// Try expr evaluation first for complex expressions
+		// Try unified pipe/expr evaluation (handles both filters and expressions)
 		if strings.Contains(expr, "|") || isFunctionCall(expr) || isComplexExpr(expr) {
-			// Try expr first for complex expressions with operators
-			if isComplexExpr(expr) {
-				val, err = v.exprEval.Eval(expr, getEnvMap(ctx.stack))
-				if err == nil {
-					// Successfully evaluated, skip pipe fallback
-				} else {
-					// Fall back to pipe evaluation
-					pipe := parsePipeExpr(expr)
-					val, err = v.evalPipe(ctx, pipe)
-				}
-			} else {
-				// Use pipe evaluation for filter chains
-				pipe := parsePipeExpr(expr)
-				val, err = v.evalPipe(ctx, pipe)
-			}
-
+			pipe := parsePipeExpr(expr)
+			val, err = v.evalPipe(ctx, pipe)
 			if err != nil {
 				return "", fmt.Errorf("in expression '{{ %s }}': %w", expr, err)
 			}

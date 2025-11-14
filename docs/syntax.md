@@ -33,6 +33,53 @@ Access nested object properties using dot notation:
 <p>Temperature: {{ current.temperature_2m }}{{ current_units.temperature_2m }}</p>
 ```
 
+### Expressions and Operators
+
+Interpolation supports comparison operators, logical operators, and ternary expressions:
+
+```html
+<!-- Comparisons -->
+<span>{{ status == "active" ? "Online" : "Offline" }}</span>
+<span>{{ age >= 18 ? "Adult" : "Minor" }}</span>
+
+<!-- Logical operators -->
+<span>{{ isAdmin && hasPermission ? "Allowed" : "Denied" }}</span>
+<span>{{ isEmpty || isNull ? "No data" : "Has data" }}</span>
+
+<!-- Negation -->
+<span>{{ !disabled ? "Enabled" : "Disabled" }}</span>
+```
+
+### Filters and Pipes
+
+Transform values using built-in filters with the pipe syntax:
+
+```html
+<!-- Single filter -->
+<p>{{ name | upper }}</p>
+
+<!-- Chained filters -->
+<p>{{ name | upper | title }}</p>
+
+<!-- Filter with arguments -->
+<p>{{ items | default("No items") }}</p>
+
+<!-- Complex expressions in pipes -->
+<p>{{ price | . > 100 ? "Expensive" : "Affordable" }}</p>
+```
+
+**Available Filters:**
+- `upper` - Convert to uppercase
+- `lower` - Convert to lowercase
+- `title` - Capitalize first letter of each word
+- `len` - Get length of string, array, or map
+- `trim` - Remove leading/trailing whitespace
+- `escape` - HTML escape the value
+- `default(fallback)` - Use fallback if value is nil or empty
+- `formatTime([layout])` - Format time value
+- `int` - Convert to integer
+- `string` - Convert to string
+
 ### Example with Data
 
 **Template:**
@@ -119,14 +166,32 @@ Bind HTML attributes to expressions using `:attr` shorthand or `v-bind:attr` syn
 
 Render elements only when the expression is truthy using the `v-if` directive.
 
-**Important:** Only a single boolean parameter is supported. Use `v-if="name"` for truthy checks or `v-if="!name"` to negate.
-
 ### Basic Usage
 
 ```html
 <div v-if="show">Visible when 'show' is true</div>
 <div v-if="!hide">Visible when 'hide' is false</div>
 <p v-if="user">User is logged in</p>
+```
+
+### Comparisons
+
+Use comparison operators for conditional logic:
+
+```html
+<p v-if="status == 'active'">Status is active</p>
+<p v-if="age >= 18">Adult content</p>
+<p v-if="count > 5">More than 5 items</p>
+```
+
+### Boolean Expressions
+
+Combine conditions using logical operators:
+
+```html
+<p v-if="isAdmin && hasPermission">Admin access granted</p>
+<p v-if="isEmpty || !loaded">Loading or empty state</p>
+<p v-if="!error && success">Success message</p>
 ```
 
 ### Negation with `!`

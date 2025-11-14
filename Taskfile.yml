@@ -42,6 +42,7 @@ tasks:
       - go-fsck coverage -c pkg.cov.json -o go-fsck.json
       - go-fsck coverage --template=docs/testing-coverage.md.tpl -v > docs/testing-coverage.md
       - perl -pi -e 's/github.com\/titpetric/titpetric/g' docs/testing-coverage.md
+      - task: fmt
 
   uncover:
     desc: "Show uncovered source"

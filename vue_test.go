@@ -73,3 +73,121 @@ func TestVue_Escaping(t *testing.T) {
 		t.Logf("-- Escape result: %s", got.String())
 	})
 }
+
+func TestVue_BoundAttributesFalsey(t *testing.T) {
+	const template = "template.vuego"
+
+	t.Run("false boolean attribute is removed", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<input :checked="isDone" />`)},
+		}
+		data := map[string]any{
+			"isDone": false,
+		}
+
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, data))
+		// Should not contain "checked" attribute
+		require.NotContains(t, got.String(), "checked")
+	})
+
+	t.Run("true boolean attribute is rendered", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<input :checked="isDone" />`)},
+		}
+		data := map[string]any{
+			"isDone": true,
+		}
+
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, data))
+		// Should contain "checked" attribute
+		require.Contains(t, got.String(), "checked")
+	})
+
+	t.Run("empty string is falsey", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<input :disabled="reason" />`)},
+		}
+		data := map[string]any{
+			"reason": "",
+		}
+
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NotContains(t, got.String(), "disabled")
+	})
+
+	t.Run("string 'false' is falsey", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<input :disabled="reason" />`)},
+		}
+		data := map[string]any{
+			"reason": "false",
+		}
+
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NotContains(t, got.String(), "disabled")
+	})
+
+	t.Run("zero is falsey", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<input :disabled="count" />`)},
+		}
+		data := map[string]any{
+			"count": 0,
+		}
+
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NotContains(t, got.String(), "disabled")
+	})
+
+	t.Run("nil is falsey", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<input :disabled="val" />`)},
+		}
+		data := map[string]any{
+			"val": nil,
+		}
+
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NotContains(t, got.String(), "disabled")
+	})
+
+	t.Run("truthy string is rendered", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<input :disabled="reason" />`)},
+		}
+		data := map[string]any{
+			"reason": "User not ready",
+		}
+
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.Contains(t, got.String(), "disabled")
+	})
+
+	t.Run("v-bind: prefix also respects falsey values", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<input v-bind:required="isRequired" />`)},
+		}
+		data := map[string]any{
+			"isRequired": false,
+		}
+
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NotContains(t, got.String(), "required")
+	})
+}

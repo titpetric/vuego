@@ -16,6 +16,15 @@ type Component struct {
 ```
 
 ```go
+// ExprEvaluator wraps expr for evaluating boolean and interpolated expressions.
+// It caches compiled programs to avoid recompilation.
+type ExprEvaluator struct {
+	mu       sync.RWMutex
+	programs map[string]*vm.Program
+}
+```
+
+```go
 // FuncMap is a map of function names to functions, similar to text/template's FuncMap.
 // Functions can have any number of parameters and must return 1 or 2 values.
 // If 2 values are returned, the second must be an error.
@@ -36,6 +45,7 @@ type Vue struct {
 	templateFS fs.FS
 	loader     *Component
 	funcMap    FuncMap
+	exprEval   *ExprEvaluator
 }
 ```
 
@@ -55,9 +65,12 @@ type VueContext struct {
 
 - `func DefaultFuncMap () FuncMap`
 - `func NewComponent (fs fs.FS) *Component`
+- `func NewExprEvaluator () *ExprEvaluator`
 - `func NewStack (root map[string]any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
 - `func NewVueContext (fromFilename string, data map[string]any) VueContext`
+- `func (*ExprEvaluator) ClearCache ()`
+- `func (*ExprEvaluator) Eval (expression string, env map[string]any) (any, error)`
 - `func (*Stack) ForEach (expr string, fn func(index int, value any) error) error`
 - `func (*Stack) GetInt (expr string) (int, bool)`
 - `func (*Stack) GetMap (expr string) (map[string]any, bool)`
@@ -93,6 +106,14 @@ NewComponent creates a Component backed by fs.
 func NewComponent(fs fs.FS) *Component
 ```
 
+### NewExprEvaluator
+
+NewExprEvaluator creates a new ExprEvaluator with an empty cache.
+
+```go
+func NewExprEvaluator() *ExprEvaluator
+```
+
 ### NewStack
 
 NewStack constructs a Stack with an optional initial root map (nil allowed).
@@ -115,6 +136,27 @@ NewVueContext returns a VueContext initialized for the given template filename w
 
 ```go
 func NewVueContext(fromFilename string, data map[string]any) VueContext
+```
+
+### ClearCache
+
+ClearCache clears the program cache (useful for testing or memory management).
+
+```go
+func (*ExprEvaluator) ClearCache()
+```
+
+### Eval
+
+Eval evaluates an expression against the given environment (stack). It returns the result value and any error. The expression can contain:
+- Variable references: item, item.title, items[0]
+- Comparison: ==, !=, <, >, <=, >=
+- Boolean operations: &&, ||, !
+- Function calls: len(items), isActive(v)
+- Literals: 42, "text", true, false
+
+```go
+func (*ExprEvaluator) Eval(expression string, env map[string]any) (any, error)
 ```
 
 ### ForEach

@@ -15,73 +15,124 @@ import (
 // If 2 values are returned, the second must be an error.
 type FuncMap map[string]any
 
-// pipeExpr represents a parsed pipe expression like "value | fn1 | fn2(arg)"
+// pipeExpr represents a parsed pipe expression like "value | fn1 | . > 5 | fn2(arg)"
 type pipeExpr struct {
-	initial string
-	filters []filterCall
+	initial  string
+	segments []pipeSegment
 }
 
-// filterCall represents a single filter in a pipe chain
-type filterCall struct {
-	name string
-	args []string
+// pipeSegment represents either a filter call or an expression in a pipe chain
+type pipeSegment struct {
+	typ  segmentType // "filter" or "expr"
+	expr string      // The expression/filter text
+	name string      // Filter name (only for filters)
+	args []string    // Filter arguments (only for filters)
 }
+
+type segmentType string
+
+const (
+	segmentFilter = "filter"
+	segmentExpr   = "expr"
+)
 
 var (
 	// matches function calls like "fn(arg1, arg2)" or just "fn"
 	filterRe = regexp.MustCompile(`^(\w+)(?:\((.*?)\))?$`)
 )
 
-// parsePipeExpr parses an expression like "item.date | formatTime | localize"
-// or a direct function call like "len(items)"
+// parsePipeExpr parses "item | double | . > 5" into segments, auto-detecting expressions vs filters
 func parsePipeExpr(expr string) pipeExpr {
-	// Check if it's a direct function call (no pipes)
 	if !strings.Contains(expr, "|") {
-		matches := filterRe.FindStringSubmatch(strings.TrimSpace(expr))
-		if matches != nil && matches[2] != "" {
-			// It's a function call like "len(items)"
-			fc := filterCall{
-				name: matches[1],
-				args: parseArgs(matches[2]),
-			}
+		trimmed := strings.TrimSpace(expr)
+		// Check if it's a complex expression first
+		if isComplexExpr(trimmed) {
 			return pipeExpr{
 				initial: "",
-				filters: []filterCall{fc},
+				segments: []pipeSegment{{
+					typ:  segmentExpr,
+					expr: trimmed,
+				}},
 			}
 		}
+		// Check if it's a function call
+		if matches := filterRe.FindStringSubmatch(trimmed); matches != nil && matches[2] != "" {
+			return pipeExpr{
+				initial: "",
+				segments: []pipeSegment{{
+					typ:  segmentFilter,
+					expr: trimmed,
+					name: matches[1],
+					args: parseArgs(matches[2]),
+				}},
+			}
+		}
+		// Just a simple variable reference
+		return pipeExpr{initial: trimmed}
 	}
 
 	parts := strings.Split(expr, "|")
-	if len(parts) == 0 {
-		return pipeExpr{}
-	}
-
 	result := pipeExpr{
-		initial: strings.TrimSpace(parts[0]),
-		filters: make([]filterCall, 0, len(parts)-1),
+		initial:  strings.TrimSpace(parts[0]),
+		segments: make([]pipeSegment, 0, len(parts)-1),
 	}
 
 	for i := 1; i < len(parts); i++ {
 		part := strings.TrimSpace(parts[i])
-		matches := filterRe.FindStringSubmatch(part)
-		if matches == nil {
-			continue
-		}
-
-		fc := filterCall{
-			name: matches[1],
-			args: []string{},
-		}
-
-		if matches[2] != "" {
-			argStr := matches[2]
-			fc.args = parseArgs(argStr)
-		}
-
-		result.filters = append(result.filters, fc)
+		result.segments = append(result.segments, classifySegment(part))
 	}
 
 	return result
+}
+
+// classifySegment determines if a pipe segment is a filter call or expression
+func classifySegment(part string) pipeSegment {
+	// Check for complex expression operators first
+	if isComplexExpr(part) {
+		return pipeSegment{
+			typ:  segmentExpr,
+			expr: part,
+		}
+	}
+
+	// Try to match as function call
+	if matches := filterRe.FindStringSubmatch(part); matches != nil {
+		name := matches[1]
+		if isIdentifier(name) {
+			args := []string{}
+			if matches[2] != "" {
+				args = parseArgs(matches[2])
+			}
+			return pipeSegment{
+				typ:  segmentFilter,
+				expr: part,
+				name: name,
+				args: args,
+			}
+		}
+	}
+
+	// Otherwise treat as expression
+	return pipeSegment{
+		typ:  segmentExpr,
+		expr: part,
+	}
+}
+
+// isIdentifier checks if string is a valid function name pattern
+func isIdentifier(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for i, ch := range s {
+		if i == 0 && !((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_') {
+			return false
+		}
+		if !((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '_') {
+			return false
+		}
+	}
+	return true
 }
 
 // parseArgs parses comma-separated arguments, handling quoted strings
@@ -116,92 +167,96 @@ func parseArgs(argStr string) []string {
 	return args
 }
 
-// evalPipe evaluates a pipe expression using the function map
+// evalPipe evaluates a pipe expression, handling both filters and expressions
 func (v *Vue) evalPipe(ctx VueContext, expr pipeExpr) (any, error) {
-	var val any
-
 	// Handle direct function calls (no initial value)
-	if expr.initial == "" && len(expr.filters) > 0 {
-		// This is a direct function call like "len(items)"
-		filter := expr.filters[0]
-		fn, exists := v.funcMap[filter.name]
-		if !exists {
-			return nil, fmt.Errorf("function '%s' not found", filter.name)
-		}
-
-		// Resolve all arguments
-		var args []any
-		for _, argExpr := range filter.args {
-			argVal := v.resolveArgument(ctx, argExpr)
-			args = append(args, argVal)
-		}
-
-		// Call the function
-		result, err := v.callFunc(fn, args...)
+	if expr.initial == "" && len(expr.segments) > 0 {
+		val, err := v.evalSegment(ctx, expr.segments[0], nil, true, false)
 		if err != nil {
-			return nil, fmt.Errorf("%s(): %w", filter.name, err)
+			return nil, err
 		}
-		val = result
-
-		// Apply remaining filters if any
-		for i := 1; i < len(expr.filters); i++ {
-			filter := expr.filters[i]
-			fn, exists := v.funcMap[filter.name]
-			if !exists {
-				return nil, fmt.Errorf("function '%s' not found", filter.name)
-			}
-
-			args := []any{val}
-			for _, argExpr := range filter.args {
-				argVal := v.resolveArgument(ctx, argExpr)
-				args = append(args, argVal)
-			}
-
-			result, err := v.callFunc(fn, args...)
+		// Apply remaining segments
+		for i := 1; i < len(expr.segments); i++ {
+			val, err = v.evalSegment(ctx, expr.segments[i], val, false, true)
 			if err != nil {
-				return nil, fmt.Errorf("%s(): %w", filter.name, err)
+				return nil, err
 			}
-			val = result
 		}
 		return val, nil
 	}
 
 	// Resolve initial value
+	var val any
 	var ok bool
 	val, ok = ctx.stack.Resolve(expr.initial)
 	if !ok {
-		// If variable not found but there's a filter chain, pass nil to first filter
-		// This allows filters like 'default' to handle missing variables
-		if len(expr.filters) > 0 {
-			val = nil
+		if len(expr.segments) > 0 {
+			val = nil // Pass nil to first segment filter
 		} else {
 			return nil, fmt.Errorf("variable '%s' not found", expr.initial)
 		}
 	}
 
-	// Apply each filter in sequence
-	for _, filter := range expr.filters {
-		fn, exists := v.funcMap[filter.name]
-		if !exists {
-			return nil, fmt.Errorf("function '%s' not found", filter.name)
-		}
-
-		// Build arguments: current value + any additional args
-		args := []any{val}
-		for _, argExpr := range filter.args {
-			argVal := v.resolveArgument(ctx, argExpr)
-			args = append(args, argVal)
-		}
-
-		// Call the function
-		result, err := v.callFunc(fn, args...)
+	// Apply each segment in sequence
+	for i, seg := range expr.segments {
+		var err error
+		val, err = v.evalSegment(ctx, seg, val, i == 0, true)
 		if err != nil {
-			return nil, fmt.Errorf("%s(): %w", filter.name, err)
+			return nil, err
 		}
-		val = result
 	}
 
 	return val, nil
+}
+
+// evalSegment evaluates a single pipe segment (either filter or expression)
+// isFirst indicates if this is the first segment
+// fromInitial indicates if the input came from initial variable resolution
+func (v *Vue) evalSegment(ctx VueContext, seg pipeSegment, input any, isFirst, fromInitial bool) (any, error) {
+	switch seg.typ {
+	case segmentFilter:
+		return v.evalFilter(ctx, seg, input, isFirst, fromInitial)
+	case segmentExpr:
+		// Use expr library with . representing the input value
+		env := getEnvMap(ctx.stack)
+		if input != nil {
+			env["."] = input
+		}
+		result, err := v.exprEval.Eval(seg.expr, env)
+		if err != nil {
+			return nil, fmt.Errorf("in expression '%s': %w", seg.expr, err)
+		}
+		return result, nil
+	}
+	return nil, fmt.Errorf("unknown segment type: %v", seg.typ)
+}
+
+// evalFilter applies a filter function to input
+// isFirst indicates if this is the first segment
+// fromInitial indicates if input came from initial variable resolution
+func (v *Vue) evalFilter(ctx VueContext, seg pipeSegment, input any, isFirst, fromInitial bool) (any, error) {
+	fn, exists := v.funcMap[seg.name]
+	if !exists {
+		return nil, fmt.Errorf("function '%s' not found", seg.name)
+	}
+
+	// Prepend input if:
+	// - Not the first segment (pipe continuation), OR
+	// - First segment that came from initial variable resolution (passes input even if nil)
+	args := []any{}
+	if !isFirst || (isFirst && fromInitial) {
+		args = append(args, input)
+	}
+	for _, argExpr := range seg.args {
+		argVal := v.resolveArgument(ctx, argExpr)
+		args = append(args, argVal)
+	}
+
+	result, err := v.callFunc(fn, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s(): %w", seg.name, err)
+	}
+	return result, nil
 }
 
 // resolveArgument resolves a single argument (either a variable reference or literal)

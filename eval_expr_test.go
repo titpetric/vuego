@@ -252,10 +252,10 @@ func TestVue_BackwardCompatibility(t *testing.T) {
 	}
 
 	data := map[string]any{
-		"show": true,
-		"hide": false,
+		"show":    true,
+		"hide":    false,
 		"message": "Hello",
-		"user": map[string]any{"name": "Alice"},
+		"user":    map[string]any{"name": "Alice"},
 	}
 
 	var buf bytes.Buffer
@@ -315,10 +315,10 @@ func TestRequestExample_BooleanOperations(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(&buf, "test.vuego", map[string]any{
-		"score": 95,
-		"age": 21,
+		"score":    95,
+		"age":      21,
 		"verified": true,
-		"role": "admin",
+		"role":     "admin",
 	})
 	require.NoError(t, err)
 
@@ -334,7 +334,7 @@ func TestRequestExample_StackCompatibility(t *testing.T) {
 	env := map[string]any{
 		"item": map[string]any{
 			"title": "Hello",
-			"id": 42,
+			"id":    42,
 		},
 		"items": []any{
 			map[string]any{"name": "first"},
@@ -356,4 +356,52 @@ func TestRequestExample_StackCompatibility(t *testing.T) {
 	result, err = evaluator.Eval("items[0].name", env)
 	require.NoError(t, err)
 	require.Equal(t, "first", result)
+}
+
+func TestVue_VIfWithStrictEquality(t *testing.T) {
+	t.Run("=== is normalized to ==", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<div v-if="status === 'active'"><p>Active</p></div><div v-if="status !== 'active'"><p>Inactive</p></div>`),
+			},
+		}
+		data := map[string]any{
+			"status": "active",
+		}
+
+		vue := vuego.NewVue(fs)
+		var buf bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&buf, "test.html", data))
+		require.Contains(t, buf.String(), "Active")
+		require.NotContains(t, buf.String(), "Inactive")
+	})
+
+	t.Run("!== is normalized to !=", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<div v-if="status !== 'inactive'"><p>Not Inactive</p></div>`),
+			},
+		}
+		data := map[string]any{
+			"status": "active",
+		}
+
+		vue := vuego.NewVue(fs)
+		var buf bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&buf, "test.html", data))
+		require.Contains(t, buf.String(), "Not Inactive")
+	})
+
+	t.Run("=== with both sides as literals", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<div v-if="'active' === 'active'"><p>Match</p></div>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		var buf bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&buf, "test.html", map[string]any{}))
+		require.Contains(t, buf.String(), "Match")
+	})
 }

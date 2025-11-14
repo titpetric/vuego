@@ -12,7 +12,10 @@ func (v *Vue) evalCondition(ctx VueContext, node *html.Node, expr string) (bool,
 
 	expr = trimSpace(expr)
 
-	// Try to evaluate as expr expression first (supports ==, ===, !=, !==, &&, ||, !, <, >, <=, >=, and function calls)
+	// Normalize comparison operators: coalesce === to == and !== to !=
+	expr = normalizeComparisonOperators(expr)
+
+	// Try to evaluate as expr expression first (supports ==, !=, &&, ||, !, <, >, <=, >=, and function calls)
 	result, err := v.exprEval.Eval(expr, getEnvMap(ctx.stack))
 	if err == nil {
 		// Successfully evaluated with expr - convert to boolean
@@ -31,12 +34,17 @@ func (v *Vue) evalCondition(ctx VueContext, node *html.Node, expr string) (bool,
 }
 
 // isTruthy converts a value to boolean following Vue semantics.
+// For bound attributes, false values should not render the attribute.
 func isTruthy(val any) bool {
 	switch b := val.(type) {
 	case bool:
 		return b
 	case string:
-		return b != ""
+		// Empty string and "false" are falsey
+		if b == "" || b == "false" {
+			return false
+		}
+		return true
 	case int, int64, float64:
 		return fmt.Sprintf("%v", b) != "0"
 	case nil:
@@ -97,4 +105,22 @@ func trimSpace(s string) string {
 		end--
 	}
 	return s[start:end]
+}
+
+// normalizeComparisonOperators coalesces strict comparison operators (=== and !==) to loose operators (== and !=).
+// This is needed because the underlying expr evaluator supports == and != but not === and !==.
+func normalizeComparisonOperators(expr string) string {
+	result := make([]byte, 0, len(expr))
+	for i := 0; i < len(expr); i++ {
+		if i+3 <= len(expr) && expr[i:i+3] == "===" {
+			result = append(result, '=', '=')
+			i += 2
+		} else if i+3 <= len(expr) && expr[i:i+3] == "!==" {
+			result = append(result, '!', '=')
+			i += 2
+		} else {
+			result = append(result, expr[i])
+		}
+	}
+	return string(result)
 }

@@ -21,18 +21,24 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 		case strings.HasPrefix(key, ":"):
 			boundName := strings.TrimPrefix(key, ":")
 			valResolved, _ := ctx.stack.Resolve(val)
-			newAttrs = append(newAttrs, html.Attribute{
-				Key: boundName,
-				Val: fmt.Sprintf("%v", valResolved),
-			})
+			// Skip falsey values for boolean attributes
+			if isTruthy(valResolved) {
+				newAttrs = append(newAttrs, html.Attribute{
+					Key: boundName,
+					Val: fmt.Sprintf("%v", valResolved),
+				})
+			}
 
 		case strings.HasPrefix(key, "v-bind:"):
 			boundName := strings.TrimPrefix(key, "v-bind:")
 			valResolved, _ := ctx.stack.Resolve(val)
-			newAttrs = append(newAttrs, html.Attribute{
-				Key: boundName,
-				Val: fmt.Sprintf("%v", valResolved),
-			})
+			// Skip falsey values for boolean attributes
+			if isTruthy(valResolved) {
+				newAttrs = append(newAttrs, html.Attribute{
+					Key: boundName,
+					Val: fmt.Sprintf("%v", valResolved),
+				})
+			}
 
 		default:
 			// run interpolation on normal attributes
