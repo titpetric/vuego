@@ -1,0 +1,16 @@
+{
+  "title": "FuncMap Demo",
+  "users": [
+    {
+      "name": "alice smith",
+      "email": "ALICE@EXAMPLE.COM"
+    },
+    {
+      "name": "bob jones",
+      "email": "BOB@EXAMPLE.COM"
+    }
+  ],
+  "greeting": "",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "description": "  this is a demo  "
+}

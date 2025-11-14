@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FuncMap Example</title>
+</head>
+<body>
+  <h1>{{ title | upper }}</h1>
+  
+  <div v-if="len(users)">
+    <p>We have {{ users | len }} users</p>
+    <ul>
+      <li v-for="user in users">
+        {{ user.name | title }} - {{ user.email | lower }}
+      </li>
+    </ul>
+  </div>
+  
+  <div>
+    <p>Welcome message: {{ greeting | default("Hello, Guest!") }}</p>
+    <p>Timestamp: {{ timestamp | formatTime("2006-01-02 15:04") }}</p>
+  </div>
+  
+  <div>
+    <p>Description: {{ description | trim | title }}</p>
+  </div>
+</body>
+</html>

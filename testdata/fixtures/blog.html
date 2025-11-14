@@ -1,0 +1,66 @@
+<article>
+  <h1>Building Modern Web Applications with VueGo</h1>
+  <p>
+    <em>By Jane Developer on November 14, 2025</em>
+  </p>
+  <p>VueGo combines the simplicity of Vue.js-style templates with the power of Go&#39;s template engine. This article explores how to leverage both for building dynamic, server-rendered applications.</p>
+  <h2>Key Features</h2>
+  <ul>
+    <li>
+      <strong>Server-Side Rendering</strong>
+      : Render templates on the server for better SEO and initial load performance
+    </li>
+    <li>
+      <strong>Familiar Syntax</strong>
+      : Use Vue.js-like directives (v-if, v-for, v-bind) that feel natural
+    </li>
+    <li>
+      <strong>Type Safety</strong>
+      : Leverage Go&#39;s type system for robust template rendering
+    </li>
+  </ul>
+  <h2>Getting Started</h2>
+  <p>Follow these steps to begin:</p>
+  <ol>
+    <li>Install VueGo package with go get</li>
+    <li>Create your first template with .vuego extension</li>
+    <li>Set up data as a map[string]any</li>
+    <li>Render using vue.Render()</li>
+    <li>Enjoy your dynamic HTML!</li>
+  </ol>
+  <blockquote>
+
+    Simplicity is the ultimate sophistication.
+    <br></br>
+    <strong>— Leonardo da Vinci</strong>
+  </blockquote>
+  <h2>Code Example</h2>
+  <p>Here's a simple example:</p>
+  <pre>
+    <code>vue := vuego.NewVue(templateFS)
+var buf bytes.Buffer
+err := vue.Render(&amp;buf, &#34;page.vuego&#34;, data)</code>
+  </pre>
+  <hr></hr>
+  <h3>Related Articles</h3>
+  <ul>
+    <li>
+      <a href="#">Understanding Template Directives</a>
+    </li>
+    <li>
+      <a href="#">Advanced Filtering Techniques</a>
+    </li>
+    <li>
+      <a href="#">Building Reusable Components</a>
+    </li>
+  </ul>
+  <p>
+    <small>
+      Tags:       <span>golang </span>
+      <span>templates </span>
+      <span>vue </span>
+      <span>web-development </span>
+      <span>ssr </span>
+    </small>
+  </p>
+</article>
