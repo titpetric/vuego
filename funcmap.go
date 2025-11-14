@@ -204,7 +204,7 @@ func (v *Vue) evalSegment(ctx VueContext, seg pipeSegment, input any, isFirst, f
 		return v.evalFilter(ctx, seg, input, isFirst, fromInitial)
 	case segmentExpr:
 		// Use expr library with . representing the input value
-		env := getEnvMap(ctx.stack)
+		env := ctx.stack.EnvMap()
 		if input != nil {
 			env["."] = input
 		}

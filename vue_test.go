@@ -191,3 +191,61 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 		require.NotContains(t, got.String(), "required")
 	})
 }
+
+func TestVue_StructFieldAccess(t *testing.T) {
+	const template = "template.vuego"
+
+	t.Run("struct fields accessible without data prefix", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<div>Name: {{Name}}, Age: {{Age}}</div>`)},
+		}
+
+		type Person struct {
+			Name string
+			Age  int
+		}
+
+		person := Person{Name: "Alice", Age: 30}
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, person))
+		require.Contains(t, got.String(), "Name: Alice")
+		require.Contains(t, got.String(), "Age: 30")
+	})
+
+	t.Run("nested struct fields work", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<div>{{Address.City}}</div>`)},
+		}
+
+		type Address struct {
+			City string
+		}
+
+		type Person struct {
+			Address Address
+		}
+
+		person := Person{Address: Address{City: "New York"}}
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		require.NoError(t, vue.RenderFragment(&got, template, person))
+		require.Contains(t, got.String(), "New York")
+	})
+
+	t.Run("map data still takes precedence over struct fields", func(t *testing.T) {
+		templateFS := &fstest.MapFS{
+			template: {Data: []byte(`<div>{{Name}}</div>`)},
+		}
+
+		data := map[string]any{
+			"Name": "Bob",
+		}
+
+		vue := vuego.NewVue(templateFS)
+		var got bytes.Buffer
+		// When passing a map, struct fields are not used
+		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.Contains(t, got.String(), "Bob")
+	})
+}

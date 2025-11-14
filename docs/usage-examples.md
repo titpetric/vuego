@@ -41,7 +41,7 @@ func main() {
 
 ### Using Typed Values (Structs)
 
-Vuego supports passing typed values directly to `Render` and `RenderFragment`. These are accessible via the `data.` prefix in templates.
+Vuego supports passing typed values directly to `Render` and `RenderFragment`. Struct fields are accessible directly by their field names or JSON tags, without requiring the `data.` prefix.
 
 ```go
 type AppConfig struct {
@@ -54,7 +54,7 @@ func main() {
 	templateFS := os.DirFS("templates")
 	vue := vuego.NewVue(templateFS)
 
-	// Pass struct directly - accessible as data.Title, data.Version, etc.
+	// Pass struct directly - accessible as Title, Version, MaxConnections, etc.
 	config := &AppConfig{
 		Title:          "My App",
 		Version:        "1.0.0",
@@ -70,10 +70,10 @@ func main() {
 In the template, access fields using both Go field names and JSON tags:
 
 ```html
-<h1>{{ data.Title }}</h1>
-<p>Version: {{ data.version }}</p>
-<!-- Both data.MaxConnections and data.max_connections work -->
-<p>Max: {{ data.MaxConnections }}</p>
+<h1>{{ Title }}</h1>
+<p>Version: {{ version }}</p>
+<!-- Both MaxConnections and max_connections work -->
+<p>Max: {{ MaxConnections }}</p>
 ```
 
 ### As a CLI Tool

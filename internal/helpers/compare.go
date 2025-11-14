@@ -19,8 +19,8 @@ func CompareHTML(tb testing.TB, want, got, template, data []byte) bool {
 	require.NoError(tb, err)
 
 	// build significant children lists for each root
-	ac := significantChildren(an)
-	bc := significantChildren(bn)
+	ac := SignificantChildren(an)
+	bc := SignificantChildren(bn)
 
 	isEqual := func() bool {
 		if len(ac) != len(bc) {
@@ -41,9 +41,9 @@ func CompareHTML(tb testing.TB, want, got, template, data []byte) bool {
 	return isEqual
 }
 
-// significantChildren returns a slice of child nodes of root that are not pure-whitespace text nodes.
+// SignificantChildren returns a slice of child nodes of root that are not pure-whitespace text nodes.
 // For document nodes it returns children, for element nodes it returns the node itself wrapped as single-item slice.
-func significantChildren(root *html.Node) []*html.Node {
+func SignificantChildren(root *html.Node) []*html.Node {
 	if root == nil {
 		return nil
 	}

@@ -34,7 +34,8 @@ type FuncMap map[string]any
 ```go
 // Stack provides stack-based variable lookup and convenient typed accessors.
 type Stack struct {
-	stack []map[string]any // bottom..top, top is last element
+	stack    []map[string]any // bottom..top, top is last element
+	rootData any              // original data passed to Render (for struct field fallback)
 }
 ```
 
@@ -67,10 +68,13 @@ type VueContext struct {
 - `func NewComponent (fs fs.FS) *Component`
 - `func NewExprEvaluator () *ExprEvaluator`
 - `func NewStack (root map[string]any) *Stack`
+- `func NewStackWithData (root map[string]any, originalData any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
 - `func NewVueContext (fromFilename string, data map[string]any) VueContext`
+- `func NewVueContextWithData (fromFilename string, data map[string]any, originalData any) VueContext`
 - `func (*ExprEvaluator) ClearCache ()`
 - `func (*ExprEvaluator) Eval (expression string, env map[string]any) (any, error)`
+- `func (*Stack) EnvMap () map[string]any`
 - `func (*Stack) ForEach (expr string, fn func(index int, value any) error) error`
 - `func (*Stack) GetInt (expr string) (int, bool)`
 - `func (*Stack) GetMap (expr string) (map[string]any, bool)`
@@ -116,10 +120,18 @@ func NewExprEvaluator() *ExprEvaluator
 
 ### NewStack
 
-NewStack constructs a Stack with an optional initial root map (nil allowed).
+NewStack constructs a Stack with an optional initial root map (nil allowed). The originalData parameter is the original value passed to Render (for struct field fallback).
 
 ```go
 func NewStack(root map[string]any) *Stack
+```
+
+### NewStackWithData
+
+NewStackWithData constructs a Stack with both map data and original root data for struct field fallback.
+
+```go
+func NewStackWithData(root map[string]any, originalData any) *Stack
 ```
 
 ### NewVue
@@ -136,6 +148,14 @@ NewVueContext returns a VueContext initialized for the given template filename w
 
 ```go
 func NewVueContext(fromFilename string, data map[string]any) VueContext
+```
+
+### NewVueContextWithData
+
+NewVueContextWithData returns a VueContext with both map data and original root data for struct field fallback.
+
+```go
+func NewVueContextWithData(fromFilename string, data map[string]any, originalData any) VueContext
 ```
 
 ### ClearCache
@@ -157,6 +177,14 @@ Eval evaluates an expression against the given environment (stack). It returns t
 
 ```go
 func (*ExprEvaluator) Eval(expression string, env map[string]any) (any, error)
+```
+
+### EnvMap
+
+EnvMap converts the Stack to a map[string]any for expr evaluation. Includes all accessible values from stack and struct fields.
+
+```go
+func (*Stack) EnvMap() map[string]any
 ```
 
 ### ForEach
@@ -201,7 +229,7 @@ func (*Stack) GetString(expr string) (string, bool)
 
 ### Lookup
 
-Lookup searches stack from top to bottom for a plain identifier (no dots). Returns (value, true) if found.
+Lookup searches stack from top to bottom for a plain identifier (no dots). If not found in the stack maps, it checks the root data struct (if any). Returns (value, true) if found.
 
 ```go
 func (*Stack) Lookup(name string) (any, bool)

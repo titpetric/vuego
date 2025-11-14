@@ -31,8 +31,13 @@ type VueContext struct {
 
 // NewVueContext returns a VueContext initialized for the given template filename with initial data.
 func NewVueContext(fromFilename string, data map[string]any) VueContext {
+	return NewVueContextWithData(fromFilename, data, nil)
+}
+
+// NewVueContextWithData returns a VueContext with both map data and original root data for struct field fallback.
+func NewVueContextWithData(fromFilename string, data map[string]any, originalData any) VueContext {
 	return VueContext{
-		stack:         NewStack(data),
+		stack:         NewStackWithData(data, originalData),
 		CurrentDir:    path.Dir(fromFilename),
 		FromFilename:  fromFilename,
 		TemplateStack: []string{fromFilename},
@@ -85,7 +90,7 @@ func (v *Vue) Funcs(funcMap FuncMap) *Vue {
 
 // toMapData converts any value to map[string]any for use as template context.
 // If data is already a map[string]any, it's returned as-is.
-// Otherwise, it's wrapped with a "data" key to allow struct/value access.
+// Otherwise, returns an empty map (struct fields will be resolved via fallback in Stack.Lookup).
 func toMapData(data any) map[string]any {
 	if data == nil {
 		return make(map[string]any)
@@ -93,8 +98,8 @@ func toMapData(data any) map[string]any {
 	if m, ok := data.(map[string]any); ok {
 		return m
 	}
-	// Wrap non-map values so they're accessible via data.field
-	return map[string]any{"data": data}
+	// Return empty map; struct fields will be accessible via Stack.rootData fallback
+	return make(map[string]any)
 }
 
 // Render processes a full-page template file and writes the output to w.
@@ -105,9 +110,9 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 		return err
 	}
 
-	// Convert data to map[string]any
+	// Convert data to map[string]any and create context with original data for struct fallback
 	dataMap := toMapData(data)
-	ctx := NewVueContext(filename, dataMap)
+	ctx := NewVueContextWithData(filename, dataMap, data)
 
 	result, err := v.evaluate(ctx, dom, 0)
 	if err != nil {
@@ -125,9 +130,9 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 		return err
 	}
 
-	// Convert data to map[string]any
+	// Convert data to map[string]any and create context with original data for struct fallback
 	dataMap := toMapData(data)
-	ctx := NewVueContext(filename, dataMap)
+	ctx := NewVueContextWithData(filename, dataMap, data)
 
 	result, err := v.evaluate(ctx, dom, 0)
 	if err != nil {

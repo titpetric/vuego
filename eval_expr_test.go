@@ -118,6 +118,11 @@ func TestExprEvaluator_Caching(t *testing.T) {
 }
 
 func TestVue_VIfWithExprComparison(t *testing.T) {
+	type testCase struct {
+		Priority string `json:"priority"`
+		Total    int    `json:"total"`
+	}
+
 	templateFS := &fstest.MapFS{
 		"test.vuego": {Data: []byte(`
 <div v-if="priority == 'high'">High Priority</div>
@@ -129,17 +134,17 @@ func TestVue_VIfWithExprComparison(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		data   map[string]any
+		data   testCase
 		expect string
 	}{
 		{
 			"priority high",
-			map[string]any{"priority": "high", "total": 5},
+			testCase{Priority: "high", Total: 5},
 			"<div>High Priority</div>\n<div>Has Items</div>\n",
 		},
 		{
 			"priority low",
-			map[string]any{"priority": "low", "total": 0},
+			testCase{Priority: "low", Total: 0},
 			"<div>Low Priority</div>\n<div>No Items</div>\n",
 		},
 	}
@@ -156,6 +161,13 @@ func TestVue_VIfWithExprComparison(t *testing.T) {
 }
 
 func TestVue_VIfWithLogicalOperators(t *testing.T) {
+	type testCase struct {
+		IsActive      bool `json:"isActive"`
+		HasPermission bool `json:"hasPermission"`
+		IsAdmin       bool `json:"isAdmin"`
+		IsDeveloper   bool `json:"isDeveloper"`
+	}
+
 	templateFS := &fstest.MapFS{
 		"test.vuego": {Data: []byte(`
 <div v-if="isActive && hasPermission">Active with Permission</div>
@@ -165,17 +177,17 @@ func TestVue_VIfWithLogicalOperators(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		data   map[string]any
+		data   testCase
 		expect string
 	}{
 		{
 			"both true",
-			map[string]any{"isActive": true, "hasPermission": true, "isAdmin": false, "isDeveloper": false},
+			testCase{IsActive: true, HasPermission: true, IsAdmin: false, IsDeveloper: false},
 			"<div>Active with Permission</div>\n",
 		},
 		{
 			"admin role",
-			map[string]any{"isActive": false, "hasPermission": false, "isAdmin": true, "isDeveloper": false},
+			testCase{IsActive: false, HasPermission: false, IsAdmin: true, IsDeveloper: false},
 			"<div>Admin or Developer</div>\n",
 		},
 	}
@@ -192,6 +204,17 @@ func TestVue_VIfWithLogicalOperators(t *testing.T) {
 }
 
 func TestVue_VIfWithNestedProperties(t *testing.T) {
+	type User struct {
+		Active bool `json:"active"`
+	}
+	type Item struct {
+		InStock bool `json:"inStock"`
+	}
+	type testCase struct {
+		User User `json:"user"`
+		Item Item `json:"item"`
+	}
+
 	templateFS := &fstest.MapFS{
 		"test.vuego": {Data: []byte(`
 <div v-if="user.active">User is Active</div>
@@ -199,9 +222,9 @@ func TestVue_VIfWithNestedProperties(t *testing.T) {
 `)},
 	}
 
-	data := map[string]any{
-		"user": map[string]any{"active": true},
-		"item": map[string]any{"inStock": true},
+	data := testCase{
+		User: User{Active: true},
+		Item: Item{InStock: true},
 	}
 
 	var buf bytes.Buffer
@@ -214,6 +237,10 @@ func TestVue_VIfWithNestedProperties(t *testing.T) {
 }
 
 func TestVue_InterpolationWithComparison(t *testing.T) {
+	type testCase struct {
+		Status string `json:"status"`
+	}
+
 	templateFS := &fstest.MapFS{
 		"test.vuego": {Data: []byte(`
 <p>Status: {{ status == 'active' }}</p>
@@ -222,18 +249,18 @@ func TestVue_InterpolationWithComparison(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		status string
+		data   testCase
 		expect string
 	}{
-		{"active status", "active", "<p>Status: true</p>\n"},
-		{"inactive status", "inactive", "<p>Status: false</p>\n"},
+		{"active status", testCase{Status: "active"}, "<p>Status: true</p>\n"},
+		{"inactive status", testCase{Status: "inactive"}, "<p>Status: false</p>\n"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", map[string]any{"status": tt.status})
+			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			require.Equal(t, tt.expect, buf.String())
 		})
@@ -241,6 +268,16 @@ func TestVue_InterpolationWithComparison(t *testing.T) {
 }
 
 func TestVue_BackwardCompatibility(t *testing.T) {
+	type User struct {
+		Name string `json:"name"`
+	}
+	type testCase struct {
+		Show    bool   `json:"show"`
+		Hide    bool   `json:"hide"`
+		Message string `json:"message"`
+		User    User   `json:"user"`
+	}
+
 	// Ensure existing syntax still works
 	templateFS := &fstest.MapFS{
 		"test.vuego": {Data: []byte(`
@@ -251,11 +288,11 @@ func TestVue_BackwardCompatibility(t *testing.T) {
 `)},
 	}
 
-	data := map[string]any{
-		"show":    true,
-		"hide":    false,
-		"message": "Hello",
-		"user":    map[string]any{"name": "Alice"},
+	data := testCase{
+		Show:    true,
+		Hide:    false,
+		Message: "Hello",
+		User:    User{Name: "Alice"},
 	}
 
 	var buf bytes.Buffer
@@ -270,6 +307,13 @@ func TestVue_BackwardCompatibility(t *testing.T) {
 // Test the exact examples from the original request
 
 func TestRequestExample_TaskPriority(t *testing.T) {
+	type Task struct {
+		Priority string `json:"priority"`
+	}
+	type testCase struct {
+		Task Task `json:"task"`
+	}
+
 	// Test: v-if="task.priority == 'high'" as requested
 	templateFS := &fstest.MapFS{
 		"test.vuego": {Data: []byte(`
@@ -280,22 +324,20 @@ func TestRequestExample_TaskPriority(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
-		priority string
-		expect   string
+		name   string
+		data   testCase
+		expect string
 	}{
-		{"high priority", "high", "High Priority Task"},
-		{"medium priority", "medium", "Medium Priority Task"},
-		{"low priority", "low", "Low Priority Task"},
+		{"high priority", testCase{Task: Task{Priority: "high"}}, "High Priority Task"},
+		{"medium priority", testCase{Task: Task{Priority: "medium"}}, "Medium Priority Task"},
+		{"low priority", testCase{Task: Task{Priority: "low"}}, "Low Priority Task"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", map[string]any{
-				"task": map[string]any{"priority": tt.priority},
-			})
+			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			require.Contains(t, buf.String(), tt.expect)
 		})
@@ -303,6 +345,13 @@ func TestRequestExample_TaskPriority(t *testing.T) {
 }
 
 func TestRequestExample_BooleanOperations(t *testing.T) {
+	type testCase struct {
+		Score    int    `json:"score"`
+		Age      int    `json:"age"`
+		Verified bool   `json:"verified"`
+		Role     string `json:"role"`
+	}
+
 	// Test various boolean operators as requested
 	templateFS := &fstest.MapFS{
 		"test.vuego": {Data: []byte(`
@@ -312,16 +361,19 @@ func TestRequestExample_BooleanOperations(t *testing.T) {
 `)},
 	}
 
+	data := testCase{
+		Score:    95,
+		Age:      21,
+		Verified: true,
+		Role:     "admin",
+	}
+
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", map[string]any{
-		"score":    95,
-		"age":      21,
-		"verified": true,
-		"role":     "admin",
-	})
+	err := vue.RenderFragment(&buf, "test.vuego", data)
 	require.NoError(t, err)
 
+	t.Logf("Output: %s", buf.String())
 	require.Contains(t, buf.String(), "Excellent")
 	require.Contains(t, buf.String(), "Verified Adult")
 	require.Contains(t, buf.String(), "Staff")

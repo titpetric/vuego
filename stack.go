@@ -5,21 +5,29 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/titpetric/vuego/internal/reflect"
+	ireflect "github.com/titpetric/vuego/internal/reflect"
 )
 
 // Stack provides stack-based variable lookup and convenient typed accessors.
 type Stack struct {
-	stack []map[string]any // bottom..top, top is last element
+	stack    []map[string]any // bottom..top, top is last element
+	rootData any              // original data passed to Render (for struct field fallback)
 }
 
 // NewStack constructs a Stack with an optional initial root map (nil allowed).
+// The originalData parameter is the original value passed to Render (for struct field fallback).
 func NewStack(root map[string]any) *Stack {
+	return NewStackWithData(root, nil)
+}
+
+// NewStackWithData constructs a Stack with both map data and original root data for struct field fallback.
+func NewStackWithData(root map[string]any, originalData any) *Stack {
 	s := &Stack{}
 	if root == nil {
 		root = map[string]any{}
 	}
 	s.stack = []map[string]any{root}
+	s.rootData = originalData
 	return s
 }
 
@@ -51,10 +59,17 @@ func (s *Stack) Set(key string, val any) {
 }
 
 // Lookup searches stack from top to bottom for a plain identifier (no dots).
+// If not found in the stack maps, it checks the root data struct (if any).
 // Returns (value, true) if found.
 func (s *Stack) Lookup(name string) (any, bool) {
 	for i := len(s.stack) - 1; i >= 0; i-- {
 		if v, ok := s.stack[i][name]; ok {
+			return v, true
+		}
+	}
+	// Fallback: check root data struct fields
+	if s.rootData != nil {
+		if v, ok := ireflect.ResolveValue(s.rootData, name); ok {
 			return v, true
 		}
 	}
@@ -133,7 +148,7 @@ func (s *Stack) Resolve(expr string) (any, bool) {
 			cur = c[idx]
 		default:
 			// Try struct field resolution via reflection
-			if v, ok := reflect.ResolveValue(cur, p); ok {
+			if v, ok := ireflect.ResolveValue(cur, p); ok {
 				cur = v
 			} else {
 				// unsupported type
@@ -256,6 +271,24 @@ func (s *Stack) GetMap(expr string) (map[string]any, bool) {
 	default:
 		return nil, false
 	}
+}
+
+// EnvMap converts the Stack to a map[string]any for expr evaluation.
+// Includes all accessible values from stack and struct fields.
+func (s *Stack) EnvMap() map[string]any {
+	result := make(map[string]any)
+	// Iterate through stack from bottom to top, with top overriding bottom
+	for i := 0; i < len(s.stack); i++ {
+		for k, v := range s.stack[i] {
+			result[k] = v
+		}
+	}
+
+	// Also include struct fields from rootData (if available)
+	if s.rootData != nil {
+		ireflect.PopulateStructFields(result, s.rootData)
+	}
+	return result
 }
 
 // ForEach iterates over a collection at the given expr and calls fn(index,value).

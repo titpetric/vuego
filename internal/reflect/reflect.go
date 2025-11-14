@@ -110,3 +110,106 @@ func CanDescend(v any) bool {
 		return false
 	}
 }
+
+// StructToMap converts a struct to a map using JSON tags for keys.
+// Nested structs are recursively converted to maps as well.
+func StructToMap(data any) map[string]any {
+	result := make(map[string]any)
+	if data == nil {
+		return result
+	}
+
+	rv := reflect.ValueOf(data)
+	// Dereference pointers
+	for rv.Kind() == reflect.Ptr {
+		if rv.IsNil() {
+			return result
+		}
+		rv = rv.Elem()
+	}
+
+	if rv.Kind() != reflect.Struct {
+		return result
+	}
+
+	rt := rv.Type()
+	for i := range rt.NumField() {
+		f := rt.Field(i)
+		// Only export fields
+		if !f.IsExported() {
+			continue
+		}
+
+		// Get the JSON tag name, default to field name if no tag
+		tagName := f.Name
+		if tag := f.Tag.Get("json"); tag != "" {
+			// Parse JSON tag, stripping options like "omitempty"
+			parts := strings.Split(tag, ",")
+			if parts[0] != "" {
+				tagName = parts[0]
+			}
+		}
+
+		fv := rv.Field(i)
+		fieldValue := fv.Interface()
+
+		// Recursively convert nested structs
+		if fv.Kind() == reflect.Struct || (fv.Kind() == reflect.Ptr && fv.Type().Elem().Kind() == reflect.Struct) {
+			fieldValue = StructToMap(fieldValue)
+		}
+
+		result[tagName] = fieldValue
+	}
+	return result
+}
+
+// PopulateStructFields adds exported struct fields to the map using JSON tags.
+// Nested structs are converted to maps to support path resolution like item.inStock.
+func PopulateStructFields(m map[string]any, data any) {
+	if data == nil {
+		return
+	}
+
+	rv := reflect.ValueOf(data)
+	// Dereference pointers
+	for rv.Kind() == reflect.Ptr {
+		if rv.IsNil() {
+			return
+		}
+		rv = rv.Elem()
+	}
+
+	if rv.Kind() != reflect.Struct {
+		return
+	}
+
+	rt := rv.Type()
+	for i := range rt.NumField() {
+		f := rt.Field(i)
+		// Only export fields
+		if !f.IsExported() {
+			continue
+		}
+
+		// Get the JSON tag name, default to field name if no tag
+		tagName := f.Name
+		if tag := f.Tag.Get("json"); tag != "" {
+			// Parse JSON tag, stripping options like "omitempty"
+			parts := strings.Split(tag, ",")
+			if parts[0] != "" {
+				tagName = parts[0]
+			}
+		}
+
+		fv := rv.Field(i)
+		fieldValue := fv.Interface()
+
+		// Convert nested structs to maps so they can be accessed with JSON tag paths
+		if fv.Kind() == reflect.Struct || (fv.Kind() == reflect.Ptr && fv.Type().Elem().Kind() == reflect.Struct) {
+			fieldValue = StructToMap(fieldValue)
+		}
+
+		// Add the field itself (for path resolution like item.inStock)
+		m[tagName] = fieldValue
+	}
+}

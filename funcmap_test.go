@@ -315,24 +315,6 @@ func TestVue_Funcs_StringFilter(t *testing.T) {
 	require.Contains(t, buf.String(), "42")
 }
 
-func TestVue_Funcs_NoFilterChain(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
-			Data: []byte(`<p>{{ name }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"name": "test",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "test")
-}
-
 func TestVue_Funcs_MissingFilter(t *testing.T) {
 	fs := fstest.MapFS{
 		"test.html": &fstest.MapFile{
@@ -536,4 +518,384 @@ func TestVue_Funcs_TypeConversionError(t *testing.T) {
 	err := vue.Render(&buf, "test.html", data)
 	require.Error(t, err)
 	require.Equal(t, "in test.html: in expression '{{ items | double }}': double(): cannot convert argument 0 from []string to int", err.Error())
+}
+
+func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
+	t.Run("string to int8", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("42") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(n int8) int8 {
+				return n
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "42")
+	})
+
+	t.Run("string to int16", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("1000") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(n int16) int16 {
+				return n
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "1000")
+	})
+
+	t.Run("string to int32", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("100000") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(n int32) int32 {
+				return n
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "100000")
+	})
+
+	t.Run("string to int64", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("9223372036854775806") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(n int64) int64 {
+				return n
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "9223372036854775806")
+	})
+
+	t.Run("string to uint", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("42") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(n uint) uint {
+				return n
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "42")
+	})
+
+	t.Run("string to uint8", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("200") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(n uint8) uint8 {
+				return n
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "200")
+	})
+
+	t.Run("string to uint16", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("50000") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(n uint16) uint16 {
+				return n
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "50000")
+	})
+
+	t.Run("string to uint32", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("4000000000") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(n uint32) uint32 {
+				return n
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "4000000000")
+	})
+
+	t.Run("string to uint64", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("9223372036854775806") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(n uint64) uint64 {
+				return n
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "9223372036854775806")
+	})
+
+	t.Run("string to float32", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("3.14") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(f float32) float32 {
+				return f
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "3.14")
+	})
+
+	t.Run("string to float64", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("2.71828") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(f float64) float64 {
+				return f
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "2.71828")
+	})
+
+	t.Run("string to bool", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("true") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(b bool) string {
+				return fmt.Sprintf("%v", b)
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "true")
+	})
+
+	t.Run("int to string via function", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ toStr(42) }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"toStr": func(n int) string {
+				return fmt.Sprintf("%d", n)
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "42")
+	})
+
+	t.Run("float to string via function", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ toStr(3.14159) }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"toStr": func(f float64) string {
+				return fmt.Sprintf("%v", f)
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "3.14159")
+	})
+
+	t.Run("bool to string via function", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ toStr(true) }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"toStr": func(b bool) string {
+				return fmt.Sprintf("%v", b)
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "true")
+	})
+
+	t.Run("invalid string to int", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("not-a-number") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(n int) int {
+				return n
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot convert argument 0")
+	})
+
+	t.Run("invalid string to float", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("not-a-float") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(f float64) float64 {
+				return f
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot convert argument 0")
+	})
+
+	t.Run("invalid string to bool", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.html": &fstest.MapFile{
+				Data: []byte(`<p>{{ convert("maybe") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"convert": func(b bool) bool {
+				return b
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.html", data)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot convert argument 0")
+	})
 }
