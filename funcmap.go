@@ -121,8 +121,6 @@ func classifySegment(part string) pipeSegment {
 	}
 }
 
-
-
 // parseArgs parses comma-separated arguments, handling quoted strings
 func parseArgs(argStr string) []string {
 	var args []string

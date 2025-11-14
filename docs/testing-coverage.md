@@ -12,10 +12,10 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 81.30%   | 512       | 1623  |
+| ✅     | titpetric/vuego                      | 81.78%   | 466       | 1525  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 6         | 65    |
-| ✅     | titpetric/vuego/internal/helpers     | 86.66%   | 80        | 223   |
+| ✅     | titpetric/vuego/internal/helpers     | 83.33%   | 120       | 313   |
 | ✅     | titpetric/vuego/internal/reflect     | 98.15%   | 20        | 97    |
 
 ## Functions
@@ -64,21 +64,14 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | VueContext.FormatTemplateChain | 66.70%   | 1         |
 | ✅     | titpetric/vuego                      | VueContext.WithTemplate        | 100.00%  | 0         |
 | ❌     | titpetric/vuego                      | classifySegment                | 80.00%   | 7         |
-| ❌     | titpetric/vuego                      | containsPipe                   | 0.00%    | 3         |
 | ❌     | titpetric/vuego                      | convertValue                   | 55.00%   | 24        |
 | ✅     | titpetric/vuego                      | defaultFunc                    | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | escapeFunc                     | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | formatTimeFunc                 | 62.50%   | 4         |
 | ✅     | titpetric/vuego                      | getEnvMap                      | 100.00%  | 3         |
 | ✅     | titpetric/vuego                      | intFunc                        | 42.90%   | 3         |
-| ✅     | titpetric/vuego                      | isComplexExpr                  | 100.00%  | 3         |
-| ✅     | titpetric/vuego                      | isFunctionCall                 | 100.00%  | 5         |
-| ❌     | titpetric/vuego                      | isIdentifier                   | 62.50%   | 14        |
-| ✅     | titpetric/vuego                      | isIdentifierChar               | 100.00%  | 4         |
-| ✅     | titpetric/vuego                      | isTruthy                       | 87.50%   | 4         |
 | ✅     | titpetric/vuego                      | lenFunc                        | 28.60%   | 1         |
 | ✅     | titpetric/vuego                      | lowerFunc                      | 66.70%   | 1         |
-| ✅     | titpetric/vuego                      | normalizeComparisonOperators   | 100.00%  | 7         |
 | ✅     | titpetric/vuego                      | parseArgs                      | 100.00%  | 11        |
 | ✅     | titpetric/vuego                      | parseFor                       | 86.70%   | 8         |
 | ✅     | titpetric/vuego                      | parsePipeExpr                  | 92.30%   | 7         |
@@ -88,7 +81,6 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | titleFunc                      | 85.70%   | 6         |
 | ✅     | titpetric/vuego                      | toMapData                      | 80.00%   | 2         |
 | ✅     | titpetric/vuego                      | trimFunc                       | 66.70%   | 1         |
-| ❌     | titpetric/vuego                      | trimSpace                      | 71.40%   | 6         |
 | ✅     | titpetric/vuego                      | upperFunc                      | 66.70%   | 1         |
 | ❌     | titpetric/vuego/cmd/vuego            | main                           | 0.00%    | 1         |
 | ❌     | titpetric/vuego/cmd/vuego            | start                          | 0.00%    | 4         |
@@ -96,8 +88,15 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego/cmd/vuego-playground | main                           | 0.00%    | 2         |
 | ✅     | titpetric/vuego/internal/helpers     | CloneNode                      | 100.00%  | 0         |
 | ✅     | titpetric/vuego/internal/helpers     | CompareHTML                    | 81.20%   | 8         |
+| ❌     | titpetric/vuego/internal/helpers     | ContainsPipe                   | 0.00%    | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | DeepCloneNode                  | 100.00%  | 5         |
 | ✅     | titpetric/vuego/internal/helpers     | GetAttr                        | 100.00%  | 3         |
+| ✅     | titpetric/vuego/internal/helpers     | IsComplexExpr                  | 100.00%  | 3         |
+| ✅     | titpetric/vuego/internal/helpers     | IsFunctionCall                 | 100.00%  | 5         |
+| ❌     | titpetric/vuego/internal/helpers     | IsIdentifier                   | 62.50%   | 14        |
+| ✅     | titpetric/vuego/internal/helpers     | IsIdentifierChar               | 100.00%  | 4         |
+| ✅     | titpetric/vuego/internal/helpers     | IsTruthy                       | 87.50%   | 4         |
+| ✅     | titpetric/vuego/internal/helpers     | NormalizeComparisonOperators   | 100.00%  | 7         |
 | ✅     | titpetric/vuego/internal/helpers     | RemoveAttr                     | 100.00%  | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | attrsEqual                     | 84.60%   | 8         |
 | ❌     | titpetric/vuego/internal/helpers     | compareNodeRecursive           | 62.50%   | 17        |
