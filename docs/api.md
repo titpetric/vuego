@@ -82,8 +82,8 @@ type VueContext struct {
 - `func (*Stack) Resolve (expr string) (any, bool)`
 - `func (*Stack) Set (key string, val any)`
 - `func (*Vue) Funcs (funcMap FuncMap) *Vue`
-- `func (*Vue) Render (w io.Writer, filename string, data map[string]any) error`
-- `func (*Vue) RenderFragment (w io.Writer, filename string, data map[string]any) error`
+- `func (*Vue) Render (w io.Writer, filename string, data any) error`
+- `func (*Vue) RenderFragment (w io.Writer, filename string, data any) error`
 - `func (Component) Load (filename string) ([]*html.Node, error)`
 - `func (Component) LoadFragment (filename string) ([]*html.Node, error)`
 - `func (Component) Stat (filename string) error`
@@ -258,7 +258,7 @@ func (*Vue) Funcs(funcMap FuncMap) *Vue
 Render processes a full-page template file and writes the output to w. Render is safe to call concurrently from multiple goroutines.
 
 ```go
-func (*Vue) Render(w io.Writer, filename string, data map[string]any) error
+func (*Vue) Render(w io.Writer, filename string, data any) error
 ```
 
 ### RenderFragment
@@ -266,7 +266,7 @@ func (*Vue) Render(w io.Writer, filename string, data map[string]any) error
 RenderFragment processes a template fragment file and writes the output to w. RenderFragment is safe to call concurrently from multiple goroutines.
 
 ```go
-func (*Vue) RenderFragment(w io.Writer, filename string, data map[string]any) error
+func (*Vue) RenderFragment(w io.Writer, filename string, data any) error
 ```
 
 ### Load

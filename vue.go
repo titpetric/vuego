@@ -83,15 +83,31 @@ func (v *Vue) Funcs(funcMap FuncMap) *Vue {
 	return v
 }
 
+// toMapData converts any value to map[string]any for use as template context.
+// If data is already a map[string]any, it's returned as-is.
+// Otherwise, it's wrapped with a "data" key to allow struct/value access.
+func toMapData(data any) map[string]any {
+	if data == nil {
+		return make(map[string]any)
+	}
+	if m, ok := data.(map[string]any); ok {
+		return m
+	}
+	// Wrap non-map values so they're accessible via data.field
+	return map[string]any{"data": data}
+}
+
 // Render processes a full-page template file and writes the output to w.
 // Render is safe to call concurrently from multiple goroutines.
-func (v *Vue) Render(w io.Writer, filename string, data map[string]any) error {
+func (v *Vue) Render(w io.Writer, filename string, data any) error {
 	dom, err := v.loader.Load(filename)
 	if err != nil {
 		return err
 	}
 
-	ctx := NewVueContext(filename, data)
+	// Convert data to map[string]any
+	dataMap := toMapData(data)
+	ctx := NewVueContext(filename, dataMap)
 
 	result, err := v.evaluate(ctx, dom, 0)
 	if err != nil {
@@ -103,13 +119,15 @@ func (v *Vue) Render(w io.Writer, filename string, data map[string]any) error {
 
 // RenderFragment processes a template fragment file and writes the output to w.
 // RenderFragment is safe to call concurrently from multiple goroutines.
-func (v *Vue) RenderFragment(w io.Writer, filename string, data map[string]any) error {
+func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 	dom, err := v.loader.LoadFragment(filename)
 	if err != nil {
 		return err
 	}
 
-	ctx := NewVueContext(filename, data)
+	// Convert data to map[string]any
+	dataMap := toMapData(data)
+	ctx := NewVueContext(filename, dataMap)
 
 	result, err := v.evaluate(ctx, dom, 0)
 	if err != nil {

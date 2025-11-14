@@ -162,6 +162,223 @@ func TestStack_Resolve(t *testing.T) {
 		require.Equal(t, "localhost", val)
 	})
 
+	t.Run("struct field by name", func(t *testing.T) {
+		cfg := &testConfig{Name: "MyApp", Port: 8080}
+		s := vuego.NewStack(map[string]any{"config": cfg})
+		val, ok := s.Resolve("config.Name")
+		require.True(t, ok)
+		require.Equal(t, "MyApp", val)
+
+		val, ok = s.Resolve("config.Port")
+		require.True(t, ok)
+		require.Equal(t, 8080, val)
+	})
+
+	t.Run("deeply nested struct with multiple levels", func(t *testing.T) {
+		cfg := &testConfig{
+			Name: "ProductionApp",
+			Database: &testDatabase{
+				Host: "db.prod.local",
+				Port: 5432,
+				Name: "maindb",
+				Options: &testDatabaseOptions{
+					SSL:      true,
+					PoolSize: 50,
+					Timeout:  30,
+				},
+			},
+		}
+		s := vuego.NewStack(map[string]any{"config": cfg})
+
+		val, ok := s.Resolve("config.Database.Host")
+		require.True(t, ok)
+		require.Equal(t, "db.prod.local", val)
+
+		val, ok = s.Resolve("config.Database.Options.PoolSize")
+		require.True(t, ok)
+		require.Equal(t, 50, val)
+
+		val, ok = s.Resolve("config.Database.Options.SSL")
+		require.True(t, ok)
+		require.Equal(t, true, val)
+	})
+
+	t.Run("slice of structs indexing", func(t *testing.T) {
+		cfg := &testConfig{
+			Name: "MyApp",
+			Database: &testDatabase{
+				Host: "localhost",
+				Replicas: []*testReplica{
+					{Host: "replica1.local", Port: 5433, Region: "us-east-1", Status: "active"},
+					{Host: "replica2.local", Port: 5433, Region: "us-west-1", Status: "active"},
+					{Host: "replica3.local", Port: 5433, Region: "eu-west-1", Status: "standby"},
+				},
+			},
+		}
+		s := vuego.NewStack(map[string]any{"config": cfg})
+
+		// Access slice through nested path and index
+		val, ok := s.Resolve("config.Database.Replicas")
+		require.True(t, ok)
+		replicas := val.([]*testReplica)
+		require.Len(t, replicas, 3)
+
+		// Index into the slice
+		val, ok = s.Resolve("config.Database.Replicas[0]")
+		require.True(t, ok)
+		replica := val.(*testReplica)
+		require.Equal(t, "replica1.local", replica.Host)
+
+		// Access field of indexed struct
+		val, ok = s.Resolve("config.Database.Replicas[1].Region")
+		require.True(t, ok)
+		require.Equal(t, "us-west-1", val)
+
+		val, ok = s.Resolve("config.Database.Replicas[2].Status")
+		require.True(t, ok)
+		require.Equal(t, "standby", val)
+	})
+
+	t.Run("string slice indexing", func(t *testing.T) {
+		cfg := &testConfig{
+			Name:   "MyApp",
+			Admins: []string{"alice@example.com", "bob@example.com", "charlie@example.com"},
+		}
+		s := vuego.NewStack(map[string]any{"config": cfg})
+
+		val, ok := s.Resolve("config.Admins[0]")
+		require.True(t, ok)
+		require.Equal(t, "alice@example.com", val)
+
+		val, ok = s.Resolve("config.Admins[2]")
+		require.True(t, ok)
+		require.Equal(t, "charlie@example.com", val)
+
+		_, ok = s.Resolve("config.Admins[10]")
+		require.False(t, ok)
+	})
+
+	t.Run("nested struct with multiple slice fields", func(t *testing.T) {
+		cfg := &testConfig{
+			Name: "DistributedApp",
+			Cache: &testCache{
+				Type: "redis",
+				Host: "cache.local",
+				Port: 6379,
+				Servers: []*testCacheServer{
+					{Address: "cache1:6379", Weight: 100, Active: true},
+					{Address: "cache2:6379", Weight: 50, Active: true},
+					{Address: "cache3:6379", Weight: 25, Active: false},
+				},
+			},
+			Services: []*testService{
+				{
+					Name:    "AuthService",
+					URL:     "http://auth:3000",
+					Timeout: 5,
+					Enabled: true,
+					Config: &testServiceConfig{
+						APIKey:    "secret-key-123",
+						RateLimit: 1000,
+						Endpoints: []string{"/login", "/logout", "/verify"},
+					},
+				},
+				{
+					Name:    "PaymentService",
+					URL:     "http://payment:3001",
+					Timeout: 10,
+					Enabled: true,
+					Config: &testServiceConfig{
+						APIKey:    "payment-key-456",
+						RateLimit: 500,
+						Endpoints: []string{"/charge", "/refund", "/status"},
+					},
+				},
+			},
+		}
+		s := vuego.NewStack(map[string]any{"config": cfg})
+
+		// Cache server indexing
+		val, ok := s.Resolve("config.Cache.Servers[1].Address")
+		require.True(t, ok)
+		require.Equal(t, "cache2:6379", val)
+
+		// Service indexing
+		val, ok = s.Resolve("config.Services[0].Name")
+		require.True(t, ok)
+		require.Equal(t, "AuthService", val)
+
+		// Service config with JSON tags
+		val, ok = s.Resolve("config.Services[1].Config.api_key")
+		require.True(t, ok)
+		require.Equal(t, "payment-key-456", val)
+
+		// Service config endpoints slice
+		val, ok = s.Resolve("config.Services[0].Config.Endpoints")
+		require.True(t, ok)
+		endpoints := val.([]string)
+		require.Equal(t, []string{"/login", "/logout", "/verify"}, endpoints)
+	})
+
+	t.Run("JSON tag resolution in deeply nested structure", func(t *testing.T) {
+		cfg := &testConfig{
+			Name:        "MyApp",
+			SecretKey:   "supersecret",
+			Environment: "production",
+			Database: &testDatabase{
+				Host: "localhost",
+				Options: &testDatabaseOptions{
+					PoolSize:      100,
+					RetryAttempts: 5,
+				},
+			},
+		}
+		s := vuego.NewStack(map[string]any{"config": cfg})
+
+		val, ok := s.Resolve("config.secret_key")
+		require.True(t, ok)
+		require.Equal(t, "supersecret", val)
+
+		val, ok = s.Resolve("config.env")
+		require.True(t, ok)
+		require.Equal(t, "production", val)
+
+		val, ok = s.Resolve("config.Database.Options.pool_size")
+		require.True(t, ok)
+		require.Equal(t, 100, val)
+
+		val, ok = s.Resolve("config.Database.Options.retry_attempts")
+		require.True(t, ok)
+		require.Equal(t, 5, val)
+
+		val, ok = s.Resolve("config.Database.max_connections")
+		require.True(t, ok)
+		require.Equal(t, 0, val) // Default zero value
+	})
+
+	t.Run("struct with JSON tags", func(t *testing.T) {
+		user := &testUser{FirstName: "Alice", LastName: "Smith"}
+		s := vuego.NewStack(map[string]any{"user": user})
+
+		val, ok := s.Resolve("user.first_name")
+		require.True(t, ok)
+		require.Equal(t, "Alice", val)
+
+		val, ok = s.Resolve("user.last_name")
+		require.True(t, ok)
+		require.Equal(t, "Smith", val)
+	})
+
+	t.Run("struct field as fallback", func(t *testing.T) {
+		user := &testUser{FirstName: "Bob"}
+		s := vuego.NewStack(map[string]any{"user": user})
+
+		// Should resolve by field name even though JSON tag exists
+		val, ok := s.Resolve("user.FirstName")
+		require.True(t, ok)
+		require.Equal(t, "Bob", val)
+	})
+
 	t.Run("typed slices", func(t *testing.T) {
 		s := vuego.NewStack(map[string]any{
 			"strings": []string{"a", "b"},
@@ -611,4 +828,76 @@ func TestStack_ForEach(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, 0, count)
 	})
+}
+
+// Test helper structs for struct resolution tests
+
+type testConfig struct {
+	Name        string
+	Version     string
+	Port        int
+	Database    *testDatabase
+	Cache       *testCache
+	Services    []*testService
+	SecretKey   string `json:"secret_key"`
+	Environment string `json:"env"`
+	Debug       bool
+	Admins      []string
+	Tags        map[string]string
+}
+
+type testDatabase struct {
+	Host     string
+	Port     int
+	Name     string
+	Replicas []*testReplica
+	Options  *testDatabaseOptions
+	MaxConns int `json:"max_connections"`
+}
+
+type testReplica struct {
+	Host   string
+	Port   int
+	Region string
+	Status string
+}
+
+type testDatabaseOptions struct {
+	SSL           bool
+	Timeout       int
+	PoolSize      int `json:"pool_size"`
+	RetryAttempts int `json:"retry_attempts"`
+}
+
+type testCache struct {
+	Type    string
+	Host    string
+	Port    int
+	Servers []*testCacheServer
+	TTL     int
+}
+
+type testCacheServer struct {
+	Address string
+	Weight  int
+	Active  bool
+}
+
+type testService struct {
+	Name    string
+	URL     string
+	Timeout int
+	Enabled bool
+	Config  *testServiceConfig
+}
+
+type testServiceConfig struct {
+	APIKey    string `json:"api_key"`
+	RateLimit int    `json:"rate_limit"`
+	Endpoints []string
+}
+
+type testUser struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 }

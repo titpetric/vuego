@@ -12,10 +12,11 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 81.21%   | 506       | 1601  |
+| ✅     | titpetric/vuego                      | 81.30%   | 512       | 1623  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 6         | 65    |
 | ✅     | titpetric/vuego/internal/helpers     | 86.66%   | 80        | 223   |
+| ✅     | titpetric/vuego/internal/reflect     | 98.15%   | 20        | 97    |
 
 ## Functions
 
@@ -41,12 +42,12 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Stack.Lookup                   | 100.00%  | 3         |
 | ✅     | titpetric/vuego                      | Stack.Pop                      | 80.00%   | 2         |
 | ✅     | titpetric/vuego                      | Stack.Push                     | 100.00%  | 1         |
-| ✅     | titpetric/vuego                      | Stack.Resolve                  | 81.40%   | 38        |
+| ✅     | titpetric/vuego                      | Stack.Resolve                  | 84.40%   | 42        |
 | ✅     | titpetric/vuego                      | Stack.Set                      | 66.70%   | 1         |
 | ✅     | titpetric/vuego                      | Stack.splitPath                | 81.80%   | 25        |
 | ✅     | titpetric/vuego                      | Vue.Funcs                      | 80.00%   | 2         |
-| ✅     | titpetric/vuego                      | Vue.Render                     | 87.50%   | 2         |
-| ✅     | titpetric/vuego                      | Vue.RenderFragment             | 75.00%   | 2         |
+| ✅     | titpetric/vuego                      | Vue.Render                     | 88.90%   | 2         |
+| ✅     | titpetric/vuego                      | Vue.RenderFragment             | 77.80%   | 2         |
 | ✅     | titpetric/vuego                      | Vue.callFunc                   | 92.30%   | 24        |
 | ✅     | titpetric/vuego                      | Vue.evalAttributes             | 85.70%   | 13        |
 | ✅     | titpetric/vuego                      | Vue.evalCondition              | 60.00%   | 2         |
@@ -85,6 +86,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | renderNode                     | 95.00%   | 16        |
 | ✅     | titpetric/vuego                      | stringFunc                     | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | titleFunc                      | 85.70%   | 6         |
+| ✅     | titpetric/vuego                      | toMapData                      | 80.00%   | 2         |
 | ✅     | titpetric/vuego                      | trimFunc                       | 66.70%   | 1         |
 | ❌     | titpetric/vuego                      | trimSpace                      | 71.40%   | 6         |
 | ✅     | titpetric/vuego                      | upperFunc                      | 66.70%   | 1         |
@@ -102,3 +104,9 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego/internal/helpers     | filteredChildren               | 100.00%  | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | isIgnorable                    | 80.00%   | 3         |
 | ❌     | titpetric/vuego/internal/helpers     | significantChildren            | 58.30%   | 30        |
+| ✅     | titpetric/vuego/internal/reflect     | CanDescend                     | 100.00%  | 5         |
+| ✅     | titpetric/vuego/internal/reflect     | ResolveValue                   | 100.00%  | 2         |
+| ✅     | titpetric/vuego/internal/reflect     | resolveMap                     | 100.00%  | 1         |
+| ✅     | titpetric/vuego/internal/reflect     | resolveSliceIndex              | 100.00%  | 2         |
+| ✅     | titpetric/vuego/internal/reflect     | resolveStruct                  | 100.00%  | 6         |
+| ✅     | titpetric/vuego/internal/reflect     | resolveValueRecursive          | 88.90%   | 4         |

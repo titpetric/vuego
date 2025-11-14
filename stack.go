@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/titpetric/vuego/internal/reflect"
 )
 
 // Stack provides stack-based variable lookup and convenient typed accessors.
@@ -130,8 +132,13 @@ func (s *Stack) Resolve(expr string) (any, bool) {
 			}
 			cur = c[idx]
 		default:
-			// unsupported descendable type without reflection
-			return nil, false
+			// Try struct field resolution via reflection
+			if v, ok := reflect.ResolveValue(cur, p); ok {
+				cur = v
+			} else {
+				// unsupported type
+				return nil, false
+			}
 		}
 	}
 	return cur, true
