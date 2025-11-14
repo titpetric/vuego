@@ -1,0 +1,8 @@
+<template>
+  <div v-if="score >= 90">Grade: A</div>
+  <div v-if="score >= 80 && score < 90">Grade: B</div>
+  <div v-if="score >= 70 && score < 80">Grade: C</div>
+  <div v-if="score < 70">Grade: F</div>
+  <div v-if="status == 'active'">Active</div>
+  <div v-if="isAdmin || isDeveloper">Admin or Developer</div>
+</template>

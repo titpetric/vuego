@@ -32,14 +32,29 @@ func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 		var val any
 		var err error
 
-		// Check if expression contains pipe (filter chain) or is a function call
-		if strings.Contains(expr, "|") || isFunctionCall(expr) {
-			pipe := parsePipeExpr(expr)
-			val, err = v.evalPipe(ctx, pipe)
+		// Try expr evaluation first for complex expressions
+		if strings.Contains(expr, "|") || isFunctionCall(expr) || isComplexExpr(expr) {
+			// Try expr first for complex expressions with operators
+			if isComplexExpr(expr) {
+				val, err = v.exprEval.Eval(expr, getEnvMap(ctx.stack))
+				if err == nil {
+					// Successfully evaluated, skip pipe fallback
+				} else {
+					// Fall back to pipe evaluation
+					pipe := parsePipeExpr(expr)
+					val, err = v.evalPipe(ctx, pipe)
+				}
+			} else {
+				// Use pipe evaluation for filter chains
+				pipe := parsePipeExpr(expr)
+				val, err = v.evalPipe(ctx, pipe)
+			}
+
 			if err != nil {
 				return "", fmt.Errorf("in expression '{{ %s }}': %w", expr, err)
 			}
 		} else {
+			// Simple variable reference
 			var ok bool
 			val, ok = ctx.stack.Resolve(expr)
 			if !ok {
@@ -60,4 +75,15 @@ func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 	out.WriteString(input[last:])
 
 	return out.String(), nil
+}
+
+// isComplexExpr checks if an expression contains operators like ==, ===, !=, <, >, etc.
+func isComplexExpr(expr string) bool {
+	operators := []string{"==", "===", "!=", "!==", "<=", ">=", "<", ">", "&&", "||"}
+	for _, op := range operators {
+		if strings.Contains(expr, op) {
+			return true
+		}
+	}
+	return false
 }

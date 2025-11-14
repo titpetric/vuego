@@ -16,6 +16,7 @@ type Vue struct {
 	templateFS fs.FS
 	loader     *Component
 	funcMap    FuncMap
+	exprEval   *ExprEvaluator
 }
 
 // VueContext carries template inclusion context and request-scoped state used during evaluation.
@@ -67,6 +68,7 @@ func NewVue(templateFS fs.FS) *Vue {
 		templateFS: templateFS,
 		loader:     NewComponent(templateFS),
 		funcMap:    DefaultFuncMap(),
+		exprEval:   NewExprEvaluator(),
 	}
 }
 

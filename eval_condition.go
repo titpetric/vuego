@@ -10,49 +10,53 @@ import (
 func (v *Vue) evalCondition(ctx VueContext, node *html.Node, expr string) (bool, error) {
 	helpers.RemoveAttr(node, "v-if")
 
-	// Handle negation with ! prefix
-	negated := false
-	if len(expr) > 0 && expr[0] == '!' {
-		negated = true
-		expr = expr[1:]
+	expr = trimSpace(expr)
+
+	// Try to evaluate as expr expression first (supports ==, ===, !=, !==, &&, ||, !, <, >, <=, >=, and function calls)
+	result, err := v.exprEval.Eval(expr, getEnvMap(ctx.stack))
+	if err == nil {
+		// Successfully evaluated with expr - convert to boolean
+		return isTruthy(result), nil
 	}
 
-	var val any
-	var ok bool
-
-	// Check if expression is a function call or contains pipes
-	if isFunctionCall(expr) || containsPipe(expr) {
-		pipe := parsePipeExpr(expr)
-		var err error
-		val, err = v.evalPipe(ctx, pipe)
-		if err != nil {
-			return false, fmt.Errorf("v-if='%s': %w", expr, err)
-		}
-		ok = true
-	} else {
-		val, ok = ctx.stack.Resolve(expr)
-	}
-
+	// Fall back to legacy behavior for simple variable references
+	// This handles cases like "show" or "!show"
+	val, ok := ctx.stack.Resolve(expr)
 	if !ok {
-		return negated, nil
+		// Variable not found - return false unless negated
+		return false, nil
 	}
 
-	var result bool
+	return isTruthy(val), nil
+}
+
+// isTruthy converts a value to boolean following Vue semantics.
+func isTruthy(val any) bool {
 	switch b := val.(type) {
 	case bool:
-		result = b
+		return b
 	case string:
-		result = b != ""
+		return b != ""
 	case int, int64, float64:
-		result = fmt.Sprintf("%v", b) != "0"
+		return fmt.Sprintf("%v", b) != "0"
+	case nil:
+		return false
 	default:
-		result = val != nil
+		return true
 	}
+}
 
-	if negated {
-		return !result, nil
+// getEnvMap converts a Stack to a map[string]any for expr evaluation.
+// This flattens the stack into a single environment map.
+func getEnvMap(s *Stack) map[string]any {
+	result := make(map[string]any)
+	// Iterate through stack from bottom to top, with top overriding bottom
+	for i := 0; i < len(s.stack); i++ {
+		for k, v := range s.stack[i] {
+			result[k] = v
+		}
 	}
-	return result, nil
+	return result
 }
 
 // isFunctionCall checks if an expression looks like a function call
