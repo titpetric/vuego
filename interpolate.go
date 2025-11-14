@@ -6,6 +6,8 @@ import (
 	"html"
 	"regexp"
 	"strings"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // {{ expr }} regex (non-greedy, no nested braces)
@@ -33,7 +35,7 @@ func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 		var err error
 
 		// Try unified pipe/expr evaluation (handles both filters and expressions)
-		if strings.Contains(expr, "|") || isFunctionCall(expr) || isComplexExpr(expr) {
+		if strings.Contains(expr, "|") || helpers.IsFunctionCall(expr) || helpers.IsComplexExpr(expr) {
 			pipe := parsePipeExpr(expr)
 			val, err = v.evalPipe(ctx, pipe)
 			if err != nil {
@@ -61,15 +63,4 @@ func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 	out.WriteString(input[last:])
 
 	return out.String(), nil
-}
-
-// isComplexExpr checks if an expression contains operators like ==, ===, !=, <, >, etc.
-func isComplexExpr(expr string) bool {
-	operators := []string{"==", "===", "!=", "!==", "<=", ">=", "<", ">", "&&", "||"}
-	for _, op := range operators {
-		if strings.Contains(expr, op) {
-			return true
-		}
-	}
-	return false
 }

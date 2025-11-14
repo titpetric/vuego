@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // FuncMap is a map of function names to functions, similar to text/template's FuncMap.
@@ -46,7 +48,7 @@ func parsePipeExpr(expr string) pipeExpr {
 	if !strings.Contains(expr, "|") {
 		trimmed := strings.TrimSpace(expr)
 		// Check if it's a complex expression first
-		if isComplexExpr(trimmed) {
+		if helpers.IsComplexExpr(trimmed) {
 			return pipeExpr{
 				initial: "",
 				segments: []pipeSegment{{
@@ -88,7 +90,7 @@ func parsePipeExpr(expr string) pipeExpr {
 // classifySegment determines if a pipe segment is a filter call or expression
 func classifySegment(part string) pipeSegment {
 	// Check for complex expression operators first
-	if isComplexExpr(part) {
+	if helpers.IsComplexExpr(part) {
 		return pipeSegment{
 			typ:  segmentExpr,
 			expr: part,
@@ -98,7 +100,7 @@ func classifySegment(part string) pipeSegment {
 	// Try to match as function call
 	if matches := filterRe.FindStringSubmatch(part); matches != nil {
 		name := matches[1]
-		if isIdentifier(name) {
+		if helpers.IsIdentifier(name) {
 			args := []string{}
 			if matches[2] != "" {
 				args = parseArgs(matches[2])
@@ -119,21 +121,7 @@ func classifySegment(part string) pipeSegment {
 	}
 }
 
-// isIdentifier checks if string is a valid function name pattern
-func isIdentifier(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-	for i, ch := range s {
-		if i == 0 && !((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_') {
-			return false
-		}
-		if !((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '_') {
-			return false
-		}
-	}
-	return true
-}
+
 
 // parseArgs parses comma-separated arguments, handling quoted strings
 func parseArgs(argStr string) []string {

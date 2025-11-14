@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
 )
 
@@ -22,7 +23,7 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 			boundName := strings.TrimPrefix(key, ":")
 			valResolved, _ := ctx.stack.Resolve(val)
 			// Skip falsey values for boolean attributes
-			if isTruthy(valResolved) {
+			if helpers.IsTruthy(valResolved) {
 				newAttrs = append(newAttrs, html.Attribute{
 					Key: boundName,
 					Val: fmt.Sprintf("%v", valResolved),
@@ -33,7 +34,7 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 			boundName := strings.TrimPrefix(key, "v-bind:")
 			valResolved, _ := ctx.stack.Resolve(val)
 			// Skip falsey values for boolean attributes
-			if isTruthy(valResolved) {
+			if helpers.IsTruthy(valResolved) {
 				newAttrs = append(newAttrs, html.Attribute{
 					Key: boundName,
 					Val: fmt.Sprintf("%v", valResolved),
