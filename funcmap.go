@@ -1,6 +1,7 @@
 package vuego
 
 import (
+	"encoding/json"
 	"fmt"
 	"html"
 	"reflect"
@@ -423,6 +424,7 @@ func DefaultFuncMap() FuncMap {
 		"escape":     escapeFunc,
 		"int":        intFunc,
 		"string":     stringFunc,
+		"json":       jsonFunc,
 	}
 }
 
@@ -528,4 +530,12 @@ func intFunc(v any) any {
 
 func stringFunc(v any) any {
 	return fmt.Sprint(v)
+}
+
+func jsonFunc(v any) (string, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal to JSON: %w", err)
+	}
+	return string(b), nil
 }

@@ -899,3 +899,328 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		require.Contains(t, err.Error(), "cannot convert argument 0")
 	})
 }
+
+func TestVue_Funcs_JsonFilter(t *testing.T) {
+	t.Run("simple object in script tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<script>const data = {{ user | json }};</script>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"user": map[string]any{
+				"name": "Alice",
+				"age":  30,
+			},
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// JSON is not HTML-escaped inside script tags
+		require.Contains(t, output, `"age":30`)
+		require.Contains(t, output, `"name":"Alice"`)
+		require.NotContains(t, output, `&#34;`)
+	})
+
+	t.Run("array in script tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<script>const items = {{ items | json }};</script>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"items": []string{"apple", "banana", "cherry"},
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		require.Contains(t, output, `"apple"`)
+		require.Contains(t, output, `"banana"`)
+		require.Contains(t, output, `"cherry"`)
+		require.NotContains(t, output, `&#34;`)
+	})
+
+	t.Run("string value in script tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<script>const name = {{ name | json }};</script>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"name": "Bob",
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		require.Contains(t, output, `"Bob"`)
+		require.NotContains(t, output, `&#34;`)
+	})
+
+	t.Run("number value in script tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<script>const count = {{ count | json }};</script>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"count": 42,
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		// Numbers don't need escaping
+		require.Contains(t, buf.String(), `42`)
+	})
+
+	t.Run("nested structure in script tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<script>const payload = {{ payload | json }};</script>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"payload": map[string]any{
+				"user": map[string]any{
+					"name": "Charlie",
+					"tags": []string{"admin", "user"},
+				},
+				"status": "active",
+			},
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// Check unescaped JSON
+		require.Contains(t, output, `"name":"Charlie"`)
+		require.Contains(t, output, `"status":"active"`)
+		require.NotContains(t, output, `&#34;`)
+	})
+
+	t.Run("fragment still escapes JSON outside script tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`{{ data | json }}`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"data": map[string]any{"key": "value"},
+		}
+
+		var buf bytes.Buffer
+		err := vue.RenderFragment(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// JSON is HTML-escaped in fragments (not in script tags)
+		require.Contains(t, output, `&#34;key&#34;`)
+		require.Contains(t, output, `&#34;value&#34;`)
+	})
+
+	t.Run("JSON escaped in code tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<code>{{ data | json }}</code>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"data": map[string]any{"key": "value"},
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// JSON should be HTML-escaped inside code tags
+		require.Contains(t, output, `&#34;key&#34;`)
+		require.Contains(t, output, `&#34;value&#34;`)
+		require.NotContains(t, output, `"key":"value"`)
+	})
+
+	t.Run("JSON escaped in pre tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<pre>{{ data | json }}</pre>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"data": map[string]any{
+				"name": "Alice",
+				"age":  30,
+			},
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// JSON should be HTML-escaped inside pre tags
+		require.Contains(t, output, `&#34;name&#34;`)
+		require.Contains(t, output, `&#34;Alice&#34;`)
+		require.Contains(t, output, `&#34;age&#34;`)
+		require.NotContains(t, output, `"name":"Alice"`)
+	})
+
+	t.Run("JSON escaped in pre+code tags", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<pre><code>{{ data | json }}</code></pre>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"data": map[string]any{
+				"status": "active",
+				"count":  42,
+			},
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// JSON should be HTML-escaped inside pre+code tags
+		require.Contains(t, output, `&#34;status&#34;`)
+		require.Contains(t, output, `&#34;active&#34;`)
+		require.Contains(t, output, `&#34;count&#34;`)
+		require.NotContains(t, output, `"status":"active"`)
+	})
+
+	t.Run("JSON unescaped in script tag (comparison)", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<script>const data = {{ data | json }};</script>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"data": map[string]any{
+				"status": "active",
+				"count":  42,
+			},
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// JSON should NOT be escaped inside script tags
+		require.Contains(t, output, `"status":"active"`)
+		require.Contains(t, output, `"count":42`)
+		require.NotContains(t, output, `&#34;`)
+	})
+}
+
+func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
+	t.Run("plain string with quotes in script tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<script>const msg = "{{ message }}";</script>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"message": "hello world",
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// Interpolated values inside script tags should be unescaped
+		require.Contains(t, output, `const msg = "hello world";`)
+	})
+
+	t.Run("string with HTML entities in script tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<script>const value = "{{ htmlContent }}";</script>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"htmlContent": `<div class="test">content</div>`,
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// Should NOT be HTML-escaped inside script tags
+		require.Contains(t, output, `<div class="test">content</div>`)
+		require.NotContains(t, output, `&lt;`)
+		require.NotContains(t, output, `&gt;`)
+		require.NotContains(t, output, `&#34;`)
+	})
+
+	t.Run("string with special chars in script tag", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<script>const val = '{{ val }}';</script>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"val": `test & check < > " '`,
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// Should NOT be HTML-escaped inside script tags
+		require.Contains(t, output, `test & check < > " '`)
+		require.NotContains(t, output, `&amp;`)
+		require.NotContains(t, output, `&lt;`)
+		require.NotContains(t, output, `&gt;`)
+	})
+
+	t.Run("escaping still applies outside script tags", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ value }}</div>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"value": `<script>alert('xss')</script>`,
+		}
+
+		var buf bytes.Buffer
+		err := vue.RenderFragment(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		output := buf.String()
+		// Should still be HTML-escaped outside script tags
+		require.Contains(t, output, `&lt;script&gt;`)
+		require.NotContains(t, output, `<script>`)
+	})
+}
