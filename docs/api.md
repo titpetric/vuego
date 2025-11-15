@@ -63,6 +63,7 @@ type VueContext struct {
 	CurrentDir    string
 	FromFilename  string
 	TemplateStack []string
+	TagStack      []string
 }
 ```
 
@@ -92,9 +93,12 @@ type VueContext struct {
 - `func (*Vue) Funcs (funcMap FuncMap) *Vue`
 - `func (*Vue) Render (w io.Writer, filename string, data any) error`
 - `func (*Vue) RenderFragment (w io.Writer, filename string, data any) error`
+- `func (*VueContext) PopTag ()`
+- `func (*VueContext) PushTag (tag string)`
 - `func (Component) Load (filename string) ([]*html.Node, error)`
 - `func (Component) LoadFragment (filename string) ([]*html.Node, error)`
 - `func (Component) Stat (filename string) error`
+- `func (VueContext) CurrentTag () string`
 - `func (VueContext) FormatTemplateChain () string`
 - `func (VueContext) WithTemplate (filename string) VueContext`
 
@@ -301,6 +305,22 @@ RenderFragment processes a template fragment file and writes the output to w. Re
 func (*Vue) RenderFragment(w io.Writer, filename string, data any) error
 ```
 
+### PopTag
+
+PopTag removes the current tag from the tag stack.
+
+```go
+func (*VueContext) PopTag()
+```
+
+### PushTag
+
+PushTag adds a tag to the tag stack.
+
+```go
+func (*VueContext) PushTag(tag string)
+```
+
 ### Load
 
 Load parses a full HTML document from the given filename.
@@ -323,6 +343,14 @@ Stat checks that filename exists in the component filesystem.
 
 ```go
 func (Component) Stat(filename string) error
+```
+
+### CurrentTag
+
+CurrentTag returns the current parent tag, or empty string if no tag is on the stack.
+
+```go
+func (VueContext) CurrentTag() string
 ```
 
 ### FormatTemplateChain

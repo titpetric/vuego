@@ -76,6 +76,28 @@ Transform values using filters with the pipe syntax:
 - `formatTime([layout])` - Format time value
 - `int` - Convert to integer
 - `string` - Convert to string
+- `json` - Marshal value to JSON (unescaped in `<script>` tags, escaped elsewhere)
+
+#### JSON Filter
+
+The `json` filter marshals a value to JSON format. Its behavior differs depending on the context:
+
+**In `<script>` tags:** JSON is output unescaped, allowing safe embedding of data in JavaScript:
+
+```html
+<script>
+  const user = {{ user | json }};
+  const items = {{ items | json }};
+</script>
+```
+
+**In other contexts** (`<pre>`, `<code>`, fragments, etc.): JSON is HTML-escaped to prevent XSS:
+
+```html
+<pre><code>{{ data | json }}</code></pre>
+```
+
+This automatic escaping prevents malicious content in the JSON from breaking out of HTML context, while allowing safe direct use in JavaScript where JSON has its own syntax safety.
 
 ## Directives
 
