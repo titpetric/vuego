@@ -2,6 +2,7 @@ let examples = {};
 let debounceTimer = null;
 let isRendering = false;
 let isEmbedFS = true; // Will be set by server
+let currentExampleName = null; // Track the current example being edited
 
 // Load examples from the server (for getting template/data when a button is clicked)
 async function loadExamples() {
@@ -19,6 +20,7 @@ async function loadExamples() {
 function loadExample(name) {
     const example = examples[name];
     if (example) {
+        currentExampleName = name; // Track the loaded example
         document.getElementById('template').value = example.template;
         document.getElementById('data').value = example.data;
         render();
@@ -325,6 +327,7 @@ async function createFile() {
             refreshExampleButtons();
             // Load the newly created file directly
             if (result.name && examples[result.name]) {
+                currentExampleName = result.name; // Set the current example name
                 const example = examples[result.name];
                 document.getElementById('template').value = example.template;
                 document.getElementById('data').value = example.data;
@@ -343,6 +346,9 @@ async function save() {
     const template = document.getElementById('template').value;
     const data = document.getElementById('data').value;
     
+    // Use the current example name, or fall back to 'template' if none is loaded
+    const name = currentExampleName || 'template';
+    
     try {
         const response = await fetch('/api/save', {
             method: 'POST',
@@ -351,7 +357,8 @@ async function save() {
             },
             body: JSON.stringify({
                 template: template,
-                data: data
+                data: data,
+                name: name
             })
         });
         
@@ -359,7 +366,7 @@ async function save() {
         if (result.error) {
             alert(`Error: ${result.error}`);
         } else {
-            alert('Files saved successfully');
+            alert(`Files saved successfully to ${result.path}`);
         }
     } catch (e) {
         alert(`Failed to save: ${e.message}`);
