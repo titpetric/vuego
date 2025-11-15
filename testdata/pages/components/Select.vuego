@@ -1,0 +1,3 @@
+<select :name="name">
+<option v-for="item in items" :value="item.id">{{item.title}}</option>
+</select>
