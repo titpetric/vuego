@@ -1,0 +1,9 @@
+{
+  "title": "Project Overview",
+  "description": "This card demonstrates how v-once styles are applied to template rendering, keeping styles scoped and performant.",
+  "statistics": [
+    {"name": "Active Users", "value": "2,847"},
+    {"name": "Revenue", "value": "$145K"},
+    {"name": "Uptime", "value": "99.9%"}
+  ]
+}

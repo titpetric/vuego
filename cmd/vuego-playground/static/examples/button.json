@@ -1,0 +1,8 @@
+{
+  "primaryButtons": [
+    {"label": "Create"},
+    {"label": "Edit"},
+    {"label": "View"}
+  ],
+  "actions": ["Submit", "Review", "Approve"]
+}
