@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  vuego-playground:
+    build:
+      context: .
+      dockerfile: docker/playground/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./cmd/vuego-playground/static:/app/examples
+    environment:
+      - LOG_LEVEL=info

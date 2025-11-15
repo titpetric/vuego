@@ -1,0 +1,36 @@
+---
+version: "3"
+
+tasks:
+  build:
+    desc: "Build the vuego-playground Docker image"
+    cmds:
+      - docker build --network=host -t vuego-playground:latest -f docker/playground/Dockerfile .
+
+  up:
+    desc: "Start the vuego-playground with docker compose"
+    deps:
+      - build
+    cmds:
+      - docker compose -f docker/playground/docker-compose.yml up -d
+
+  down:
+    desc: "Stop the vuego-playground"
+    cmds:
+      - docker compose -f docker/playground/docker-compose.yml down
+
+  logs:
+    desc: "View docker compose logs"
+    cmds:
+      - docker compose -f docker/playground/docker-compose.yml logs -f
+
+  shell:
+    desc: "Open a shell in the running container"
+    cmds:
+      - docker compose -f docker/playground/docker-compose.yml exec vuego-playground sh
+
+  clean:
+    desc: "Clean up Docker images and containers"
+    cmds:
+      - docker compose -f docker/playground/docker-compose.yml down -v
+      - docker rmi vuego-playground:latest 2>/dev/null || true
