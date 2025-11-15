@@ -192,6 +192,19 @@ func getIndent(indent int) string {
 	return strings.Repeat(" ", indent)
 }
 
+// shouldEscapeTextNode checks if a text node needs HTML escaping.
+// Returns false if the text appears to be already HTML-escaped (from interpolation),
+// true if it contains raw HTML special characters that need escaping.
+func shouldEscapeTextNode(data string) bool {
+	// If the text contains HTML entity references like &lt; &amp; &#39; etc,
+	// it's likely from interpolation and already escaped
+	if strings.Contains(data, "&") && strings.Contains(data, ";") {
+		return false
+	}
+	// Check if text contains unescaped HTML special characters
+	return strings.ContainsAny(data, "<>&\"'")
+}
+
 func renderNode(w io.Writer, node *html.Node, indent int) error {
 	switch node.Type {
 	case html.TextNode:
@@ -199,7 +212,11 @@ func renderNode(w io.Writer, node *html.Node, indent int) error {
 			return nil
 		}
 		spaces := getIndent(indent)
-		_, _ = w.Write([]byte(spaces + node.Data))
+		if shouldEscapeTextNode(node.Data) {
+			_, _ = w.Write([]byte(spaces + html.EscapeString(node.Data)))
+		} else {
+			_, _ = w.Write([]byte(spaces + node.Data))
+		}
 
 	case html.ElementNode:
 		// Count children without allocating slice
@@ -215,7 +232,11 @@ func renderNode(w io.Writer, node *html.Node, indent int) error {
 			_, _ = w.Write([]byte(spaces + "<" + node.Data + renderAttrs(node.Attr) + "></" + node.Data + ">\n"))
 		} else if childCount == 1 && firstChild.Type == html.TextNode {
 			_, _ = w.Write([]byte(spaces + "<" + node.Data + renderAttrs(node.Attr) + ">"))
-			_, _ = w.Write([]byte(firstChild.Data))
+			if shouldEscapeTextNode(firstChild.Data) {
+				_, _ = w.Write([]byte(html.EscapeString(firstChild.Data)))
+			} else {
+				_, _ = w.Write([]byte(firstChild.Data))
+			}
 			_, _ = w.Write([]byte("</" + node.Data + ">\n"))
 		} else {
 			_, _ = w.Write([]byte(spaces + "<" + node.Data + renderAttrs(node.Attr) + ">\n"))
