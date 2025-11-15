@@ -510,6 +510,11 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 		return
 	}
 
+	// Add .vuego extension if not already present
+	if !strings.HasSuffix(filename, ".vuego") {
+		filename = filename + ".vuego"
+	}
+
 	var filePath string
 	if req.Type == "component" {
 		// Create components directory if it doesn't exist
@@ -520,10 +525,10 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 			})
 			return
 		}
-		filePath = filepath.Join(compDir, filename+".vuego")
+		filePath = filepath.Join(compDir, filename)
 	} else {
 		// Page type (default)
-		filePath = filepath.Join(examplesDir, filename+".vuego")
+		filePath = filepath.Join(examplesDir, filename)
 	}
 
 	// Check if file already exists
@@ -546,7 +551,18 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 		return
 	}
 
-	json.NewEncoder(w).Encode(CreateResponse{
-		Path: filePath,
+	// Calculate the example name (relative path without extension)
+	// This is used by the frontend to load the created file directly
+	var exampleName string
+	if req.Type == "component" {
+		exampleName = filepath.Join("components", strings.TrimSuffix(filename, ".vuego"))
+	} else {
+		exampleName = strings.TrimSuffix(filename, ".vuego")
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"path":  filePath,
+		"name":  exampleName,
+		"error": "",
 	})
 }

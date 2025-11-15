@@ -25,6 +25,61 @@ function loadExample(name) {
     }
 }
 
+// Rebuild the example button list from the loaded examples
+function refreshExampleButtons() {
+    const exampleList = [];
+    
+    // Build the example list from the examples object
+    for (const name in examples) {
+        const depth = name.split('/').length - 1;
+        const label = name.split('/').pop();
+        const isNested = depth > 0;
+        const buttonClass = isNested ? 'example-nested' : 'example-root';
+        
+        exampleList.push({
+            name: name,
+            label: label,
+            depth: depth,
+            isNested: isNested,
+            buttonClass: buttonClass
+        });
+    }
+    
+    // Sort by depth first (root first), then alphabetically
+    exampleList.sort((a, b) => {
+        if (a.depth !== b.depth) {
+            return a.depth - b.depth;
+        }
+        return a.name.localeCompare(b.name);
+    });
+    
+    // Rebuild Pages group
+    const pagesGroup = document.querySelector('.example-group:first-child .button-group');
+    pagesGroup.innerHTML = '';
+    exampleList.forEach(ex => {
+        if (!ex.isNested) {
+            const button = document.createElement('button');
+            button.className = ex.buttonClass;
+            button.textContent = ex.label;
+            button.onclick = () => loadExample(ex.name);
+            pagesGroup.appendChild(button);
+        }
+    });
+    
+    // Rebuild Components group
+    const componentsGroup = document.querySelector('.example-group:last-child .button-group');
+    componentsGroup.innerHTML = '';
+    exampleList.forEach(ex => {
+        if (ex.isNested) {
+            const button = document.createElement('button');
+            button.className = ex.buttonClass;
+            button.textContent = ex.label;
+            button.onclick = () => loadExample(ex.name);
+            componentsGroup.appendChild(button);
+        }
+    });
+}
+
 async function render() {
     if (isRendering) return;
     
@@ -239,7 +294,9 @@ async function createFile() {
     const fileType = document.querySelector('input[name="fileType"]:checked').value;
     
     if (!fileName) {
-        alert('Please enter a file name');
+        const error = document.getElementById('error');
+        error.textContent = 'Please enter a file name';
+        error.style.display = 'block';
         return;
     }
     
@@ -257,15 +314,27 @@ async function createFile() {
         
         const result = await response.json();
         if (result.error) {
-            alert(`Error: ${result.error}`);
+            const error = document.getElementById('error');
+            error.textContent = `Error: ${result.error}`;
+            error.style.display = 'block';
         } else {
-            alert(`Created ${result.path}`);
             closeCreateDialog();
-            // Reload examples
+            // Reload examples to pick up the new file
             await loadExamples();
+            // Refresh the button list to show the new template
+            refreshExampleButtons();
+            // Load the newly created file directly
+            if (result.name && examples[result.name]) {
+                const example = examples[result.name];
+                document.getElementById('template').value = example.template;
+                document.getElementById('data').value = example.data;
+                render();
+            }
         }
     } catch (e) {
-        alert(`Failed to create file: ${e.message}`);
+        const error = document.getElementById('error');
+        error.textContent = `Failed to create file: ${e.message}`;
+        error.style.display = 'block';
     }
 }
 
