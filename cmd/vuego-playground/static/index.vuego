@@ -11,7 +11,7 @@
         <div class="header-container">
             <div class="header-left">
                 <div class="header-title">
-                    <h1>VueGo Playground</h1>
+                    <h1><a href="https://github.com/titpetric/vuego">VueGo</a> Playground</h1>
                     <div class="subtitle">Test your VueGo templates in real-time</div>
                 </div>
                 <div class="header-actions">
