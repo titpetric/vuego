@@ -1,7 +1,7 @@
 package vuego_test
 
 import (
-	"bytes"
+	"strings"
 	"testing"
 	"testing/fstest"
 
@@ -89,7 +89,7 @@ func BenchmarkVue_ConcurrentBlogRender(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			var buf bytes.Buffer
+			var buf strings.Builder
 			err := vue.Render(&buf, "blog.html", data)
 			require.NoError(b, err)
 		}

@@ -241,7 +241,7 @@ func (*Stack) Lookup(name string) (any, bool)
 
 ### Pop
 
-Pop the top-most Stack. If only root remains it still pops to empty slice safely.
+Pop the top-most Stack. If only root remains it still pops to empty slice safely. Returns pooled maps to reduce GC pressure.
 
 ```go
 func (*Stack) Pop()
@@ -249,7 +249,7 @@ func (*Stack) Pop()
 
 ### Push
 
-Push a new map as a top-most Stack.
+Push a new map as a top-most Stack. If m is nil, an empty map is obtained from the pool.
 
 ```go
 func (*Stack) Push(m map[string]any)

@@ -21,3 +21,16 @@ func IsIdentifier(s string) bool {
 	}
 	return true
 }
+
+// NeedsHTMLEscape checks if a string contains characters that need HTML escaping.
+// Returns true if the string contains &, <, >, ", or ' characters.
+// This avoids calling html.EscapeString which always allocates a new string.
+func NeedsHTMLEscape(s string) bool {
+	for i := 0; i < len(s); i++ {
+		switch s[i] {
+		case '&', '<', '>', '"', '\'':
+			return true
+		}
+	}
+	return false
+}

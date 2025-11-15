@@ -55,5 +55,7 @@ tasks:
 
   bench:
     desc: "Run benchmarks with multiple CPU configurations"
+    deps:
+      - fmt
     cmds:
       - go test -bench=. -benchmem -cpu 1,2,4 ./...

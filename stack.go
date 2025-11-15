@@ -2,11 +2,46 @@ package vuego
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 
+	"github.com/titpetric/vuego/internal/helpers"
 	ireflect "github.com/titpetric/vuego/internal/reflect"
 )
+
+// pathCache caches parsed paths to avoid re-parsing frequently-used expressions.
+var pathCache = &struct {
+	sync.RWMutex
+	m map[string][]string
+}{
+	m: make(map[string][]string),
+}
+
+const pathCacheLimit = 256
+
+// getCachedPath returns a cached path or computes and caches it.
+func getCachedPath(expr string) []string {
+	pathCache.RLock()
+	if parts, ok := pathCache.m[expr]; ok {
+		pathCache.RUnlock()
+		return parts
+	}
+	pathCache.RUnlock()
+
+	// Not in cache, compute it
+	parts := splitPathImpl(expr)
+
+	// Cache if under limit
+	if len(pathCache.m) < pathCacheLimit {
+		pathCache.Lock()
+		pathCache.m[expr] = parts
+		pathCache.Unlock()
+	}
+
+	return parts
+}
 
 // Stack provides stack-based variable lookup and convenient typed accessors.
 type Stack struct {
@@ -31,20 +66,39 @@ func NewStackWithData(root map[string]any, originalData any) *Stack {
 	return s
 }
 
+// mapPool caches map[string]any allocations to reduce GC pressure.
+var mapPool = sync.Pool{
+	New: func() any {
+		return make(map[string]any, 0)
+	},
+}
+
 // Push a new map as a top-most Stack.
+// If m is nil, an empty map is obtained from the pool.
 func (s *Stack) Push(m map[string]any) {
 	if m == nil {
-		m = map[string]any{}
+		m = mapPool.Get().(map[string]any)
 	}
 	s.stack = append(s.stack, m)
 }
 
 // Pop the top-most Stack. If only root remains it still pops to empty slice safely.
+// Returns pooled maps to reduce GC pressure.
 func (s *Stack) Pop() {
 	if len(s.stack) == 0 {
 		return
 	}
-	s.stack = s.stack[:len(s.stack)-1]
+	// Return the top map to the pool before removing it
+	topIdx := len(s.stack) - 1
+	topMap := s.stack[topIdx]
+	// Clear the map and return it to pool if it's not the root
+	if topIdx > 0 && len(topMap) > 0 {
+		for k := range topMap {
+			delete(topMap, k)
+		}
+		mapPool.Put(topMap)
+	}
+	s.stack = s.stack[:topIdx]
 	if len(s.stack) == 0 {
 		s.stack = append(s.stack, map[string]any{})
 	}
@@ -82,7 +136,13 @@ func (s *Stack) Lookup(name string) (any, bool) {
 //
 // It returns (value, true) if resolution succeeded.
 func (s *Stack) Resolve(expr string) (any, bool) {
-	parts := s.splitPath(expr)
+	// Fast path: if no dots or brackets, do direct lookup
+	if !strings.ContainsAny(expr, ".[") {
+		return s.Lookup(expr)
+	}
+
+	// Parse once (with caching)
+	parts := getCachedPath(expr)
 	if len(parts) == 0 {
 		return nil, false
 	}
@@ -97,66 +157,38 @@ func (s *Stack) Resolve(expr string) (any, bool) {
 		if cur == nil {
 			return nil, false
 		}
-		switch c := cur.(type) {
-		case map[string]any:
-			v, ok := c[p]
-			if !ok {
-				// also allow numeric-key lookup if p is numeric and map has stringified numeric keys
-				v2, ok2 := c[p]
-				if !ok2 {
-					return nil, false
-				}
-				cur = v2
-			} else {
-				cur = v
-			}
-		case map[string]string:
-			v, ok := c[p]
-			if !ok {
-				return nil, false
-			}
-			cur = v
-		case []any:
-			idx, err := strconv.Atoi(p)
-			if err != nil || idx < 0 || idx >= len(c) {
-				return nil, false
-			}
-			cur = c[idx]
-		case []map[string]any:
-			idx, err := strconv.Atoi(p)
-			if err != nil || idx < 0 || idx >= len(c) {
-				return nil, false
-			}
-			cur = c[idx]
-		case []string:
-			idx, err := strconv.Atoi(p)
-			if err != nil || idx < 0 || idx >= len(c) {
-				return nil, false
-			}
-			cur = c[idx]
-		case []int:
-			idx, err := strconv.Atoi(p)
-			if err != nil || idx < 0 || idx >= len(c) {
-				return nil, false
-			}
-			cur = c[idx]
-		case []float64:
-			idx, err := strconv.Atoi(p)
-			if err != nil || idx < 0 || idx >= len(c) {
-				return nil, false
-			}
-			cur = c[idx]
-		default:
-			// Try struct field resolution via reflection
-			if v, ok := ireflect.ResolveValue(cur, p); ok {
-				cur = v
-			} else {
-				// unsupported type
-				return nil, false
-			}
+		cur = s.resolveStep(cur, p)
+		if cur == nil {
+			return nil, false
 		}
 	}
 	return cur, true
+}
+
+// resolveStep resolves a single step in a path, returning nil if resolution fails.
+func (s *Stack) resolveStep(cur any, p string) any {
+	// Try maps first
+	switch c := cur.(type) {
+	case map[string]any:
+		return c[p]
+	case map[string]string:
+		return c[p]
+	}
+
+	// Try numeric index for slices and arrays using reflection
+	idx, err := strconv.Atoi(p)
+	if err == nil && idx >= 0 {
+		v := reflect.ValueOf(cur)
+		if (v.Kind() == reflect.Slice || v.Kind() == reflect.Array) && idx < v.Len() {
+			return v.Index(idx).Interface()
+		}
+	}
+
+	// Fall back to struct field resolution via reflection
+	if v, ok := ireflect.ResolveValue(cur, p); ok {
+		return v
+	}
+	return nil
 }
 
 // GetString resolves and tries to return a string.
@@ -224,29 +256,13 @@ func (s *Stack) GetSlice(expr string) ([]any, bool) {
 	case []any:
 		return t, true
 	case []map[string]any:
-		out := make([]any, len(t))
-		for i := range t {
-			out[i] = t[i]
-		}
-		return out, true
+		return helpers.SliceToAny(t), true
 	case []string:
-		out := make([]any, len(t))
-		for i := range t {
-			out[i] = t[i]
-		}
-		return out, true
+		return helpers.SliceToAny(t), true
 	case []int:
-		out := make([]any, len(t))
-		for i := range t {
-			out[i] = t[i]
-		}
-		return out, true
+		return helpers.SliceToAny(t), true
 	case []float64:
-		out := make([]any, len(t))
-		for i := range t {
-			out[i] = t[i]
-		}
-		return out, true
+		return helpers.SliceToAny(t), true
 	default:
 		return nil, false
 	}
@@ -355,53 +371,73 @@ func (s *Stack) ForEach(expr string, fn func(index int, value any) error) error 
 
 // Helpers
 
-// splitPath turns expressions into path parts. Supports dot notation and bracket numeric/string indexes:
+// splitPath turns expressions into path parts. Supports dot notation and bracket numeric/string indexes.
+// Now delegates to splitPathImpl which is cached by getCachedPath.
 // examples:
 //
 //	"items[0].name" -> ["items","0","name"]
 //	"user.name" -> ["user","name"]
 //	"a['b'].c" -> ["a","b","c"]
 func (s *Stack) splitPath(expr string) []string {
+	return getCachedPath(expr)
+}
+
+// splitPathImpl is the actual implementation of path splitting.
+// Called by getCachedPath which caches the results.
+func splitPathImpl(expr string) []string {
 	expr = strings.TrimSpace(expr)
 	if expr == "" {
 		return nil
 	}
-	// We'll convert brackets to dot segments then split by dot
+
+	// Fast path: if no brackets, just split by dots
+	if !strings.Contains(expr, "[") {
+		parts := strings.Split(expr, ".")
+		// Sanitize in-place to avoid extra allocation
+		out := parts[:0]
+		for _, p := range parts {
+			if p = strings.TrimSpace(p); p != "" {
+				out = append(out, p)
+			}
+		}
+		return out
+	}
+
+	// Full parsing with bracket support
 	var b strings.Builder
+	b.Grow(len(expr) + 8)
 	i := 0
 	for i < len(expr) {
 		ch := expr[i]
 		if ch == '[' {
-			// find matching ]
 			j := i + 1
 			for j < len(expr) && expr[j] != ']' {
 				j++
 			}
 			if j >= len(expr) {
-				// unmatched bracket, treat literally
 				b.WriteByte(ch)
 				i++
 				continue
 			}
 			inside := strings.TrimSpace(expr[i+1 : j])
-			// strip quotes if present
 			if len(inside) >= 2 && ((inside[0] == '\'' && inside[len(inside)-1] == '\'') || (inside[0] == '"' && inside[len(inside)-1] == '"')) {
 				inside = inside[1 : len(inside)-1]
 			}
-			// write dot + inside (if inside is empty, skip)
 			if inside != "" {
 				b.WriteByte('.')
 				b.WriteString(inside)
 			}
 			i = j + 1
-			continue
 		} else {
 			b.WriteByte(ch)
 			i++
 		}
 	}
-	parts := strings.Split(b.String(), ".")
-	out := make([]string, 0, len(parts))
+
+	builtStr := b.String()
+	parts := strings.Split(builtStr, ".")
+	// Sanitize in-place to avoid extra allocation
+	out := parts[:0]
 	for _, p := range parts {
 		p = strings.TrimSpace(p)
 		if p == "" {

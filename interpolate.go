@@ -43,8 +43,8 @@ func (v *Vue) interpolateToWriter(ctx VueContext, w io.Writer, input string) err
 		if endPos < 0 {
 			break
 		}
-		endPos += start + 2  // Position of first }
-		endPos += 2          // Skip past }}
+		endPos += start + 2 // Position of first }
+		endPos += 2         // Skip past }}
 
 		// Write the text before the interpolation
 		if _, err := io.WriteString(w, input[last:start]); err != nil {
@@ -88,8 +88,17 @@ func (v *Vue) interpolateToWriter(ctx VueContext, w io.Writer, input string) err
 
 		if val != nil {
 			// Escape value for HTML output
-			if _, err := io.WriteString(w, html.EscapeString(fmt.Sprint(val))); err != nil {
-				return err
+			valStr := fmt.Sprint(val)
+			// Skip escaping if the string doesn't contain special characters
+			// (avoids allocation in html.EscapeString for most cases)
+			if !helpers.NeedsHTMLEscape(valStr) {
+				if _, err := io.WriteString(w, valStr); err != nil {
+					return err
+				}
+			} else {
+				if _, err := io.WriteString(w, html.EscapeString(valStr)); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -113,13 +122,18 @@ func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 		bufferPool.Put(buf)
 	}()
 
-	if err := v.interpolateToWriter(ctx, buf, input); err != nil {
-		return "", err
-	}
-
 	// Early return for no-interpolation case
 	if !strings.Contains(input, "{{") {
 		return input, nil
+	}
+
+	// Pre-allocate builder capacity to reduce grow operations
+	// Estimate output will be ~120% of input (for escaped HTML entities)
+	estimatedLen := len(input) + len(input)/5
+	buf.Grow(estimatedLen)
+
+	if err := v.interpolateToWriter(ctx, buf, input); err != nil {
+		return "", err
 	}
 
 	return buf.String(), nil
