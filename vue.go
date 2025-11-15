@@ -290,12 +290,31 @@ func renderNodeWithContext(w io.Writer, node *html.Node, indent int, ctx *VueCon
 	return nil
 }
 
+// shouldIgnoreAttr returns true if an attribute should be skipped in HTML output.
+// This includes Vue directives and binding attributes that are only used during evaluation.
+func shouldIgnoreAttr(key string) bool {
+	// Vue directives that should not appear in final HTML
+	switch key {
+	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html":
+		return true
+	}
+	// v-bind: and : prefixed attributes are processed and shouldn't appear in output
+	if strings.HasPrefix(key, "v-bind:") || strings.HasPrefix(key, ":") {
+		return true
+	}
+	return false
+}
+
 func renderAttrs(attrs []html.Attribute) string {
 	if len(attrs) == 0 {
 		return ""
 	}
 	var sb strings.Builder
 	for _, a := range attrs {
+		// Skip Vue directives and internal binding attributes
+		if shouldIgnoreAttr(a.Key) {
+			continue
+		}
 		sb.WriteByte(' ')
 		sb.WriteString(a.Key)
 		sb.WriteByte('=')

@@ -107,7 +107,14 @@ go test -v -run TestStack_Push
 
 # Full test suite with coverage
 task test
+
+# Update coverage report (generates docs/testing-coverage.md)
+task test cover
 ```
+
+**Coverage Report:**
+- `docs/testing-coverage.md` is auto-generated and should be updated after adding or modifying tests
+- Run `task test cover` to regenerate the coverage report before committing changes
 
 ## Code Style
 

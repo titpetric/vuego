@@ -19,7 +19,8 @@ func (v *Vue) evaluateChildren(ctx VueContext, node *html.Node, depth int) ([]*h
 func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.Node, error) {
 	var result []*html.Node
 
-	for _, node := range nodes {
+	for i := 0; i < len(nodes); i++ {
+		node := nodes[i]
 
 		switch node.Type {
 		case html.TextNode:
@@ -38,9 +39,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			// Check for v-pre early - prevents all interpolation and directive processing
 			if helpers.HasAttr(node, "v-pre") {
 				newNode := helpers.ShallowCloneWithAttrs(node)
-				// Remove the v-pre attribute from output before processing
-				helpers.RemoveAttr(newNode, "v-pre")
-				// Deep clone children without processing them
+				// Deep clone children without processing them (v-pre will be filtered during rendering)
 				var prev *html.Node
 				for c := node.FirstChild; c != nil; c = c.NextSibling {
 					cloned := helpers.DeepCloneNode(c)
@@ -115,11 +114,22 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				continue
 			}
 
-			if vIf := helpers.GetAttr(node, "v-if"); vIf != "" {
-				ok, err := v.evalCondition(ctx, node, vIf)
-				if err != nil || !ok {
-					continue
+			// Handle v-if chains (v-if, v-else-if, v-else)
+			if helpers.HasAttr(node, "v-if") {
+				chainResult, skipCount, err := v.evalElseIfChain(ctx, node, nodes[i:], depth)
+				if err != nil {
+					return nil, err
 				}
+				result = append(result, chainResult...)
+				// Skip past the v-else-if and v-else nodes that were part of this chain
+				i += skipCount
+				continue
+			}
+
+			// Skip v-else-if and v-else if they appear without v-if
+			// (they should be handled as part of a chain)
+			if helpers.HasAttr(node, "v-else-if") || helpers.HasAttr(node, "v-else") {
+				continue
 			}
 
 			if vFor := helpers.GetAttr(node, "v-for"); vFor != "" {
@@ -134,6 +144,29 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				}
 
 				result = append(result, loopNodes...)
+
+				// If v-for produced no results, check for v-else on the next sibling
+				if len(loopNodes) == 0 {
+					for j := i + 1; j < len(nodes); j++ {
+						nextNode := nodes[j]
+						// Skip text nodes (whitespace)
+						if nextNode.Type != html.ElementNode {
+							continue
+						}
+						// Found the next element - check if it's v-else
+						if helpers.HasAttr(nextNode, "v-else") {
+							// Evaluate the v-else node without cloning yet - let evaluateNodeAsElement handle it
+							vElseResult, err := v.evaluateNodeAsElement(ctx, nextNode, depth)
+							if err != nil {
+								return nil, err
+							}
+							result = append(result, vElseResult...)
+							i = j // Skip to the v-else node since we've processed it
+						}
+						// Stop looking after the first element node (v-else or not)
+						break
+					}
+				}
 				continue
 			}
 

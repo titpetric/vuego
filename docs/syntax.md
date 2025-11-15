@@ -107,6 +107,8 @@ Directives are special attributes that apply dynamic behavior to elements.
 |--------------------------|----------------------------------------------------|
 | `:attr` or `v-bind:attr` | Bind HTML attributes to expressions                |
 | `v-if`                   | Conditionally render elements based on expressions |
+| `v-else-if`              | Alternative condition for `v-if`                   |
+| `v-else`                 | Fallback render when all previous conditions fail  |
 | `v-for`                  | Iterate over arrays with optional index            |
 | `v-html`                 | Render unescaped HTML content                      |
 | `v-pre`                  | Skip template processing for element and children  |
@@ -123,9 +125,11 @@ Bind HTML attributes to dynamic values:
 
 Shorthand `:attr` is equivalent to `v-bind:attr`.
 
-### Conditional Rendering (`v-if`)
+### Conditional Rendering (`v-if`, `v-else-if`, `v-else`)
 
-Render elements only when the condition is truthy:
+Render elements only when conditions are met. Use `v-else-if` and `v-else` to provide alternative branches:
+
+#### Basic `v-if`
 
 ```html
 <div v-if="show">Visible when true</div>
@@ -133,6 +137,36 @@ Render elements only when the condition is truthy:
 <p v-if="status == 'active'">Active</p>
 <p v-if="age >= 18">Adult</p>
 <p v-if="isAdmin && hasPermission">Admin access</p>
+```
+
+#### Chained Conditions with `v-else-if` and `v-else`
+
+Use `v-else-if` to test multiple conditions and `v-else` as the default fallback:
+
+```html
+<div v-if="status == 'pending'">
+  <p class="warning">Your request is pending</p>
+</div>
+<div v-else-if="status == 'approved'">
+  <p class="success">Your request was approved</p>
+</div>
+<div v-else-if="status == 'rejected'">
+  <p class="error">Your request was rejected</p>
+</div>
+<div v-else>
+  <p class="info">Status unknown</p>
+</div>
+```
+
+#### Empty List with `v-for` and `v-else`
+
+Use `v-else` after a `v-for` loop to display a "no results" message when the list is empty. Note that `v-else` must be an immediate sibling to the `v-for` element:
+
+```html
+<ul>
+  <li v-for="item in items">{{ item.name }}</li>
+  <li v-else>No results found</li>
+</ul>
 ```
 
 ### List Rendering (`v-for`)
@@ -256,7 +290,7 @@ Both styles are valid and work identically.
 - ✅ Nested property access with dot notation
 - ✅ Expressions (comparisons, logical operators, ternary)
 - ✅ Attribute binding with `:attr` and `v-bind:attr`
-- ✅ Conditional rendering with `v-if`
+- ✅ Conditional rendering with `v-if`, `v-else-if`, and `v-else`
 - ✅ List iteration with `v-for` (with optional index)
 - ✅ Raw HTML with `v-html`
 - ✅ Skip template processing with `v-pre`
@@ -267,7 +301,6 @@ Both styles are valid and work identically.
 
 ### What Vuego Does NOT Support
 
-- ❌ `v-else` and `v-else-if` directives
 - ❌ `v-show` directive
 - ❌ Event handling (`@click`, `v-on`)
 - ❌ Two-way binding (`v-model`)

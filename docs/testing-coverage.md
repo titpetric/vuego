@@ -12,9 +12,9 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 86.32%   | 500       | 1731  |
+| ✅     | titpetric/vuego                      | 86.14%   | 614       | 1948  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
-| ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 68        | 444   |
+| ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 71        | 460   |
 | ✅     | titpetric/vuego/internal/helpers     | 97.20%   | 142       | 407   |
 | ✅     | titpetric/vuego/internal/reflect     | 92.65%   | 55        | 198   |
 
@@ -37,7 +37,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | NewVueContext                  | 0.00%    | 0         |
 | ✅     | titpetric/vuego                      | NewVueContextWithData          | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Stack.EnvMap                   | 100.00%  | 4         |
-| ✅     | titpetric/vuego                      | Stack.ForEach                  | 93.90%   | 32        |
+| ✅     | titpetric/vuego                      | Stack.ForEach                  | 84.60%   | 41        |
 | ✅     | titpetric/vuego                      | Stack.GetInt                   | 73.30%   | 5         |
 | ✅     | titpetric/vuego                      | Stack.GetMap                   | 100.00%  | 5         |
 | ✅     | titpetric/vuego                      | Stack.GetSlice                 | 100.00%  | 3         |
@@ -54,15 +54,18 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.RenderFragment             | 77.80%   | 2         |
 | ✅     | titpetric/vuego                      | Vue.callFunc                   | 92.30%   | 24        |
 | ✅     | titpetric/vuego                      | Vue.evalAttributes             | 90.50%   | 13        |
-| ✅     | titpetric/vuego                      | Vue.evalCondition              | 90.00%   | 2         |
+| ✅     | titpetric/vuego                      | Vue.evalCondition              | 100.00%  | 0         |
+| ✅     | titpetric/vuego                      | Vue.evalConditionExpr          | 88.90%   | 2         |
+| ✅     | titpetric/vuego                      | Vue.evalElseIfChain            | 91.70%   | 34        |
 | ✅     | titpetric/vuego                      | Vue.evalFilter                 | 100.00%  | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalFor                    | 81.80%   | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalPipe                   | 81.80%   | 16        |
 | ✅     | titpetric/vuego                      | Vue.evalSegment                | 70.00%   | 5         |
 | ✅     | titpetric/vuego                      | Vue.evalTemplate               | 87.50%   | 16        |
-| ✅     | titpetric/vuego                      | Vue.evalVHtml                  | 96.40%   | 8         |
-| ✅     | titpetric/vuego                      | Vue.evaluate                   | 92.90%   | 90        |
+| ✅     | titpetric/vuego                      | Vue.evalVHtml                  | 96.30%   | 8         |
+| ✅     | titpetric/vuego                      | Vue.evaluate                   | 92.70%   | 140       |
 | ✅     | titpetric/vuego                      | Vue.evaluateChildren           | 100.00%  | 1         |
+| ❌     | titpetric/vuego                      | Vue.evaluateNodeAsElement      | 70.00%   | 16        |
 | ✅     | titpetric/vuego                      | Vue.interpolate                | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | Vue.interpolateToWriter        | 82.40%   | 49        |
 | ✅     | titpetric/vuego                      | Vue.loadCached                 | 91.70%   | 2         |
@@ -88,10 +91,11 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | parseArgs                      | 100.00%  | 11        |
 | ✅     | titpetric/vuego                      | parseFor                       | 86.70%   | 8         |
 | ✅     | titpetric/vuego                      | parsePipeExpr                  | 92.30%   | 7         |
-| ✅     | titpetric/vuego                      | renderAttrs                    | 100.00%  | 2         |
+| ✅     | titpetric/vuego                      | renderAttrs                    | 100.00%  | 4         |
 | ✅     | titpetric/vuego                      | renderNode                     | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | renderNodeWithContext          | 91.20%   | 27        |
 | ✅     | titpetric/vuego                      | shouldEscapeTextNode           | 100.00%  | 2         |
+| ✅     | titpetric/vuego                      | shouldIgnoreAttr               | 80.00%   | 3         |
 | ✅     | titpetric/vuego                      | splitPathImpl                  | 85.40%   | 31        |
 | ✅     | titpetric/vuego                      | stringFunc                     | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | titleFunc                      | 85.70%   | 6         |
@@ -104,7 +108,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego/cmd/vuego-playground | combinedFilesystem.Open        | 0.00%    | 1         |
 | ✅     | titpetric/vuego/cmd/vuego-playground | combinedFilesystem.ReadDir     | 0.00%    | 0         |
 | ❌     | titpetric/vuego/cmd/vuego-playground | handleCheatsheet               | 0.00%    | 1         |
-| ❌     | titpetric/vuego/cmd/vuego-playground | handleCreate                   | 0.00%    | 11        |
+| ❌     | titpetric/vuego/cmd/vuego-playground | handleCreate                   | 0.00%    | 14        |
 | ✅     | titpetric/vuego/cmd/vuego-playground | handleExamples                 | 0.00%    | 0         |
 | ❌     | titpetric/vuego/cmd/vuego-playground | handleRender                   | 0.00%    | 4         |
 | ❌     | titpetric/vuego/cmd/vuego-playground | handleSave                     | 0.00%    | 5         |

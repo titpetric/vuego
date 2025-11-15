@@ -13,7 +13,6 @@ func (v *Vue) evalVHtml(ctx VueContext, n *html.Node) error {
 	if vHtmlExpr == "" {
 		return nil
 	}
-	helpers.RemoveAttr(n, "v-html")
 
 	val, ok := ctx.stack.Resolve(vHtmlExpr)
 	if !ok {
