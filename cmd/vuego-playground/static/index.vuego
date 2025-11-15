@@ -10,22 +10,28 @@
     <header>
         <div class="header-container">
             <div class="header-left">
-                <h1>VueGo Playground</h1>
-                <div class="subtitle">Test your VueGo templates in real-time</div>
+                <div class="header-title">
+                    <h1>VueGo Playground</h1>
+                    <div class="subtitle">Test your VueGo templates in real-time</div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-create" id="createBtn" onclick="showCreateDialog()">Create</button>
+                    <button class="btn-save" id="saveBtn" onclick="save()">Save</button>
+                </div>
             </div>
             <div class="header-right">
-                <button class="btn-render" onclick="render()">Render Now</button>
-                <button class="btn-save" id="saveBtn" onclick="save()">Save</button>
-                <button class="btn-create" id="createBtn" onclick="showCreateDialog()">Create</button>
+                <div class="header-refresh">
+                    <button class="btn-render" onclick="render()">Refresh</button>
+                    <label>
+                        <input type="checkbox" id="autoRefresh" checked>
+                        Auto-refresh
+                    </label>
+                </div>
             </div>
         </div>
     </header>
 
     <div class="config-bar">
-        <label>
-            <input type="checkbox" id="autoRefresh" checked>
-            Auto-refresh
-        </label>
         <span v-for="example in ExampleList">
             <button class="{{ example.ButtonClass }}" v-bind:onclick="example.OnClick">{{ example.Label }}</button>
         </span>

@@ -28,12 +28,34 @@ header {
 
 .header-left {
     flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-title {
+    display: inline-block;
 }
 
 .header-right {
     display: flex;
+    flex-direction: column;
     gap: 0.75rem;
     flex-shrink: 0;
+    align-items: flex-end;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-refresh {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: flex-end;
 }
 
 .header-right button {
@@ -56,6 +78,20 @@ header {
 .header-right button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.header-right label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.header-right input[type="checkbox"] {
+    cursor: pointer;
 }
 
 .btn-render {
