@@ -364,6 +364,16 @@ func (s *Stack) ForEach(expr string, fn func(index int, value any) error) error 
 		}
 		return nil
 	default:
+		// Try reflection for generic slice types
+		rv := reflect.ValueOf(v)
+		if rv.Kind() == reflect.Slice {
+			for i := 0; i < rv.Len(); i++ {
+				if err := fn(i, rv.Index(i).Interface()); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
 		// unsupported collection type
 		return nil
 	}
