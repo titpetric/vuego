@@ -13,7 +13,7 @@ import (
 // where expr fails to parse and stack.Resolve is used
 func TestEvalCondition_SimpleBooleanVariables(t *testing.T) {
 	templateFS := &fstest.MapFS{
-		"test.html": {Data: []byte(`
+		"test.vuego": {Data: []byte(`
 <div v-if="show">Visible</div>
 <div v-if="hide">Hidden</div>
 `)},
@@ -40,7 +40,7 @@ func TestEvalCondition_SimpleBooleanVariables(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.html", tt.data)
+			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			require.Contains(t, buf.String(), tt.expect)
 		})
@@ -51,7 +51,7 @@ func TestEvalCondition_SimpleBooleanVariables(t *testing.T) {
 // when used with simple variable references (fallback path)
 func TestEvalCondition_NegatedVariables(t *testing.T) {
 	templateFS := &fstest.MapFS{
-		"test.html": {Data: []byte(`
+		"test.vuego": {Data: []byte(`
 <div v-if="!disabled">Enabled</div>
 <div v-if="!show">Hidden</div>
 `)},
@@ -78,7 +78,7 @@ func TestEvalCondition_NegatedVariables(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.html", tt.data)
+			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 			if tt.expect != "" {
@@ -95,7 +95,7 @@ func TestEvalCondition_NegatedVariables(t *testing.T) {
 // stack.Resolve returns false (variable not found)
 func TestEvalCondition_UndefinedVariables(t *testing.T) {
 	templateFS := &fstest.MapFS{
-		"test.html": {Data: []byte(`
+		"test.vuego": {Data: []byte(`
 <div v-if="undefined">Should not appear</div>
 <div v-if="defined">Should appear</div>
 `)},
@@ -103,7 +103,7 @@ func TestEvalCondition_UndefinedVariables(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.html", map[string]any{"defined": true})
+	err := vue.RenderFragment(&buf, "test.vuego", map[string]any{"defined": true})
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -115,7 +115,7 @@ func TestEvalCondition_UndefinedVariables(t *testing.T) {
 // when using simple variable fallback
 func TestEvalCondition_FalsyValues(t *testing.T) {
 	templateFS := &fstest.MapFS{
-		"test.html": {Data: []byte(`
+		"test.vuego": {Data: []byte(`
 <div v-if="bool_false">bool false</div>
 <div v-if="int_zero">int zero</div>
 <div v-if="empty_string">empty string</div>
@@ -132,7 +132,7 @@ func TestEvalCondition_FalsyValues(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.html", data)
+	err := vue.RenderFragment(&buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -146,7 +146,7 @@ func TestEvalCondition_FalsyValues(t *testing.T) {
 // TestEvalCondition_TruthyValues covers different truthy values
 func TestEvalCondition_TruthyValues(t *testing.T) {
 	templateFS := &fstest.MapFS{
-		"test.html": {Data: []byte(`
+		"test.vuego": {Data: []byte(`
 <div v-if="bool_true">bool true</div>
 <div v-if="int_one">int one</div>
 <div v-if="string_text">string text</div>
@@ -161,7 +161,7 @@ func TestEvalCondition_TruthyValues(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.html", data)
+	err := vue.RenderFragment(&buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -176,7 +176,7 @@ func TestEvalCondition_ExpressionFallback(t *testing.T) {
 	// Create a scenario where the condition would fail expr evaluation
 	// but work with simple variable fallback
 	templateFS := &fstest.MapFS{
-		"test.html": {Data: []byte(`
+		"test.vuego": {Data: []byte(`
 <div v-if="message">Message exists</div>
 `)},
 	}
@@ -207,7 +207,7 @@ func TestEvalCondition_ExpressionFallback(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.html", tt.data)
+			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 
 			output := buf.String()
@@ -254,7 +254,7 @@ func TestEvalCondition_WithStructFields(t *testing.T) {
 func TestEvalCondition_StackLookupPath(t *testing.T) {
 	// This tests stack.Lookup which is used in stack.Resolve
 	templateFS := &fstest.MapFS{
-		"test.html": {Data: []byte(`
+		"test.vuego": {Data: []byte(`
 <ul v-for="item in items">
 <li v-if="item.name">Item: {{ item.name }}</li>
 </ul>
@@ -271,7 +271,7 @@ func TestEvalCondition_StackLookupPath(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.html", data)
+	err := vue.RenderFragment(&buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -288,7 +288,7 @@ func TestEvalCondition_ExprCompilationFailureFallback(t *testing.T) {
 	// Test with invalid expr syntax that will fail compilation
 	// and should fall back to variable resolution
 	templateFS := &fstest.MapFS{
-		"test.html": {Data: []byte(`
+		"test.vuego": {Data: []byte(`
 <div v-if="show | extra">Should render if show is truthy</div>
 <div v-if="hide |">Should not render (syntax will fail)</div>
 `)},
@@ -301,7 +301,7 @@ func TestEvalCondition_ExprCompilationFailureFallback(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.html", data)
+	err := vue.RenderFragment(&buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -317,7 +317,7 @@ func TestEvalCondition_ExprCompilationFailureFallback(t *testing.T) {
 // expr evaluation and stack.Resolve fail, we return false
 func TestEvalCondition_ResolveFailsFallbackToFalse(t *testing.T) {
 	templateFS := &fstest.MapFS{
-		"test.html": {Data: []byte(`
+		"test.vuego": {Data: []byte(`
 <div v-if="completely_undefined">Should not appear</div>
 <div v-if="defined">Should appear</div>
 `)},
@@ -329,7 +329,7 @@ func TestEvalCondition_ResolveFailsFallbackToFalse(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.html", data)
+	err := vue.RenderFragment(&buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -353,7 +353,7 @@ func TestEvalCondition_SuccessfulResolve(t *testing.T) {
 
 	// Test that when expr succeeds, IsTruthy is applied to the result
 	templateFS := &fstest.MapFS{
-		"test.html": {Data: []byte(`
+		"test.vuego": {Data: []byte(`
 <div v-if="message">{{ message }}</div>
 `)},
 	}
@@ -379,7 +379,7 @@ func TestEvalCondition_SuccessfulResolve(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.html", tt.data)
+			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			require.Contains(t, buf.String(), tt.expect)
 		})

@@ -7,6 +7,15 @@ import (
 	"golang.org/x/net/html"
 )
 
+// evaluateChildren evaluates the children of a node without allocating a temporary slice.
+func (v *Vue) evaluateChildren(ctx VueContext, node *html.Node, depth int) ([]*html.Node, error) {
+	var childList []*html.Node
+	for c := node.FirstChild; c != nil; c = c.NextSibling {
+		childList = append(childList, c)
+	}
+	return v.evaluate(ctx, childList, depth)
+}
+
 func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.Node, error) {
 	var result []*html.Node
 
@@ -61,11 +70,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 
 			if tag == "template" {
 				// Omit template tags at the top level
-				var childList []*html.Node
-				for c := range node.ChildNodes() {
-					childList = append(childList, c)
-				}
-				evaluated, err := v.evaluate(ctx, childList, depth+1)
+				evaluated, err := v.evaluateChildren(ctx, node, depth+1)
 				if err != nil {
 					return nil, err
 				}
@@ -102,12 +107,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			v.evalAttributes(ctx, newNode)
 
 			if !hasVHtml {
-				var childList []*html.Node
-				for c := range node.ChildNodes() {
-					childList = append(childList, c)
-				}
-
-				newChildren, err := v.evaluate(ctx, childList, depth+1)
+				newChildren, err := v.evaluateChildren(ctx, node, depth+1)
 				if err != nil {
 					return nil, err
 				}

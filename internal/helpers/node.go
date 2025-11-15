@@ -1,7 +1,12 @@
 // Package helpers provides HTML node manipulation utilities for vuego.
 package helpers
 
-import "golang.org/x/net/html"
+import (
+	"strings"
+	"sync"
+
+	"golang.org/x/net/html"
+)
 
 // GetAttr returns the value of an attribute by key, or empty string if not found.
 func GetAttr(n *html.Node, key string) string {
@@ -57,4 +62,32 @@ func DeepCloneNode(n *html.Node) *html.Node {
 	}
 
 	return clone
+}
+
+// bodyNodeCache caches a pre-parsed body element for use as fragment context.
+// This avoids repeated parsing of the same wrapper document.
+var (
+	bodyNodeCache *html.Node
+	bodyNodeOnce  sync.Once
+)
+
+// GetBodyNode returns a cached body element suitable for html.ParseFragment.
+func GetBodyNode() *html.Node {
+	bodyNodeOnce.Do(func() {
+		doc, _ := html.Parse(strings.NewReader("<html><body></body></html>"))
+		var findBody func(*html.Node)
+		findBody = func(node *html.Node) {
+			if node.Type == html.ElementNode && node.Data == "body" {
+				bodyNodeCache = node
+				return
+			}
+			for c := node.FirstChild; c != nil; c = c.NextSibling {
+				if bodyNodeCache == nil {
+					findBody(c)
+				}
+			}
+		}
+		findBody(doc)
+	})
+	return bodyNodeCache
 }

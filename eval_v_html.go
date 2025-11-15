@@ -1,7 +1,6 @@
 package vuego
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -21,34 +20,15 @@ func (v *Vue) evalVHtml(ctx VueContext, n *html.Node) error {
 		return nil
 	}
 
-	htmlStr := fmt.Sprintf("%v", val)
+	htmlStr := fmt.Sprint(val)
 	if htmlStr == "" {
 		n.FirstChild = nil
 		n.LastChild = nil
 		return nil
 	}
 
-	// use a neutral <div> as context for parsing
-	wrapperDoc, err := html.Parse(bytes.NewReader([]byte("<html><body></body></html>")))
-	if err != nil {
-		return fmt.Errorf("v-html parse wrapper error: %w", err)
-	}
-
-	// find the body element
-	var body *html.Node
-	var findBody func(*html.Node)
-	findBody = func(node *html.Node) {
-		if node.Type == html.ElementNode && node.Data == "body" {
-			body = node
-			return
-		}
-		for c := node.FirstChild; c != nil; c = c.NextSibling {
-			findBody(c)
-		}
-	}
-	findBody(wrapperDoc)
-
-	// parse fragment into wrapper's body
+	// parse fragment using cached body element
+	body := helpers.GetBodyNode()
 	nodes, err := html.ParseFragment(strings.NewReader(htmlStr), body)
 	if err != nil {
 		return fmt.Errorf("v-html parse fragment error: %w", err)

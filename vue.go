@@ -1,11 +1,11 @@
 package vuego
 
 import (
-	"fmt"
 	"io"
 	"io/fs"
 	"path"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/html"
 )
@@ -17,6 +17,10 @@ type Vue struct {
 	loader     *Component
 	funcMap    FuncMap
 	exprEval   *ExprEvaluator
+
+	// Template cache to avoid re-parsing the same template
+	templateCache map[string][]*html.Node
+	templateMu    sync.RWMutex
 }
 
 // VueContext carries template inclusion context and request-scoped state used during evaluation.
@@ -70,10 +74,11 @@ func (ctx VueContext) FormatTemplateChain() string {
 // The returned Vue is safe for concurrent use by multiple goroutines.
 func NewVue(templateFS fs.FS) *Vue {
 	return &Vue{
-		templateFS: templateFS,
-		loader:     NewComponent(templateFS),
-		funcMap:    DefaultFuncMap(),
-		exprEval:   NewExprEvaluator(),
+		templateFS:    templateFS,
+		loader:        NewComponent(templateFS),
+		funcMap:       DefaultFuncMap(),
+		exprEval:      NewExprEvaluator(),
+		templateCache: make(map[string][]*html.Node),
 	}
 }
 
@@ -105,7 +110,7 @@ func toMapData(data any) map[string]any {
 // Render processes a full-page template file and writes the output to w.
 // Render is safe to call concurrently from multiple goroutines.
 func (v *Vue) Render(w io.Writer, filename string, data any) error {
-	dom, err := v.loader.Load(filename)
+	dom, err := v.loadCached(filename)
 	if err != nil {
 		return err
 	}
@@ -120,6 +125,27 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 	}
 
 	return v.render(w, result)
+}
+
+// loadCached returns a cached template or loads and caches it.
+func (v *Vue) loadCached(filename string) ([]*html.Node, error) {
+	v.templateMu.RLock()
+	if cached, ok := v.templateCache[filename]; ok {
+		v.templateMu.RUnlock()
+		return cached, nil
+	}
+	v.templateMu.RUnlock()
+
+	dom, err := v.loader.Load(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	v.templateMu.Lock()
+	v.templateCache[filename] = dom
+	v.templateMu.Unlock()
+
+	return dom, nil
 }
 
 // RenderFragment processes a template fragment file and writes the output to w.
@@ -151,33 +177,50 @@ func (v *Vue) render(w io.Writer, nodes []*html.Node) error {
 	return nil
 }
 
-func renderNode(w io.Writer, node *html.Node, indent int) error {
-	spaces := strings.Repeat(" ", indent)
+var indentCache = [256]string{}
 
+func init() {
+	for i := 0; i < len(indentCache); i++ {
+		indentCache[i] = strings.Repeat(" ", i)
+	}
+}
+
+func getIndent(indent int) string {
+	if indent < len(indentCache) {
+		return indentCache[indent]
+	}
+	return strings.Repeat(" ", indent)
+}
+
+func renderNode(w io.Writer, node *html.Node, indent int) error {
 	switch node.Type {
 	case html.TextNode:
 		if strings.TrimSpace(node.Data) == "" {
 			return nil
 		}
+		spaces := getIndent(indent)
 		_, _ = w.Write([]byte(spaces + node.Data))
 
 	case html.ElementNode:
-		var children []*html.Node
-		for child := range node.ChildNodes() {
-			children = append(children, child)
+		// Count children without allocating slice
+		childCount := 0
+		firstChild := node.FirstChild
+		for c := firstChild; c != nil; c = c.NextSibling {
+			childCount++
 		}
 
+		spaces := getIndent(indent)
 		// compact single-entry text nodes
-		if len(children) == 0 {
+		if childCount == 0 {
 			_, _ = w.Write([]byte(spaces + "<" + node.Data + renderAttrs(node.Attr) + "></" + node.Data + ">\n"))
-		} else if len(children) == 1 && children[0].Type == html.TextNode {
+		} else if childCount == 1 && firstChild.Type == html.TextNode {
 			_, _ = w.Write([]byte(spaces + "<" + node.Data + renderAttrs(node.Attr) + ">"))
-			_, _ = w.Write([]byte(children[0].Data))
+			_, _ = w.Write([]byte(firstChild.Data))
 			_, _ = w.Write([]byte("</" + node.Data + ">\n"))
 		} else {
 			_, _ = w.Write([]byte(spaces + "<" + node.Data + renderAttrs(node.Attr) + ">\n"))
-			for _, child := range children {
-				if err := renderNode(w, child, indent+2); err != nil {
+			for c := firstChild; c != nil; c = c.NextSibling {
+				if err := renderNode(w, c, indent+2); err != nil {
 					return err
 				}
 			}
@@ -189,9 +232,17 @@ func renderNode(w io.Writer, node *html.Node, indent int) error {
 }
 
 func renderAttrs(attrs []html.Attribute) string {
+	if len(attrs) == 0 {
+		return ""
+	}
 	var sb strings.Builder
 	for _, a := range attrs {
-		sb.WriteString(fmt.Sprintf(` %s="%s"`, a.Key, a.Val))
+		sb.WriteByte(' ')
+		sb.WriteString(a.Key)
+		sb.WriteByte('=')
+		sb.WriteByte('"')
+		sb.WriteString(a.Val)
+		sb.WriteByte('"')
 	}
 	return sb.String()
 }

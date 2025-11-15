@@ -773,38 +773,46 @@ func TestStack_ForEach(t *testing.T) {
 
 	t.Run("missing key is no-op", func(t *testing.T) {
 		s := vuego.NewStack(map[string]any{})
+		callCount := 0
 		err := s.ForEach("missing", func(i int, v any) error {
-			t.Fatal("should not be called")
+			callCount++
 			return nil
 		})
 		require.NoError(t, err)
+		require.Equal(t, 0, callCount)
 	})
 
 	t.Run("unsupported type is no-op", func(t *testing.T) {
 		s := vuego.NewStack(map[string]any{"key": "string"})
+		callCount := 0
 		err := s.ForEach("key", func(i int, v any) error {
-			t.Fatal("should not be called")
+			callCount++
 			return nil
 		})
 		require.NoError(t, err)
+		require.Equal(t, 0, callCount)
 	})
 
 	t.Run("boolean type is no-op", func(t *testing.T) {
 		s := vuego.NewStack(map[string]any{"flag": true})
+		callCount := 0
 		err := s.ForEach("flag", func(i int, v any) error {
-			t.Fatal("should not be called")
+			callCount++
 			return nil
 		})
 		require.NoError(t, err)
+		require.Equal(t, 0, callCount)
 	})
 
 	t.Run("numeric type is no-op", func(t *testing.T) {
 		s := vuego.NewStack(map[string]any{"count": 42})
+		callCount := 0
 		err := s.ForEach("count", func(i int, v any) error {
-			t.Fatal("should not be called")
+			callCount++
 			return nil
 		})
 		require.NoError(t, err)
+		require.Equal(t, 0, callCount)
 	})
 
 	t.Run("empty []any", func(t *testing.T) {

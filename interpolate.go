@@ -1,7 +1,6 @@
 package vuego
 
 import (
-	"bytes"
 	"fmt"
 	"html"
 	"regexp"
@@ -19,7 +18,7 @@ func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 		return input, nil
 	}
 
-	var out bytes.Buffer
+	var out strings.Builder
 	last := 0
 	for _, match := range interpRe.FindAllStringSubmatchIndex(input, -1) {
 		start := match[0]

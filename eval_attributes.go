@@ -26,7 +26,7 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 			if helpers.IsTruthy(valResolved) {
 				newAttrs = append(newAttrs, html.Attribute{
 					Key: boundName,
-					Val: fmt.Sprintf("%v", valResolved),
+					Val: fmt.Sprint(valResolved),
 				})
 			}
 
@@ -37,7 +37,7 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 			if helpers.IsTruthy(valResolved) {
 				newAttrs = append(newAttrs, html.Attribute{
 					Key: boundName,
-					Val: fmt.Sprintf("%v", valResolved),
+					Val: fmt.Sprint(valResolved),
 				})
 			}
 

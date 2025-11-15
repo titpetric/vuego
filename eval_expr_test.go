@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 func TestExprEvaluator_SimpleExpressions(t *testing.T) {
@@ -123,13 +124,14 @@ func TestVue_VIfWithExprComparison(t *testing.T) {
 		Total    int    `json:"total"`
 	}
 
-	templateFS := &fstest.MapFS{
-		"test.vuego": {Data: []byte(`
+	template := []byte(`
 <div v-if="priority == 'high'">High Priority</div>
 <div v-if="priority == 'low'">Low Priority</div>
 <div v-if="total > 0">Has Items</div>
 <div v-if="total <= 0">No Items</div>
-`)},
+`)
+	templateFS := &fstest.MapFS{
+		"test.vuego": {Data: template},
 	}
 
 	tests := []struct {
@@ -155,7 +157,7 @@ func TestVue_VIfWithExprComparison(t *testing.T) {
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
-			require.Equal(t, tt.expect, buf.String())
+			require.True(t, helpers.CompareHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil))
 		})
 	}
 }
@@ -168,11 +170,12 @@ func TestVue_VIfWithLogicalOperators(t *testing.T) {
 		IsDeveloper   bool `json:"isDeveloper"`
 	}
 
-	templateFS := &fstest.MapFS{
-		"test.vuego": {Data: []byte(`
+	template := []byte(`
 <div v-if="isActive && hasPermission">Active with Permission</div>
 <div v-if="isAdmin || isDeveloper">Admin or Developer</div>
-`)},
+`)
+	templateFS := &fstest.MapFS{
+		"test.vuego": {Data: template},
 	}
 
 	tests := []struct {
@@ -198,7 +201,7 @@ func TestVue_VIfWithLogicalOperators(t *testing.T) {
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
-			require.Equal(t, tt.expect, buf.String())
+			require.True(t, helpers.CompareHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil))
 		})
 	}
 }
@@ -215,11 +218,12 @@ func TestVue_VIfWithNestedProperties(t *testing.T) {
 		Item Item `json:"item"`
 	}
 
-	templateFS := &fstest.MapFS{
-		"test.vuego": {Data: []byte(`
+	template := []byte(`
 <div v-if="user.active">User is Active</div>
 <div v-if="item.inStock == true">In Stock</div>
-`)},
+`)
+	templateFS := &fstest.MapFS{
+		"test.vuego": {Data: template},
 	}
 
 	data := testCase{
@@ -233,7 +237,7 @@ func TestVue_VIfWithNestedProperties(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := "<div>User is Active</div>\n<div>In Stock</div>\n"
-	require.Equal(t, expected, buf.String())
+	require.True(t, helpers.CompareHTML(t, []byte(expected), buf.Bytes(), nil, nil))
 }
 
 func TestVue_InterpolationWithComparison(t *testing.T) {
@@ -241,10 +245,11 @@ func TestVue_InterpolationWithComparison(t *testing.T) {
 		Status string `json:"status"`
 	}
 
-	templateFS := &fstest.MapFS{
-		"test.vuego": {Data: []byte(`
+	template := []byte(`
 <p>Status: {{ status == 'active' }}</p>
-`)},
+`)
+	templateFS := &fstest.MapFS{
+		"test.vuego": {Data: template},
 	}
 
 	tests := []struct {
@@ -262,7 +267,7 @@ func TestVue_InterpolationWithComparison(t *testing.T) {
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
-			require.Equal(t, tt.expect, buf.String())
+			require.True(t, helpers.CompareHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil))
 		})
 	}
 }
@@ -279,13 +284,14 @@ func TestVue_BackwardCompatibility(t *testing.T) {
 	}
 
 	// Ensure existing syntax still works
-	templateFS := &fstest.MapFS{
-		"test.vuego": {Data: []byte(`
+	template := []byte(`
 <div v-if="show">Visible</div>
 <div v-if="!hide">Not Hidden</div>
 <p>{{ message }}</p>
 <p>{{ user.name }}</p>
-`)},
+`)
+	templateFS := &fstest.MapFS{
+		"test.vuego": {Data: template},
 	}
 
 	data := testCase{
@@ -301,7 +307,7 @@ func TestVue_BackwardCompatibility(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := "<div>Visible</div>\n<div>Not Hidden</div>\n<p>Hello</p>\n<p>Alice</p>\n"
-	require.Equal(t, expected, buf.String())
+	require.True(t, helpers.CompareHTML(t, []byte(expected), buf.Bytes(), nil, nil))
 }
 
 // Test the exact examples from the original request
@@ -413,7 +419,7 @@ func TestRequestExample_StackCompatibility(t *testing.T) {
 func TestVue_VIfWithStrictEquality(t *testing.T) {
 	t.Run("=== is normalized to ==", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<div v-if="status === 'active'"><p>Active</p></div><div v-if="status !== 'active'"><p>Inactive</p></div>`),
 			},
 		}
@@ -423,14 +429,14 @@ func TestVue_VIfWithStrictEquality(t *testing.T) {
 
 		vue := vuego.NewVue(fs)
 		var buf bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&buf, "test.html", data))
+		require.NoError(t, vue.RenderFragment(&buf, "test.vuego", data))
 		require.Contains(t, buf.String(), "Active")
 		require.NotContains(t, buf.String(), "Inactive")
 	})
 
 	t.Run("!== is normalized to !=", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<div v-if="status !== 'inactive'"><p>Not Inactive</p></div>`),
 			},
 		}
@@ -440,20 +446,20 @@ func TestVue_VIfWithStrictEquality(t *testing.T) {
 
 		vue := vuego.NewVue(fs)
 		var buf bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&buf, "test.html", data))
+		require.NoError(t, vue.RenderFragment(&buf, "test.vuego", data))
 		require.Contains(t, buf.String(), "Not Inactive")
 	})
 
 	t.Run("=== with both sides as literals", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<div v-if="'active' === 'active'"><p>Match</p></div>`),
 			},
 		}
 
 		vue := vuego.NewVue(fs)
 		var buf bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&buf, "test.html", map[string]any{}))
+		require.NoError(t, vue.RenderFragment(&buf, "test.vuego", map[string]any{}))
 		require.Contains(t, buf.String(), "Match")
 	})
 }

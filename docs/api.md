@@ -47,6 +47,10 @@ type Vue struct {
 	loader     *Component
 	funcMap    FuncMap
 	exprEval   *ExprEvaluator
+
+	// Template cache to avoid re-parsing the same template
+	templateCache map[string][]*html.Node
+	templateMu    sync.RWMutex
 }
 ```
 

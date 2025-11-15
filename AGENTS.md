@@ -21,6 +21,19 @@ This file contains conventions and preferences for AI agents working on this cod
 - **Avoid** `t.Fatal()`, `t.Error()`, and `t.Errorf()` - use testify/require instead
 - Use `t.Logf()` for informational output
 
+### Test File Organization
+- **Each `.go` file must have a corresponding `_test.go` file** in the same package
+- Example: `vue.go` → `vue_test.go`, `stack.go` → `stack_test.go`
+- Group tests for related functionality in the same test file as the implementation
+- This prevents test duplication and makes it easy to find tests for a specific module
+- **Standalone/integration tests** should be placed in the `tests/` subfolder
+  - These test scenarios across multiple components (e.g., concurrency, integration scenarios)
+  - Example: `tests/concurrent_test.go`, `tests/integration_test.go`
+  - Run with: `go test -v tests/concurrent_test.go`
+- **Benchmarks** should be in the `tests/` subfolder with the `_bench_test.go` suffix
+  - Example: `tests/concurrent_bench_test.go`
+  - Run with: `go test -bench -v tests/concurrent_bench_test.go`
+
 ### Test Naming Convention
 
 Follow the pattern `Test[Receiver_]Function`:
@@ -35,6 +48,13 @@ func TestVue_Render(t *testing.T)    { /* tests (*Vue).Render */ }
 func TestStack_Resolve(t *testing.T) { /* tests (*Stack).Resolve */ }
 func TestNewVue(t *testing.T)        { /* tests NewVue constructor */ }
 ```
+
+### Avoid Test Duplication
+- **Don't test the same code path in multiple test files**
+- Test each exported function/method once in its corresponding `_test.go` file
+- If functionality is tested in one place, don't re-test it elsewhere
+- For integration tests that combine multiple components, create a dedicated test in the main test file (e.g., `vue_concurrent_test.go` for concurrency-specific tests)
+- Review existing tests before adding new ones to avoid redundant coverage
 
 ### Assertion Examples
 

@@ -14,7 +14,7 @@ import (
 
 func TestVue_Funcs_PipeChaining(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ name | upper }}</p>`),
 		},
 	}
@@ -25,14 +25,14 @@ func TestVue_Funcs_PipeChaining(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "JOHN DOE")
 }
 
 func TestVue_Funcs_MultiplePipes(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ name | lower | title }}</p>`),
 		},
 	}
@@ -43,14 +43,14 @@ func TestVue_Funcs_MultiplePipes(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "John Doe")
 }
 
 func TestVue_Funcs_PipeWithArgs(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ value | default("fallback") }}</p>`),
 		},
 	}
@@ -61,14 +61,14 @@ func TestVue_Funcs_PipeWithArgs(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "fallback")
 }
 
 func TestVue_Funcs_CustomFunc(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ name | greet }}</p>`),
 		},
 	}
@@ -84,14 +84,14 @@ func TestVue_Funcs_CustomFunc(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "Hello, Alice")
 }
 
 func TestVue_Funcs_FormatTime(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ timestamp | formatTime("2006-01-02") }}</p>`),
 		},
 	}
@@ -103,14 +103,14 @@ func TestVue_Funcs_FormatTime(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), now.Format("2006-01-02"))
 }
 
 func TestVue_Funcs_LenFilter(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ items | len }}</p>`),
 		},
 	}
@@ -121,14 +121,14 @@ func TestVue_Funcs_LenFilter(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "3")
 }
 
 func TestVue_Funcs_TrimFilter(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ text | trim }}</p>`),
 		},
 	}
@@ -139,7 +139,7 @@ func TestVue_Funcs_TrimFilter(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "hello world")
 	require.NotContains(t, buf.String(), "  hello world  ")
@@ -147,7 +147,7 @@ func TestVue_Funcs_TrimFilter(t *testing.T) {
 
 func TestVue_Funcs_IntFilter(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ value | int }}</p>`),
 		},
 	}
@@ -158,14 +158,14 @@ func TestVue_Funcs_IntFilter(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "42")
 }
 
 func TestVue_Funcs_ComplexChain(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ text | trim | lower | title }}</p>`),
 		},
 	}
@@ -176,14 +176,14 @@ func TestVue_Funcs_ComplexChain(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "Hello World")
 }
 
 func TestVue_Funcs_VIfWithFunction(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<div v-if="len(items)"><p>Has items</p></div>`),
 		},
 	}
@@ -194,14 +194,14 @@ func TestVue_Funcs_VIfWithFunction(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "Has items")
 }
 
 func TestVue_Funcs_VIfWithFunctionFalse(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<div v-if="len(items)"><p>Has items</p></div>`),
 		},
 	}
@@ -212,14 +212,14 @@ func TestVue_Funcs_VIfWithFunctionFalse(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.NotContains(t, buf.String(), "Has items")
 }
 
 func TestVue_Funcs_NestedData(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ user.name | upper }}</p>`),
 		},
 	}
@@ -232,14 +232,14 @@ func TestVue_Funcs_NestedData(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "ALICE")
 }
 
 func TestVue_Funcs_DefaultWithValue(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ name | default("Anonymous") }}</p>`),
 		},
 	}
@@ -250,7 +250,7 @@ func TestVue_Funcs_DefaultWithValue(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "Bob")
 	require.NotContains(t, buf.String(), "Anonymous")
@@ -258,7 +258,7 @@ func TestVue_Funcs_DefaultWithValue(t *testing.T) {
 
 func TestVue_Funcs_ChainWithDefault(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ name | default("guest") | upper }}</p>`),
 		},
 	}
@@ -269,14 +269,14 @@ func TestVue_Funcs_ChainWithDefault(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "GUEST")
 }
 
 func TestVue_Funcs_CustomFuncWithArgs(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ value | multiply(3) }}</p>`),
 		},
 	}
@@ -292,14 +292,14 @@ func TestVue_Funcs_CustomFuncWithArgs(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "15")
 }
 
 func TestVue_Funcs_StringFilter(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ count | string }}</p>`),
 		},
 	}
@@ -310,14 +310,14 @@ func TestVue_Funcs_StringFilter(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "42")
 }
 
 func TestVue_Funcs_MissingFilter(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ name | nonexistent }}</p>`),
 		},
 	}
@@ -328,14 +328,14 @@ func TestVue_Funcs_MissingFilter(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.Error(t, err)
-	require.Equal(t, "in test.html: in expression '{{ name | nonexistent }}': function 'nonexistent' not found", err.Error())
+	require.Equal(t, "in test.vuego: in expression '{{ name | nonexistent }}': function 'nonexistent' not found", err.Error())
 }
 
 func TestVue_Funcs_VForWithFilters(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(strings.TrimSpace(`
 <ul>
   <li v-for="item in items">{{ item.name | upper }}</li>
@@ -353,7 +353,7 @@ func TestVue_Funcs_VForWithFilters(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "APPLE")
 	require.Contains(t, buf.String(), "BANANA")
@@ -361,7 +361,7 @@ func TestVue_Funcs_VForWithFilters(t *testing.T) {
 
 func TestVue_Funcs_TypedArguments(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ timestamp | formatDate }}</p>`),
 		},
 	}
@@ -381,14 +381,14 @@ func TestVue_Funcs_TypedArguments(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), now.Format("2006-01-02"))
 }
 
 func TestVue_Funcs_TypedMultipleArgs(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ add(5, 3) }}</p>`),
 		},
 	}
@@ -402,14 +402,14 @@ func TestVue_Funcs_TypedMultipleArgs(t *testing.T) {
 	data := map[string]any{}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "8")
 }
 
 func TestVue_Funcs_StringToIntConversion(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ multiply("10", 5) }}</p>`),
 		},
 	}
@@ -423,14 +423,14 @@ func TestVue_Funcs_StringToIntConversion(t *testing.T) {
 	data := map[string]any{}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "50")
 }
 
 func TestVue_Funcs_VariadicFunction(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ join("a", "b", "c") }}</p>`),
 		},
 	}
@@ -444,14 +444,14 @@ func TestVue_Funcs_VariadicFunction(t *testing.T) {
 	data := map[string]any{}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "a,b,c")
 }
 
 func TestVue_Funcs_ErrorReturn(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ divide(10, 0) }}</p>`),
 		},
 	}
@@ -468,14 +468,14 @@ func TestVue_Funcs_ErrorReturn(t *testing.T) {
 	data := map[string]any{}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.Error(t, err)
-	require.Equal(t, "in test.html: in expression '{{ divide(10, 0) }}': divide(): division by zero", err.Error())
+	require.Equal(t, "in test.vuego: in expression '{{ divide(10, 0) }}': divide(): division by zero", err.Error())
 }
 
 func TestVue_Funcs_NoReturnValue(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ name | noop }}</p>`),
 		},
 	}
@@ -492,14 +492,14 @@ func TestVue_Funcs_NoReturnValue(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.True(t, called)
 }
 
 func TestVue_Funcs_TypeConversionError(t *testing.T) {
 	fs := fstest.MapFS{
-		"test.html": &fstest.MapFile{
+		"test.vuego": &fstest.MapFile{
 			Data: []byte(`<p>{{ items | double }}</p>`),
 		},
 	}
@@ -515,15 +515,15 @@ func TestVue_Funcs_TypeConversionError(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.html", data)
+	err := vue.Render(&buf, "test.vuego", data)
 	require.Error(t, err)
-	require.Equal(t, "in test.html: in expression '{{ items | double }}': double(): cannot convert argument 0 from []string to int", err.Error())
+	require.Equal(t, "in test.vuego: in expression '{{ items | double }}': double(): cannot convert argument 0 from []string to int", err.Error())
 }
 
 func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 	t.Run("string to int8", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("42") }}</p>`),
 			},
 		}
@@ -537,14 +537,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "42")
 	})
 
 	t.Run("string to int16", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("1000") }}</p>`),
 			},
 		}
@@ -558,14 +558,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "1000")
 	})
 
 	t.Run("string to int32", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("100000") }}</p>`),
 			},
 		}
@@ -579,14 +579,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "100000")
 	})
 
 	t.Run("string to int64", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("9223372036854775806") }}</p>`),
 			},
 		}
@@ -600,14 +600,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "9223372036854775806")
 	})
 
 	t.Run("string to uint", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("42") }}</p>`),
 			},
 		}
@@ -621,14 +621,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "42")
 	})
 
 	t.Run("string to uint8", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("200") }}</p>`),
 			},
 		}
@@ -642,14 +642,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "200")
 	})
 
 	t.Run("string to uint16", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("50000") }}</p>`),
 			},
 		}
@@ -663,14 +663,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "50000")
 	})
 
 	t.Run("string to uint32", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("4000000000") }}</p>`),
 			},
 		}
@@ -684,14 +684,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "4000000000")
 	})
 
 	t.Run("string to uint64", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("9223372036854775806") }}</p>`),
 			},
 		}
@@ -705,14 +705,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "9223372036854775806")
 	})
 
 	t.Run("string to float32", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("3.14") }}</p>`),
 			},
 		}
@@ -726,14 +726,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "3.14")
 	})
 
 	t.Run("string to float64", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("2.71828") }}</p>`),
 			},
 		}
@@ -747,14 +747,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "2.71828")
 	})
 
 	t.Run("string to bool", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("true") }}</p>`),
 			},
 		}
@@ -768,14 +768,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "true")
 	})
 
 	t.Run("int to string via function", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ toStr(42) }}</p>`),
 			},
 		}
@@ -789,14 +789,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "42")
 	})
 
 	t.Run("float to string via function", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ toStr(3.14159) }}</p>`),
 			},
 		}
@@ -810,14 +810,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "3.14159")
 	})
 
 	t.Run("bool to string via function", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ toStr(true) }}</p>`),
 			},
 		}
@@ -831,14 +831,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "true")
 	})
 
 	t.Run("invalid string to int", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("not-a-number") }}</p>`),
 			},
 		}
@@ -852,14 +852,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "cannot convert argument 0")
 	})
 
 	t.Run("invalid string to float", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("not-a-float") }}</p>`),
 			},
 		}
@@ -873,14 +873,14 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "cannot convert argument 0")
 	})
 
 	t.Run("invalid string to bool", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"test.html": &fstest.MapFile{
+			"test.vuego": &fstest.MapFile{
 				Data: []byte(`<p>{{ convert("maybe") }}</p>`),
 			},
 		}
@@ -894,7 +894,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.html", data)
+		err := vue.Render(&buf, "test.vuego", data)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "cannot convert argument 0")
 	})

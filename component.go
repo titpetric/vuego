@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io/fs"
-	"strings"
 
+	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
 )
 
@@ -58,31 +58,7 @@ func (c Component) LoadFragment(filename string) ([]*html.Node, error) {
 		return c.Load(filename)
 	}
 
-	// Step 1: parse a minimal document
-	doc, err := html.Parse(strings.NewReader("<html><body></body></html>"))
-	if err != nil {
-		return nil, err
-	}
-
-	// Step 2: find <body> node
-	var body *html.Node
-	var findBody func(*html.Node)
-	findBody = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "body" {
-			body = n
-			return
-		}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			if body == nil {
-				findBody(c)
-			}
-		}
-	}
-	findBody(doc)
-	if body == nil {
-		return nil, err
-	}
-
-	// Step 3: parse the fragment using <body> as context
+	// Parse the fragment using cached body element
+	body := helpers.GetBodyNode()
 	return html.ParseFragment(bytes.NewReader(template), body)
 }
