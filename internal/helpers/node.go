@@ -8,6 +8,33 @@ import (
 	"golang.org/x/net/html"
 )
 
+// nodePool provides pooled html.Node allocations to reduce GC pressure.
+// Nodes are reused across renders; the garbage collector will clean up any
+// pooled nodes when they go out of scope at the end of Render().
+var nodePool = &sync.Pool{
+	New: func() any {
+		return &html.Node{}
+	},
+}
+
+// NewNode creates or reuses a node from the pool, clearing any previous state.
+// This reduces memory allocations and GC pressure during template rendering.
+func NewNode() *html.Node {
+	n := nodePool.Get().(*html.Node)
+	// Clear previous state
+	n.Type = 0
+	n.DataAtom = 0
+	n.Data = ""
+	n.Attr = nil
+	n.FirstChild = nil
+	n.LastChild = nil
+	n.NextSibling = nil
+	n.PrevSibling = nil
+	n.Parent = nil
+	n.Namespace = ""
+	return n
+}
+
 // GetAttr returns the value of an attribute by key, or empty string if not found.
 func GetAttr(n *html.Node, key string) string {
 	for _, a := range n.Attr {
@@ -31,20 +58,37 @@ func RemoveAttr(n *html.Node, key string) {
 }
 
 // CloneNode creates a shallow copy of a node without sharing children or siblings.
+// Attributes are shared (not copied) to avoid unnecessary allocations.
 func CloneNode(n *html.Node) *html.Node {
-	newNode := *n
-	newNode.FirstChild = nil
-	newNode.NextSibling = nil
-	return &newNode
+	newNode := NewNode()
+	newNode.Type = n.Type
+	newNode.DataAtom = n.DataAtom
+	newNode.Data = n.Data
+	newNode.Namespace = n.Namespace
+	newNode.Attr = n.Attr // Share attributes, not copied
+	// Children and siblings are intentionally not copied
+	return newNode
+}
+
+// ShallowCloneWithAttrs creates a shallow copy of a node and copies its attributes.
+// This is useful when you need a new node with the same attributes but will replace its children.
+func ShallowCloneWithAttrs(n *html.Node) *html.Node {
+	newNode := CloneNode(n)
+	if len(n.Attr) > 0 {
+		newNode.Attr = append([]html.Attribute(nil), n.Attr...)
+	}
+	return newNode
 }
 
 // DeepCloneNode creates a deep copy of a node including all children.
 func DeepCloneNode(n *html.Node) *html.Node {
-	clone := &html.Node{
-		Type:     n.Type,
-		DataAtom: n.DataAtom,
-		Data:     n.Data,
-		Attr:     append([]html.Attribute(nil), n.Attr...),
+	clone := NewNode()
+	clone.Type = n.Type
+	clone.DataAtom = n.DataAtom
+	clone.Data = n.Data
+	clone.Namespace = n.Namespace
+	if len(n.Attr) > 0 {
+		clone.Attr = append([]html.Attribute(nil), n.Attr...)
 	}
 
 	var prev *html.Node
@@ -90,4 +134,17 @@ func GetBodyNode() *html.Node {
 		findBody(doc)
 	})
 	return bodyNodeCache
+}
+
+// CountChildren counts the number of child nodes of the given node.
+// This is useful for preallocating slices with the correct capacity.
+func CountChildren(n *html.Node) int {
+	if n == nil {
+		return 0
+	}
+	count := 0
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		count++
+	}
+	return count
 }

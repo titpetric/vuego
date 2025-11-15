@@ -49,7 +49,7 @@ func SignificantChildren(root *html.Node) []*html.Node {
 	}
 	// If root is a DocumentNode (the parsed doc), return its non-whitespace children.
 	if root.Type == html.DocumentNode {
-		var out []*html.Node
+		out := make([]*html.Node, 0, CountChildren(root))
 		for c := root.FirstChild; c != nil; c = c.NextSibling {
 			if isIgnorable(c) {
 				continue
@@ -60,7 +60,7 @@ func SignificantChildren(root *html.Node) []*html.Node {
 		// prefer returning that child's significant children (so full-doc vs fragment compares).
 		if len(out) == 1 && out[0].Type == html.ElementNode && out[0].Data == "html" {
 			// descend into html node
-			var htmlChildren []*html.Node
+			htmlChildren := make([]*html.Node, 0, CountChildren(out[0]))
 			for c := out[0].FirstChild; c != nil; c = c.NextSibling {
 				if isIgnorable(c) {
 					continue
@@ -69,7 +69,7 @@ func SignificantChildren(root *html.Node) []*html.Node {
 			}
 			// if the single child is <body>, return its children (so body content is comparable)
 			if len(htmlChildren) == 1 && htmlChildren[0].Type == html.ElementNode && htmlChildren[0].Data == "body" {
-				var bodyChildren []*html.Node
+				bodyChildren := make([]*html.Node, 0, CountChildren(htmlChildren[0]))
 				for c := htmlChildren[0].FirstChild; c != nil; c = c.NextSibling {
 					if isIgnorable(c) {
 						continue
@@ -140,7 +140,7 @@ func compareNodeRecursive(a, b *html.Node) bool {
 
 // filteredChildren returns non-ignorable children of n.
 func filteredChildren(n *html.Node) []*html.Node {
-	var out []*html.Node
+	out := make([]*html.Node, 0, CountChildren(n))
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if isIgnorable(c) {
 			continue

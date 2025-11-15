@@ -9,7 +9,7 @@ import (
 
 // evaluateChildren evaluates the children of a node without allocating a temporary slice.
 func (v *Vue) evaluateChildren(ctx VueContext, node *html.Node, depth int) ([]*html.Node, error) {
-	var childList []*html.Node
+	childList := make([]*html.Node, 0, helpers.CountChildren(node))
 	for c := node.FirstChild; c != nil; c = c.NextSibling {
 		childList = append(childList, c)
 	}
@@ -100,9 +100,17 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				continue
 			}
 
-			newNode := helpers.DeepCloneNode(node)
+			// Check for v-html early to decide cloning strategy
+			hasVHtml := helpers.GetAttr(node, "v-html") != ""
+			var newNode *html.Node
+			if hasVHtml {
+				// Deep clone to preserve original children structure for v-html
+				newNode = helpers.DeepCloneNode(node)
+			} else {
+				// Shallow clone with attributes - children will be re-evaluated and replaced
+				newNode = helpers.ShallowCloneWithAttrs(node)
+			}
 
-			hasVHtml := helpers.GetAttr(newNode, "v-html") != ""
 			v.evalVHtml(ctx, newNode)
 			v.evalAttributes(ctx, newNode)
 
