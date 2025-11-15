@@ -295,7 +295,7 @@ func renderNodeWithContext(w io.Writer, node *html.Node, indent int, ctx *VueCon
 func shouldIgnoreAttr(key string) bool {
 	// Vue directives that should not appear in final HTML
 	switch key {
-	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html":
+	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-show":
 		return true
 	}
 	// v-bind: and : prefixed attributes are processed and shouldn't appear in output

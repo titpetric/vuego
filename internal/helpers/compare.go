@@ -162,6 +162,8 @@ func isIgnorable(n *html.Node) bool {
 }
 
 // attrsEqual compares two attribute slices as unordered sets (key->value).
+// For style attributes, compares CSS properties order-insensitively.
+// For class attributes, compares classes order-insensitively.
 func attrsEqual(a, b []html.Attribute) bool {
 	if len(a) != len(b) {
 		// quick fail, but still need to account for duplicate attribute keys (rare)
@@ -179,9 +181,99 @@ func attrsEqual(a, b []html.Attribute) bool {
 		return false
 	}
 	for k, v := range ma {
-		if vb, ok := mb[k]; !ok || vb != v {
+		if vb, ok := mb[k]; !ok {
+			return false
+		} else if k == "style" {
+			// Compare style attributes by parsed properties (order-insensitive)
+			if !styleEqual(v, vb) {
+				return false
+			}
+		} else if k == "class" {
+			// Compare class attributes by class names (order-insensitive)
+			if !classEqual(v, vb) {
+				return false
+			}
+		} else if vb != v {
 			return false
 		}
 	}
 	return true
+}
+
+// styleEqual compares two CSS style strings, ignoring property order.
+func styleEqual(a, b string) bool {
+	propsA := parseStyleProperties(a)
+	propsB := parseStyleProperties(b)
+
+	if len(propsA) != len(propsB) {
+		return false
+	}
+	for k, v := range propsA {
+		if vb, ok := propsB[k]; !ok || v != vb {
+			return false
+		}
+	}
+	return true
+}
+
+// parseStyleProperties parses a CSS style string into a map of property:value pairs.
+func parseStyleProperties(style string) map[string]string {
+	props := make(map[string]string)
+	if style == "" {
+		return props
+	}
+
+	// Split by semicolon
+	parts := strings.Split(style, ";")
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+
+		// Split by colon
+		idx := strings.Index(part, ":")
+		if idx == -1 {
+			continue
+		}
+
+		key := strings.TrimSpace(part[:idx])
+		val := strings.TrimSpace(part[idx+1:])
+		props[key] = val
+	}
+	return props
+}
+
+// classEqual compares two class attribute strings, ignoring order.
+func classEqual(a, b string) bool {
+	classesA := parseClasses(a)
+	classesB := parseClasses(b)
+
+	if len(classesA) != len(classesB) {
+		return false
+	}
+	for class := range classesA {
+		if !classesB[class] {
+			return false
+		}
+	}
+	return true
+}
+
+// parseClasses parses a space-separated class string into a set (map of bools).
+func parseClasses(classes string) map[string]bool {
+	result := make(map[string]bool)
+	if classes == "" {
+		return result
+	}
+
+	// Split by whitespace
+	parts := strings.Fields(classes)
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			result[part] = true
+		}
+	}
+	return result
 }

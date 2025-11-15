@@ -55,6 +55,25 @@ func HasAttr(n *html.Node, key string) bool {
 	return false
 }
 
+// SetAttr sets or updates an attribute on a node. If the attribute exists, its value is replaced.
+// If it doesn't exist, it is added.
+func SetAttr(n *html.Node, key, value string) {
+	for i, a := range n.Attr {
+		if a.Key == key {
+			n.Attr[i].Val = value
+			return
+		}
+	}
+	// Attribute not found, append it
+	n.Attr = append(n.Attr, html.Attribute{Key: key, Val: value})
+}
+
+// AppendAttr appends a value to an attribute on a node. If the attribute exists, the new value replaces it.
+// If it doesn't exist, it is added.
+func AppendAttr(n *html.Node, key, value string) {
+	SetAttr(n, key, value)
+}
+
 // RemoveAttr removes an attribute from a node by key.
 func RemoveAttr(n *html.Node, key string) {
 	var attrs []html.Attribute

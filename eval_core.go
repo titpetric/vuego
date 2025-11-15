@@ -182,6 +182,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			}
 
 			v.evalVHtml(ctx, newNode)
+			v.evalVShow(ctx, newNode)
 			v.evalAttributes(ctx, newNode)
 
 			if !hasVHtml {

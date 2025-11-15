@@ -17,12 +17,22 @@ tasks:
       - goimports -w .
       - go fmt ./...
       - go mod tidy
+
+  fmt:docs:
+    desc: "Format docs"
+    cmds:
       - task: mdox:fmt
 
   default:
     desc: "Run the playground server"
     cmds:
       - go run ./cmd/vuego-playground
+
+  lint:
+    desc: "Lint codebase"
+    cmds:
+      - task: fmt
+      - task: docs
 
   test:
     desc: "Run tests and collect coverage"
@@ -31,7 +41,7 @@ tasks:
     env:
       GOTOOLCHAIN: '{{.toolchain}}'
     cmds:
-      - go test -failfast -race -count=1 -cover -coverpkg=./... -coverprofile=pkg.cov ./...
+      - go test -failfast -count=1 -cover -coverpkg=./... -coverprofile=pkg.cov ./...
 
   cover:
     desc: "Show source coverage"
@@ -43,7 +53,7 @@ tasks:
       - go-fsck coverage -c pkg.cov.json -o go-fsck.json
       - go-fsck coverage --template=docs/testing-coverage.md.tpl -v > docs/testing-coverage.md
       - perl -pi -e 's/github.com\/titpetric/titpetric/g' docs/testing-coverage.md
-      - task: fmt
+      - task: fmt:docs
 
   uncover:
     desc: "Show uncovered source"

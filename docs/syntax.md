@@ -111,6 +111,7 @@ Directives are special attributes that apply dynamic behavior to elements.
 | `v-else`                 | Fallback render when all previous conditions fail  |
 | `v-for`                  | Iterate over arrays with optional index            |
 | `v-html`                 | Render unescaped HTML content                      |
+| `v-show`                 | Toggle element visibility with CSS display         |
 | `v-pre`                  | Skip template processing for element and children  |
 
 ### Attribute Binding (`:attr` / `v-bind:attr`)
@@ -124,6 +125,65 @@ Bind HTML attributes to dynamic values:
 ```
 
 Shorthand `:attr` is equivalent to `v-bind:attr`.
+
+#### Object Binding for `class` and `style`
+
+Bind to object literals to conditionally apply classes or styles. This is useful for dynamic styling based on data conditions.
+
+**Class Object Binding:**
+
+Object keys become class names, and are included only when their values are truthy:
+
+```html
+<!-- Bootstrap-style example: apply btn-primary only when isPrimary is true -->
+<button :class="{'btn': true, 'btn-primary': isPrimary, 'btn-large': isLarge}">
+  Click me
+</button>
+
+<!-- Combine with static classes -->
+<div class="card" :class="{'card-active': isActive, 'card-disabled': isDisabled}"></div>
+
+<!-- Boolean flags -->
+<div :class="{show: isVisible, hidden: isHidden, error: hasError}"></div>
+```
+
+Falsey values (including `0`, `false`, `""`, `nil`) exclude the class. Any other value includes it:
+
+```html
+<div :class="{alert: itemCount}"></div>
+<!-- With itemCount=0: no class applied -->
+<!-- With itemCount=5: class="alert" applied -->
+```
+
+**Style Object Binding:**
+
+Object keys use camelCase and are automatically converted to kebab-case CSS properties. Values are applied as-is:
+
+```html
+<!-- camelCase properties are converted to kebab-case -->
+<div :style="{color: textColor, fontSize: size, backgroundColor: bgColor}"></div>
+<!-- Output: style="color:textColor;font-size:size;background-color:bgColor;" -->
+
+<!-- Combine with static styles (dynamic style overwrites conflicting static style) -->
+<div style="padding: 10px;" :style="{color: errorColor, fontWeight: 'bold'}"></div>
+
+<!-- Static string values -->
+<div :style="{display: 'block', color: 'red', marginTop: '20px'}"></div>
+```
+
+**camelCase to kebab-case conversion:**
+
+CSS property names must use kebab-case (e.g., `font-size`, `background-color`). To match JavaScript convention, use camelCase in the object binding and they will be automatically converted:
+
+| camelCase         | converts to        | CSS property     |
+|-------------------|--------------------|------------------|
+| `fontSize`        | `font-size`        | font-size        |
+| `backgroundColor` | `background-color` | background-color |
+| `fontWeight`      | `font-weight`      | font-weight      |
+| `marginTop`       | `margin-top`       | margin-top       |
+| `borderRadius`    | `border-radius`    | border-radius    |
+
+Properties that already contain hyphens (e.g., custom CSS properties like `--my-color`) are left unchanged.
 
 ### Conditional Rendering (`v-if`, `v-else-if`, `v-else`)
 
@@ -198,6 +258,18 @@ Insert unescaped HTML content:
 ```
 
 **⚠️ Warning:** Only use with trusted content; user-provided content can lead to XSS vulnerabilities.
+
+### Visibility Control (`v-show`)
+
+Control element visibility with CSS without removing from DOM:
+
+```html
+<!-- v-show: toggles display property based on condition -->
+<div v-show="isVisible">Visible when true</div>
+<div v-show="user.isAdmin">Admin content</div>
+```
+
+The `v-show` directive uses CSS `display` property for visibility control, keeping elements in the DOM. Use this instead of `v-if` when you want to preserve component state or avoid repeated rendering.
 
 ### Skip Template Processing (`v-pre`)
 
@@ -291,6 +363,7 @@ Both styles are valid and work identically.
 - ✅ Expressions (comparisons, logical operators, ternary)
 - ✅ Attribute binding with `:attr` and `v-bind:attr`
 - ✅ Conditional rendering with `v-if`, `v-else-if`, and `v-else`
+- ✅ Visibility control with `v-show`
 - ✅ List iteration with `v-for` (with optional index)
 - ✅ Raw HTML with `v-html`
 - ✅ Skip template processing with `v-pre`
@@ -301,7 +374,6 @@ Both styles are valid and work identically.
 
 ### What Vuego Does NOT Support
 
-- ❌ `v-show` directive
 - ❌ Event handling (`@click`, `v-on`)
 - ❌ Two-way binding (`v-model`)
 - ❌ Computed properties

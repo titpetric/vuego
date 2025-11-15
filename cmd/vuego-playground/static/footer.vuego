@@ -25,6 +25,7 @@
     <li><code>v-for="item in items"</code> - Loop items</li>
     <li><code>v-if="condition"</code> - Conditional</li>
     <li><code>v-else</code>, <code>v-else-if</code> - Else branches</li>
+    <li><code>v-show="condition"</code> - Toggle visibility</li>
     <li><code>v-bind:attr="value"</code> - Bind attribute</li>
     <li><code>v-html="html"</code> - Raw HTML</li>
   </ul>
