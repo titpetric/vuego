@@ -317,7 +317,7 @@ window.addEventListener('load', async () => {
     try {
         const response = await fetch('/api/status');
         const result = await response.json();
-        isEmbedFS = result.isEmbedFS || true;
+        isEmbedFS = result.isEmbedFS ?? true;
         
         document.getElementById('saveBtn').disabled = isEmbedFS;
         document.getElementById('createBtn').disabled = isEmbedFS;

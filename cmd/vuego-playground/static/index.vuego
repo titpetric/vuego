@@ -15,7 +15,7 @@
                     <div class="subtitle">Test your VueGo templates in real-time</div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-create" id="createBtn" onclick="showCreateDialog()">Create</button>
+                    <button class="btn-create" id="createBtn" onclick="showCreateDialog()">New</button>
                     <button class="btn-save" id="saveBtn" onclick="save()">Save</button>
                 </div>
             </div>
@@ -32,9 +32,24 @@
     </header>
 
     <div class="config-bar">
-        <span v-for="example in ExampleList">
-            <button class="{{ example.ButtonClass }}" v-bind:onclick="example.OnClick">{{ example.Label }}</button>
-        </span>
+        <div class="example-groups">
+            <div class="example-group">
+                <span class="group-label">Pages</span>
+                <div class="button-group">
+                    <span v-for="example in ExampleList">
+                        <button v-if="!example.IsNested" class="{{ example.ButtonClass }}" :onclick="example.OnClick">{{ example.Label }}</button>
+                    </span>
+                </div>
+            </div>
+            <div class="example-group">
+                <span class="group-label">Components</span>
+                <div class="button-group">
+                    <span v-for="example in ExampleList">
+                        <button v-if="example.IsNested" class="{{ example.ButtonClass }}" :onclick="example.OnClick">{{ example.Label }}</button>
+                    </span>
+                </div>
+            </div>
+        </div>
         <div class="spinner" id="spinner"></div>
         <span class="status-text" id="status"></span>
     </div>

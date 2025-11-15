@@ -148,7 +148,36 @@ main {
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 2rem;
+}
+
+.example-groups {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.example-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.group-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6c757d;
+    letter-spacing: 0.5px;
+}
+
+.button-group {
+    display: inline-block;
+}
+
+.button-group button {
+    margin-right: 0.5rem;
 }
 
 .config-bar label {
