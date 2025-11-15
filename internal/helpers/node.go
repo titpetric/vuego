@@ -45,6 +45,16 @@ func GetAttr(n *html.Node, key string) string {
 	return ""
 }
 
+// HasAttr checks if a node has an attribute by key (regardless of its value).
+func HasAttr(n *html.Node, key string) bool {
+	for _, a := range n.Attr {
+		if a.Key == key {
+			return true
+		}
+	}
+	return false
+}
+
 // RemoveAttr removes an attribute from a node by key.
 func RemoveAttr(n *html.Node, key string) {
 	var attrs []html.Attribute

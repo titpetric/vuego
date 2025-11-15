@@ -35,6 +35,27 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 		case html.ElementNode:
 			tag := node.Data
 
+			// Check for v-pre early - prevents all interpolation and directive processing
+			if helpers.HasAttr(node, "v-pre") {
+				newNode := helpers.ShallowCloneWithAttrs(node)
+				// Remove the v-pre attribute from output before processing
+				helpers.RemoveAttr(newNode, "v-pre")
+				// Deep clone children without processing them
+				var prev *html.Node
+				for c := node.FirstChild; c != nil; c = c.NextSibling {
+					cloned := helpers.DeepCloneNode(c)
+					if prev == nil {
+						newNode.FirstChild = cloned
+					} else {
+						prev.NextSibling = cloned
+						cloned.PrevSibling = prev
+					}
+					prev = cloned
+				}
+				result = append(result, newNode)
+				continue
+			}
+
 			if tag == "vuego" {
 				name := helpers.GetAttr(node, "include")
 				compDom, err := v.loader.LoadFragment(name)
