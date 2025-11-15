@@ -17,6 +17,7 @@ var bufferPool = sync.Pool{
 
 // interpolateToWriter writes interpolated values to w, escaping for HTML safety.
 // This is the core implementation that does not allocate a string result.
+// For script and style tags, values are not HTML-escaped.
 func (v *Vue) interpolateToWriter(ctx VueContext, w io.Writer, input string) error {
 	if !strings.Contains(input, "{{") {
 		_, err := io.WriteString(w, input)
@@ -87,17 +88,25 @@ func (v *Vue) interpolateToWriter(ctx VueContext, w io.Writer, input string) err
 		}
 
 		if val != nil {
-			// Escape value for HTML output
+			// Escape value for HTML output (unless in a script/style tag)
 			valStr := fmt.Sprint(val)
-			// Skip escaping if the string doesn't contain special characters
-			// (avoids allocation in html.EscapeString for most cases)
-			if !helpers.NeedsHTMLEscape(valStr) {
+			parentTag := ctx.CurrentTag()
+			// Skip escaping inside script and style tags, since they contain code/CSS, not HTML
+			if parentTag == "script" || parentTag == "style" {
 				if _, err := io.WriteString(w, valStr); err != nil {
 					return err
 				}
 			} else {
-				if _, err := io.WriteString(w, html.EscapeString(valStr)); err != nil {
-					return err
+				// Skip escaping if the string doesn't contain special characters
+				// (avoids allocation in html.EscapeString for most cases)
+				if !helpers.NeedsHTMLEscape(valStr) {
+					if _, err := io.WriteString(w, valStr); err != nil {
+						return err
+					}
+				} else {
+					if _, err := io.WriteString(w, html.EscapeString(valStr)); err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -115,6 +124,7 @@ func (v *Vue) interpolateToWriter(ctx VueContext, w io.Writer, input string) err
 
 // interpolate escapes interpolated values for HTML safety.
 // Uses a buffer pool to minimize allocations.
+// For script and style tags, values are not HTML-escaped.
 func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 	buf := bufferPool.Get().(*strings.Builder)
 	defer func() {

@@ -136,7 +136,9 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			v.evalAttributes(ctx, newNode)
 
 			if !hasVHtml {
+				ctx.PushTag(node.Data)
 				newChildren, err := v.evaluateChildren(ctx, node, depth+1)
+				ctx.PopTag()
 				if err != nil {
 					return nil, err
 				}
