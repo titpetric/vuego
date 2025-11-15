@@ -12,10 +12,10 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.59%   | 462       | 1637  |
+| ✅     | titpetric/vuego                      | 85.57%   | 475       | 1658  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
-| ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 51        | 274   |
-| ✅     | titpetric/vuego/internal/helpers     | 97.07%   | 139       | 398   |
+| ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 68        | 444   |
+| ✅     | titpetric/vuego/internal/helpers     | 97.20%   | 142       | 407   |
 | ✅     | titpetric/vuego/internal/reflect     | 92.65%   | 55        | 198   |
 
 ## Functions
@@ -61,7 +61,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.evalSegment                | 70.00%   | 5         |
 | ✅     | titpetric/vuego                      | Vue.evalTemplate               | 87.50%   | 16        |
 | ✅     | titpetric/vuego                      | Vue.evalVHtml                  | 96.40%   | 8         |
-| ✅     | titpetric/vuego                      | Vue.evaluate                   | 94.30%   | 77        |
+| ✅     | titpetric/vuego                      | Vue.evaluate                   | 92.80%   | 90        |
 | ✅     | titpetric/vuego                      | Vue.evaluateChildren           | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | Vue.interpolate                | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | Vue.interpolateToWriter        | 83.00%   | 40        |
@@ -97,8 +97,11 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego/cmd/vuego-playground | NewIndexPageData               | 0.00%    | 10        |
 | ❌     | titpetric/vuego/cmd/vuego-playground | combinedFilesystem.Open        | 0.00%    | 1         |
 | ✅     | titpetric/vuego/cmd/vuego-playground | combinedFilesystem.ReadDir     | 0.00%    | 0         |
+| ❌     | titpetric/vuego/cmd/vuego-playground | handleCheatsheet               | 0.00%    | 1         |
+| ❌     | titpetric/vuego/cmd/vuego-playground | handleCreate                   | 0.00%    | 11        |
 | ✅     | titpetric/vuego/cmd/vuego-playground | handleExamples                 | 0.00%    | 0         |
 | ❌     | titpetric/vuego/cmd/vuego-playground | handleRender                   | 0.00%    | 4         |
+| ❌     | titpetric/vuego/cmd/vuego-playground | handleSave                     | 0.00%    | 5         |
 | ❌     | titpetric/vuego/cmd/vuego-playground | loadExamplesMap                | 0.00%    | 26        |
 | ❌     | titpetric/vuego/cmd/vuego-playground | main                           | 0.00%    | 10        |
 | ✅     | titpetric/vuego/internal/helpers     | CloneNode                      | 100.00%  | 0         |
@@ -108,6 +111,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego/internal/helpers     | DeepCloneNode                  | 100.00%  | 6         |
 | ✅     | titpetric/vuego/internal/helpers     | GetAttr                        | 100.00%  | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | GetBodyNode                    | 100.00%  | 11        |
+| ✅     | titpetric/vuego/internal/helpers     | HasAttr                        | 100.00%  | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | IsComplexExpr                  | 100.00%  | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | IsFunctionCall                 | 100.00%  | 5         |
 | ✅     | titpetric/vuego/internal/helpers     | IsIdentifier                   | 100.00%  | 14        |

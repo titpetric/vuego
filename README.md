@@ -35,11 +35,16 @@ Try VueGo in your browser! The interactive playground lets you experiment with t
 
 ## Documentation
 
-- **[Template Syntax](docs/syntax.md)** - Complete syntax reference for all features
-- **[FuncMap & Filters](docs/funcmap.md)** - Template functions and pipe-based filtering
-- **[Components](docs/components.md)** - Component composition and the `:required` attribute
+The Template Syntax reference covers four main areas:
+- **[Values](docs/syntax.md#values)** - Variable interpolation, expressions, and filters
+- **[Directives](docs/syntax.md#directives)** - Complete reference of all `v-` directives
+- **[Components](docs/syntax.md#components)** - `<vuego>` and `<template>` tags
+- **[Advanced](docs/syntax.md#advanced)** - Template functions, custom filters, and full documents
+
+Additional resources:
+- **[FuncMap & Filters](docs/funcmap.md)** - Custom template functions and built-in filters
+- **[Components Guide](docs/components.md)** - Detailed component composition examples
 - **[Testing](docs/testing.md)** - Running tests and interpreting results
-- **[Usage Examples](docs/usage-examples.md)** - Quick start and practical examples
 - **[CLI Usage](docs/cli.md)** - Command-line tool reference
 - **[Concurrency](docs/concurrency.md)** - Thread-safety and concurrent rendering
 

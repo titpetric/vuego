@@ -4,16 +4,13 @@ Vuego implements a subset of Vue.js template syntax. This document provides a co
 
 ## Table of Contents
 
-- [Variable Interpolation](#variable-interpolation)
-- [Attribute Binding](#attribute-binding)
-- [Conditional Rendering](#conditional-rendering)
-- [List Rendering](#list-rendering)
-- [Raw HTML](#raw-html)
-- [Full Document Templates](#full-document-templates)
+- [Values](#values)
+- [Directives](#directives)
 - [Components](#components)
+- [Advanced](#advanced)
 - [Notes and Limitations](#notes-and-limitations)
 
-## Variable Interpolation
+## Values
 
 Use `{{ var }}` to insert a value from the current scope. Values are automatically HTML-escaped for security.
 
@@ -52,7 +49,7 @@ Interpolation supports comparison operators, logical operators, and ternary expr
 
 ### Filters and Pipes
 
-Transform values using built-in filters with the pipe syntax:
+Transform values using filters with the pipe syntax:
 
 ```html
 <!-- Single filter -->
@@ -80,43 +77,21 @@ Transform values using built-in filters with the pipe syntax:
 - `int` - Convert to integer
 - `string` - Convert to string
 
-### Example with Data
+## Directives
 
-**Template:**
+Directives are special attributes that apply dynamic behavior to elements.
 
-```html
-<template>
-  <h1>{{ title }}</h1>
-  <p>Welcome, {{ user.name }}!</p>
-  <p>Email: {{ user.email }}</p>
-</template>
-```
+| Directive                | Description                                        |
+|--------------------------|----------------------------------------------------|
+| `:attr` or `v-bind:attr` | Bind HTML attributes to expressions                |
+| `v-if`                   | Conditionally render elements based on expressions |
+| `v-for`                  | Iterate over arrays with optional index            |
+| `v-html`                 | Render unescaped HTML content                      |
+| `v-pre`                  | Skip template processing for element and children  |
 
-**Data:**
+### Attribute Binding (`:attr` / `v-bind:attr`)
 
-```json
-{
-  "title": "Dashboard",
-  "user": {
-    "name": "John Doe",
-    "email": "john@example.com"
-  }
-}
-```
-
-**Output:**
-
-```html
-<h1>Dashboard</h1>
-<p>Welcome, John Doe!</p>
-<p>Email: john@example.com</p>
-```
-
-## Attribute Binding
-
-Bind HTML attributes to expressions using `:attr` shorthand or `v-bind:attr` syntax.
-
-### Shorthand Syntax (`:attr`)
+Bind HTML attributes to dynamic values:
 
 ```html
 <a :href="url" :title="tooltip">Link</a>
@@ -124,233 +99,32 @@ Bind HTML attributes to expressions using `:attr` shorthand or `v-bind:attr` syn
 <button :name="buttonName" :disabled="isDisabled">Click</button>
 ```
 
-### Combining Static and Dynamic Attributes
+Shorthand `:attr` is equivalent to `v-bind:attr`.
+
+### Conditional Rendering (`v-if`)
+
+Render elements only when the condition is truthy:
 
 ```html
-<a :href="url" class="link" title="{{ tooltip }}">Link</a>
+<div v-if="show">Visible when true</div>
+<div v-if="!hide">Visible when false</div>
+<p v-if="status == 'active'">Active</p>
+<p v-if="age >= 18">Adult</p>
+<p v-if="isAdmin && hasPermission">Admin access</p>
 ```
 
-### Example with Data
+### List Rendering (`v-for`)
 
-**Template:**
+Iterate over arrays or slices:
 
 ```html
-<template>
-  <a :href="link.url" :target="link.target">{{ link.text }}</a>
-  <img :src="image" :alt="description">
-</template>
-```
+<!-- Basic iteration -->
+<li v-for="item in items">{{ item.name }}</li>
 
-**Data:**
+<!-- With index -->
+<li v-for="(i, item) in items">{{ i }} - {{ item.name }}</li>
 
-```json
-{
-  "link": {
-    "url": "https://example.com",
-    "target": "_blank",
-    "text": "Visit Example"
-  },
-  "image": "/logo.png",
-  "description": "Company Logo"
-}
-```
-
-**Output:**
-
-```html
-<a href="https://example.com" target="_blank">Visit Example</a>
-<img src="/logo.png" alt="Company Logo">
-```
-
-## Conditional Rendering
-
-Render elements only when the expression is truthy using the `v-if` directive.
-
-### Basic Usage
-
-```html
-<div v-if="show">Visible when 'show' is true</div>
-<div v-if="!hide">Visible when 'hide' is false</div>
-<p v-if="user">User is logged in</p>
-```
-
-### Comparisons
-
-Use comparison operators for conditional logic:
-
-```html
-<p v-if="status == 'active'">Status is active</p>
-<p v-if="age >= 18">Adult content</p>
-<p v-if="count > 5">More than 5 items</p>
-```
-
-### Boolean Expressions
-
-Combine conditions using logical operators:
-
-```html
-<p v-if="isAdmin && hasPermission">Admin access granted</p>
-<p v-if="isEmpty || !loaded">Loading or empty state</p>
-<p v-if="!error && success">Success message</p>
-```
-
-### Negation with `!`
-
-```html
-<p v-if="!disabled">This element is enabled</p>
-<div v-if="!loading">Content loaded</div>
-```
-
-### Checking Boolean Properties
-
-```html
-<p v-if="product.inStock" class="available">In Stock</p>
-<p v-if="user.isAdmin">Admin Panel</p>
-<div v-if="!product.discontinued">Still available</div>
-```
-
-### Example with Data
-
-**Template:**
-
-```html
-<template>
-  <h1>Product: {{ product.name }}</h1>
-  <p v-if="product.onSale">Sale Price: ${{ product.salePrice }}</p>
-  <p v-if="product.inStock">Available Now</p>
-  <p v-if="product.featured">Featured Item</p>
-</template>
-```
-
-**Data:**
-
-```json
-{
-  "product": {
-    "name": "Laptop",
-    "onSale": true,
-    "salePrice": 999,
-    "inStock": true,
-    "featured": false
-  }
-}
-```
-
-**Output:**
-
-```html
-<h1>Product: Laptop</h1>
-<p>Sale Price: $999</p>
-<p>Available Now</p>
-```
-
-### Limitations
-
-- No support for `v-else` or `v-else-if`
-- No custom comparisons (e.g., `v-if="count > 5"` is not supported)
-- No boolean expressions (e.g., `v-if="a && b"` is not supported)
-- Only truthy/falsy evaluation is supported
-
-## List Rendering
-
-Iterate over arrays or slices using the `v-for` directive.
-
-### Basic Array Iteration
-
-```html
-<ul>
-  <li v-for="item in items">{{ item.name }}</li>
-</ul>
-```
-
-### With Index
-
-Access the index and value using tuple syntax:
-
-```html
-<ul>
-  <li v-for="(i, item) in items">{{ i }} - {{ item.name }}</li>
-</ul>
-```
-
-### Nested Properties
-
-```html
-<div v-for="user in users">
-  <h2>{{ user.name }}</h2>
-  <p>{{ user.email }}</p>
-  <p>{{ user.address.city }}</p>
-</div>
-```
-
-### Combining with Other Directives
-
-```html
-<div v-for="product in products">
-  <h3>{{ product.name }}</h3>
-  <p v-if="product.inStock">In Stock</p>
-  <img :src="product.image" :alt="product.name">
-</div>
-```
-
-### Example with Data
-
-**Template:**
-
-```html
-<template>
-  <h1>{{ store }} - Products</h1>
-  <div v-for="product in products">
-    <h2>{{ product.name }}</h2>
-    <p>{{ product.description }}</p>
-    <p class="price">${{ product.price }}</p>
-    <span v-if="product.inStock">Available</span>
-  </div>
-</template>
-```
-
-**Data:**
-
-```json
-{
-  "store": "Tech Shop",
-  "products": [
-    {
-      "name": "Laptop",
-      "description": "High-performance laptop",
-      "price": 1299.99,
-      "inStock": true
-    },
-    {
-      "name": "Mouse",
-      "description": "Wireless mouse",
-      "price": 29.99,
-      "inStock": false
-    }
-  ]
-}
-```
-
-**Output:**
-
-```html
-<h1>Tech Shop - Products</h1>
-<div>
-  <h2>Laptop</h2>
-  <p>High-performance laptop</p>
-  <p class="price">$1299.99</p>
-  <span>Available</span>
-</div>
-<div>
-  <h2>Mouse</h2>
-  <p>Wireless mouse</p>
-  <p class="price">$29.99</p>
-</div>
-```
-
-### Nested Loops
-
-```html
+<!-- Nested loops -->
 <div v-for="category in categories">
   <h2>{{ category.name }}</h2>
   <ul>
@@ -359,75 +133,46 @@ Access the index and value using tuple syntax:
 </div>
 ```
 
-## Raw HTML
+### Raw HTML (`v-html`)
 
-Insert unescaped HTML content using the `v-html` directive.
-
-### Basic Usage
+Insert unescaped HTML content:
 
 ```html
 <div v-html="htmlContent"></div>
 ```
 
-### Example with Data
+**⚠️ Warning:** Only use with trusted content; user-provided content can lead to XSS vulnerabilities.
 
-**Template:**
+### Skip Template Processing (`v-pre`)
 
-```html
-<template>
-  <div class="article">
-    <h1>{{ title }}</h1>
-    <div v-html="content"></div>
-  </div>
-</template>
-```
-
-**Data:**
-
-```json
-{
-  "title": "My Article",
-  "content": "<p>This is <strong>bold</strong> and <em>italic</em> text.</p>"
-}
-```
-
-**Output:**
+Prevent template processing for an element and its children:
 
 ```html
-<div class="article">
-  <h1>My Article</h1>
-  <div>
-    <p>This is <strong>bold</strong> and <em>italic</em> text.</p>
-  </div>
+<div v-pre>
+  {{ variableName }} and {{ expression }}
 </div>
 ```
 
-### Security Warning
+Useful for displaying template syntax as literal text in documentation or code examples.
 
-⚠️ **Warning:** Using `v-html` with user-provided content can lead to XSS vulnerabilities. Only use `v-html` with trusted content.
+## Components
 
-## Full Document Templates
+Vuego supports component composition using `<vuego>` and `<template>` tags. See [Components Guide](components.md) for detailed examples.
 
-Vuego supports both complete HTML documents and fragments.
+### `<vuego>` Tag (Include/Embed Components)
 
-### Complete HTML Document
+Include reusable component files:
 
 ```html
-<html>
-  <head>
-    <title>{{ pageTitle }}</title>
-    <meta name="description" :content="description">
-  </head>
-  <body>
-    <h1>{{ heading }}</h1>
-    <ul>
-      <li v-for="item in items">{{ item.name }}</li>
-    </ul>
-  </body>
-</html>
+<vuego include="components/Header.vuego"></vuego>
+<vuego include="components/Button.vuego" name="submit" title="Submit Form"></vuego>
 ```
 
-### HTML Fragment
+The `include` attribute specifies the template file path. Additional attributes are passed as props to the component.
+
+### `<template>` Tag
+
+Wrap component content or fragments:
 
 ```html
 <template>
@@ -436,34 +181,50 @@ Vuego supports both complete HTML documents and fragments.
 </template>
 ```
 
-Both styles are valid and work identically. Use `<template>` for fragments or components.
-
-## Components
-
-See [components.md](components.md) for detailed documentation on component composition.
-
-### Basic Component Include
+For component validation, use the `:required` attribute on the `<template>` tag to ensure props are provided:
 
 ```html
+<template :required="name,title">
+  <h1>{{ title }}</h1>
+  <p>Name: {{ name }}</p>
+</template>
+```
+
+Props listed in `:required` must be provided when the component is included, or rendering will fail with a validation error.
+
+## Advanced
+
+### Template Functions and Filters
+
+VueGo supports custom template functions and pipe-based filter chaining. See [FuncMap & Filters](funcmap.md) for detailed documentation on:
+- Setting custom functions with `FuncMap`
+- Built-in utility functions
+- Function signatures and type conversion
+- Error handling in template functions
+
+### Full Document Templates
+
+Vuego supports both complete HTML documents and fragments:
+
+```html
+<!-- Complete document -->
 <html>
   <head>
-    <title>Vuego index example</title>
+    <title>{{ pageTitle }}</title>
   </head>
   <body>
-    <vuego include="components/Header.vuego"></vuego>
-    <vuego include="IndexContent.vuego"></vuego>
-    <vuego include="components/Footer.vuego"></vuego>
+    <h1>{{ heading }}</h1>
   </body>
 </html>
+
+<!-- Fragment with template tag -->
+<template>
+  <h1>{{ title }}</h1>
+  <p>{{ content }}</p>
+</template>
 ```
 
-### Component with Props
-
-```html
-<vuego include="components/Button.vuego" 
-       name="submit" 
-       title="Submit Form"></vuego>
-```
+Both styles are valid and work identically.
 
 ## Notes and Limitations
 
@@ -471,27 +232,24 @@ See [components.md](components.md) for detailed documentation on component compo
 
 - ✅ Variable interpolation with `{{ expr }}`
 - ✅ Nested property access with dot notation
+- ✅ Expressions (comparisons, logical operators, ternary)
 - ✅ Attribute binding with `:attr` and `v-bind:attr`
-- ✅ Conditional rendering with `v-if` (truthy/falsy evaluation)
-- ✅ List iteration with `v-for`
-- ✅ Index access in loops with `(i, v)` syntax
+- ✅ Conditional rendering with `v-if`
+- ✅ List iteration with `v-for` (with optional index)
 - ✅ Raw HTML with `v-html`
+- ✅ Skip template processing with `v-pre`
 - ✅ Component composition with `<vuego include>`
-- ✅ Required component props with `:required`
+- ✅ Component prop validation with `:required`
 - ✅ Full HTML documents and fragments
+- ✅ Custom template functions and filters
 
 ### What Vuego Does NOT Support
 
-- ❌ Expression evaluation (e.g., `{{ 1 + 1 }}`, `{{ name.toUpperCase() }}`)
-- ❌ String concatenation in templates (e.g., `{{ firstName + ' ' + lastName }}`)
-- ❌ Custom comparisons in `v-if` (e.g., `v-if="count > 5"`)
-- ❌ Boolean expressions in `v-if` (e.g., `v-if="a && b"`)
 - ❌ `v-else` and `v-else-if` directives
 - ❌ `v-show` directive
 - ❌ Event handling (`@click`, `v-on`)
 - ❌ Two-way binding (`v-model`)
 - ❌ Computed properties
-- ❌ Methods and filters
 - ❌ Slots
 - ❌ Custom directives
 
@@ -503,23 +261,9 @@ See [components.md](components.md) for detailed documentation on component compo
 
 ### Data Types
 
-Vuego accepts `map[string]any` as data input. For strongly-typed data structures, you can use packages like [usepzaka/structmap](https://pkg.go.dev/github.com/usepzaka/structmap) to convert structs to maps.
-
-**Example:**
-
-```go
-type User struct {
-	Name  string
-	Email string
-}
-
-user := User{Name: "John", Email: "john@example.com"}
-data := structmap.Map(user) // Convert to map[string]any
-```
+Vuego accepts `map[string]any` as data input. For strongly-typed data structures, convert them to maps before rendering.
 
 ### Whitespace
-
-Whitespace handling in vuego follows these rules:
 
 - Empty text nodes (whitespace-only) are omitted from output
 - Whitespace differences are ignored when comparing DOM structures
@@ -528,5 +272,6 @@ Whitespace handling in vuego follows these rules:
 ## See Also
 
 - [CLI Documentation](cli.md) - Command-line usage
-- [Component Documentation](components.md) - Component composition
+- [Components](components.md) - Detailed component composition guide
+- [FuncMap & Filters](funcmap.md) - Template functions and custom filters
 - [Main README](../README.md) - Overview and quick start
