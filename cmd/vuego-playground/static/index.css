@@ -256,7 +256,7 @@ button.example-nested:hover {
     font-size: 0.85rem;
     line-height: 1.4;
     color: #495057;
-    padding: 1rem 2rem 2rem 2rem;
+    padding: 1rem 0 4rem 2rem;
     overflow: auto;
 }
 
