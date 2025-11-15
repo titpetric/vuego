@@ -1,0 +1,41 @@
+<div class="cheatsheet">
+<div class="cheat-section">
+  <h4>Variable Interpolation</h4>
+  <ul>
+    <li v-pre><code>{{ variableName }}</code> - Output variable</li>
+    <li v-pre><code>{{ object.property }}</code> - Nested properties</li>
+    <li v-pre><code>{{ array[0] }}</code> - Array elements</li>
+  </ul>
+</div>
+
+<div class="cheat-section">
+  <h4>Filters</h4>
+  <ul>
+    <li v-pre><code>{{ value | upper }}</code> - Apply filter</li>
+    <li><code>lower</code>, <code>capitalize</code>, <code>reverse</code>, <code>trim</code></li>
+    <li><code>join</code>, <code>split</code>, <code>add</code>, <code>subtract</code></li>
+    <li><code>multiply</code>, <code>divide</code>, <code>modulo</code>, <code>default</code></li>
+    <li><code>json</code> - JSON encoding</li>
+  </ul>
+</div>
+
+<div class="cheat-section">
+  <h4>Directives</h4>
+  <ul>
+    <li><code>v-for="item in items"</code> - Loop items</li>
+    <li><code>v-if="condition"</code> - Conditional</li>
+    <li><code>v-else</code>, <code>v-else-if</code> - Else branches</li>
+    <li><code>v-bind:attr="value"</code> - Bind attribute</li>
+    <li><code>v-html="html"</code> - Raw HTML</li>
+  </ul>
+</div>
+
+<div class="cheat-section">
+  <h4>Components</h4>
+  <ul>
+    <li><code>&#60;vuego include="file" /&#62;</code> - Include component</li>
+    <li><code>&#60;template :require="var" /&#62;</code> - Template require</li>
+    <li><code>&#60;template&#62;...&#60;/template&#62;</code> - Group elements</li>
+  </ul>
+</div>
+</div>

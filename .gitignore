@@ -8,5 +8,5 @@ pkg.cov.json
 go-fsck.json
 
 # Build artifacts
-vuego
-vuego-playground
+/vuego
+/vuego-playground
