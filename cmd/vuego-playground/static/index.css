@@ -246,25 +246,32 @@ button.example-nested:hover {
 .cheatsheet-footer {
     background: white;
     border-top: 1px solid #e9ecef;
-    padding: 1rem 2rem;
-    height: 150px;
-    overflow-y: auto;
+    padding: 0;
+    margin: 0;
     box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
+    box-sizing: border-box;
 }
 
 .cheatsheet-content {
-    max-width: 100%;
     font-size: 0.85rem;
     line-height: 1.4;
     color: #495057;
+    padding: 1rem 2rem 2rem 2rem;
+    overflow: auto;
 }
 
-.cheatsheet-content h4 {
+.cheat-section {
+    float: left;
+    width: 25%;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.cheat-section h4 {
     font-size: 0.9rem;
     font-weight: 600;
     color: #007d9c;
-    margin-top: 0.5rem;
-    margin-bottom: 0.25rem;
+    margin: 0 0 0.5rem 0;
 }
 
 .cheatsheet-content h4:first-child {
@@ -272,12 +279,13 @@ button.example-nested:hover {
 }
 
 .cheatsheet-content ul {
-    margin: 0.25rem 0 0.5rem 1.5rem;
+    margin: 0;
     padding: 0;
+    list-style: none;
 }
 
 .cheatsheet-content li {
-    margin: 0.1rem 0;
+    margin: 0.25rem 0;
 }
 
 .cheatsheet-content code {
