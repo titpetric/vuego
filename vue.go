@@ -31,6 +31,7 @@ type VueContext struct {
 	CurrentDir    string
 	FromFilename  string
 	TemplateStack []string
+	TagStack      []string
 }
 
 // NewVueContext returns a VueContext initialized for the given template filename with initial data.
@@ -45,6 +46,7 @@ func NewVueContextWithData(fromFilename string, data map[string]any, originalDat
 		CurrentDir:    path.Dir(fromFilename),
 		FromFilename:  fromFilename,
 		TemplateStack: []string{fromFilename},
+		TagStack:      []string{},
 	}
 }
 
@@ -59,6 +61,7 @@ func (ctx VueContext) WithTemplate(filename string) VueContext {
 		CurrentDir:    path.Dir(filename),
 		FromFilename:  filename,
 		TemplateStack: newStack,
+		TagStack:      ctx.TagStack, // Share the same tag stack
 	}
 }
 
@@ -68,6 +71,26 @@ func (ctx VueContext) FormatTemplateChain() string {
 		return ctx.FromFilename
 	}
 	return strings.Join(ctx.TemplateStack, " -> ")
+}
+
+// PushTag adds a tag to the tag stack.
+func (ctx *VueContext) PushTag(tag string) {
+	ctx.TagStack = append(ctx.TagStack, tag)
+}
+
+// PopTag removes the current tag from the tag stack.
+func (ctx *VueContext) PopTag() {
+	if len(ctx.TagStack) > 0 {
+		ctx.TagStack = ctx.TagStack[:len(ctx.TagStack)-1]
+	}
+}
+
+// CurrentTag returns the current parent tag, or empty string if no tag is on the stack.
+func (ctx VueContext) CurrentTag() string {
+	if len(ctx.TagStack) == 0 {
+		return ""
+	}
+	return ctx.TagStack[len(ctx.TagStack)-1]
 }
 
 // NewVue creates a new Vue backed by the given filesystem.
@@ -206,13 +229,22 @@ func shouldEscapeTextNode(data string) bool {
 }
 
 func renderNode(w io.Writer, node *html.Node, indent int) error {
+	ctx := VueContext{}
+	return renderNodeWithContext(w, node, indent, &ctx)
+}
+
+func renderNodeWithContext(w io.Writer, node *html.Node, indent int, ctx *VueContext) error {
 	switch node.Type {
 	case html.TextNode:
 		if strings.TrimSpace(node.Data) == "" {
 			return nil
 		}
 		spaces := getIndent(indent)
-		if shouldEscapeTextNode(node.Data) {
+		parentTag := ctx.CurrentTag()
+		// Skip HTML escaping inside script and style tags
+		if parentTag == "script" || parentTag == "style" {
+			_, _ = w.Write([]byte(spaces + node.Data))
+		} else if shouldEscapeTextNode(node.Data) {
 			_, _ = w.Write([]byte(spaces + html.EscapeString(node.Data)))
 		} else {
 			_, _ = w.Write([]byte(spaces + node.Data))
@@ -227,25 +259,31 @@ func renderNode(w io.Writer, node *html.Node, indent int) error {
 		}
 
 		spaces := getIndent(indent)
+		tagName := node.Data
 		// compact single-entry text nodes
 		if childCount == 0 {
-			_, _ = w.Write([]byte(spaces + "<" + node.Data + renderAttrs(node.Attr) + "></" + node.Data + ">\n"))
+			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + "></" + tagName + ">\n"))
 		} else if childCount == 1 && firstChild.Type == html.TextNode {
-			_, _ = w.Write([]byte(spaces + "<" + node.Data + renderAttrs(node.Attr) + ">"))
-			if shouldEscapeTextNode(firstChild.Data) {
+			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + ">"))
+			// Skip HTML escaping inside script and style tags
+			if tagName == "script" || tagName == "style" {
+				_, _ = w.Write([]byte(firstChild.Data))
+			} else if shouldEscapeTextNode(firstChild.Data) {
 				_, _ = w.Write([]byte(html.EscapeString(firstChild.Data)))
 			} else {
 				_, _ = w.Write([]byte(firstChild.Data))
 			}
-			_, _ = w.Write([]byte("</" + node.Data + ">\n"))
+			_, _ = w.Write([]byte("</" + tagName + ">\n"))
 		} else {
-			_, _ = w.Write([]byte(spaces + "<" + node.Data + renderAttrs(node.Attr) + ">\n"))
+			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + ">\n"))
+			ctx.PushTag(tagName)
 			for c := firstChild; c != nil; c = c.NextSibling {
-				if err := renderNode(w, c, indent+2); err != nil {
+				if err := renderNodeWithContext(w, c, indent+2, ctx); err != nil {
 					return err
 				}
 			}
-			_, _ = w.Write([]byte(spaces + "</" + node.Data + ">\n"))
+			ctx.PopTag()
+			_, _ = w.Write([]byte(spaces + "</" + tagName + ">\n"))
 		}
 	}
 
