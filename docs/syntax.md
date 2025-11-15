@@ -113,6 +113,7 @@ Directives are special attributes that apply dynamic behavior to elements.
 | `v-html`                 | Render unescaped HTML content                      |
 | `v-show`                 | Toggle element visibility with CSS display         |
 | `v-pre`                  | Skip template processing for element and children  |
+| `v-once`                 | Render element once and skip on subsequent renders |
 
 ### Attribute Binding (`:attr` / `v-bind:attr`)
 
@@ -283,6 +284,29 @@ Prevent template processing for an element and its children:
 
 Useful for displaying template syntax as literal text in documentation or code examples.
 
+### Single Render (`v-once`)
+
+Render an element once and skip it on subsequent evaluations. Useful for `<script>` and `<style>` tags that should only appear once on a page:
+
+```html
+<script v-once src="/assets/js/component.js"></script>
+
+<script v-once>
+  (function () {
+    let appearance = localStorage.getItem("appearance");
+    let theme = localStorage.getItem("theme");
+    appearance && document.documentElement.setAttribute("data-appearance", appearance);
+    theme && document.body.setAttribute("data-theme", theme);
+  })();
+</script>
+
+<style v-once>
+  .component { color: blue; }
+</style>
+```
+
+The `v-once` directive also works inside `v-for` loops and with reusable components, preventing duplicate content when components are rendered multiple times.
+
 ## Components
 
 Vuego supports component composition using `<vuego>` and `<template>` tags. See [Components Guide](components.md) for detailed examples.
@@ -367,6 +391,7 @@ Both styles are valid and work identically.
 - ✅ List iteration with `v-for` (with optional index)
 - ✅ Raw HTML with `v-html`
 - ✅ Skip template processing with `v-pre`
+- ✅ Single render deduplication with `v-once`
 - ✅ Component composition with `<vuego include>`
 - ✅ Component prop validation with `:required`
 - ✅ Full HTML documents and fragments

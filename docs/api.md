@@ -58,12 +58,21 @@ type Vue struct {
 // VueContext carries template inclusion context and request-scoped state used during evaluation.
 // Each render operation gets its own VueContext, making concurrent rendering safe.
 type VueContext struct {
-	stack         *Stack
+	// Variable scope and data resolution
+	stack *Stack
+
+	// Template inclusion chain context
 	BaseDir       string
 	CurrentDir    string
 	FromFilename  string
 	TemplateStack []string
-	TagStack      []string
+
+	// HTML rendering state
+	TagStack []string
+
+	// v-once element tracking for deep clones
+	seen         map[string]bool
+	seenCounter int
 }
 ```
 
@@ -95,6 +104,7 @@ type VueContext struct {
 - `func (*Vue) RenderFragment (w io.Writer, filename string, data any) error`
 - `func (*VueContext) PopTag ()`
 - `func (*VueContext) PushTag (tag string)`
+- `func (*VueContext) nextSeenID () string`
 - `func (Component) Load (filename string) ([]*html.Node, error)`
 - `func (Component) LoadFragment (filename string) ([]*html.Node, error)`
 - `func (Component) Stat (filename string) error`

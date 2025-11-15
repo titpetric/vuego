@@ -1,12 +1,14 @@
 package vuego
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 	"path"
 	"strings"
 	"sync"
 
+	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
 )
 
@@ -26,12 +28,21 @@ type Vue struct {
 // VueContext carries template inclusion context and request-scoped state used during evaluation.
 // Each render operation gets its own VueContext, making concurrent rendering safe.
 type VueContext struct {
-	stack         *Stack
+	// Variable scope and data resolution
+	stack *Stack
+
+	// Template inclusion chain context
 	BaseDir       string
 	CurrentDir    string
 	FromFilename  string
 	TemplateStack []string
-	TagStack      []string
+
+	// HTML rendering state
+	TagStack []string
+
+	// v-once element tracking for deep clones
+	seen         map[string]bool
+	seenCounter int
 }
 
 // NewVueContext returns a VueContext initialized for the given template filename with initial data.
@@ -47,6 +58,7 @@ func NewVueContextWithData(fromFilename string, data map[string]any, originalDat
 		FromFilename:  fromFilename,
 		TemplateStack: []string{fromFilename},
 		TagStack:      []string{},
+		seen:          make(map[string]bool),
 	}
 }
 
@@ -62,6 +74,7 @@ func (ctx VueContext) WithTemplate(filename string) VueContext {
 		FromFilename:  filename,
 		TemplateStack: newStack,
 		TagStack:      ctx.TagStack, // Share the same tag stack
+		seen:          ctx.seen,     // Share the v-once tracking map
 	}
 }
 
@@ -91,6 +104,12 @@ func (ctx VueContext) CurrentTag() string {
 		return ""
 	}
 	return ctx.TagStack[len(ctx.TagStack)-1]
+}
+
+// nextSeenID returns a unique ID for tracking v-once elements across deep clones.
+func (ctx *VueContext) nextSeenID() string {
+	ctx.seenCounter++
+	return fmt.Sprint(ctx.seenCounter)
 }
 
 // NewVue creates a new Vue backed by the given filesystem.
@@ -171,6 +190,19 @@ func (v *Vue) loadCached(filename string) ([]*html.Node, error) {
 	return dom, nil
 }
 
+// assignSeenAttrs recursively assigns unique IDs to all v-once elements in the tree
+func assignSeenAttrs(ctx *VueContext, node *html.Node) {
+	if node.Type == html.ElementNode {
+		if helpers.HasAttr(node, "v-once") {
+			id := ctx.nextSeenID()
+			helpers.SetAttr(node, "v-once-id", id)
+		}
+	}
+	for c := node.FirstChild; c != nil; c = c.NextSibling {
+		assignSeenAttrs(ctx, c)
+	}
+}
+
 // RenderFragment processes a template fragment file and writes the output to w.
 // RenderFragment is safe to call concurrently from multiple goroutines.
 func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
@@ -182,6 +214,11 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 	// Convert data to map[string]any and create context with original data for struct fallback
 	dataMap := toMapData(data)
 	ctx := NewVueContextWithData(filename, dataMap, data)
+
+	// Assign unique IDs to all v-once elements for tracking across deep clones
+	for _, node := range dom {
+		assignSeenAttrs(&ctx, node)
+	}
 
 	result, err := v.evaluate(ctx, dom, 0)
 	if err != nil {
@@ -295,7 +332,7 @@ func renderNodeWithContext(w io.Writer, node *html.Node, indent int, ctx *VueCon
 func shouldIgnoreAttr(key string) bool {
 	// Vue directives that should not appear in final HTML
 	switch key {
-	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-show":
+	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-show", "v-once", "v-once-id":
 		return true
 	}
 	// v-bind: and : prefixed attributes are processed and shouldn't appear in output

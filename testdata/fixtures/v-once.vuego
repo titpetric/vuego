@@ -1,0 +1,9 @@
+<div v-for="item in items">
+  <script v-once>
+    (function () {
+      let appearance = localStorage.getItem("appearance");
+      appearance && document.documentElement.setAttribute("data-appearance", appearance);
+    })();
+  </script>
+  <span>{{ item }}</span>
+</div>

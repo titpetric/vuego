@@ -36,6 +36,17 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 		case html.ElementNode:
 			tag := node.Data
 
+			// Check for v-once early - skip if already rendered
+			if helpers.HasAttr(node, "v-once") {
+				vSeenID := helpers.GetAttr(node, "v-once-id")
+				if ctx.seen[vSeenID] {
+					// This v-once element has already been rendered, skip it
+					continue
+				}
+				// Mark this v-once element as rendered
+				ctx.seen[vSeenID] = true
+			}
+
 			// Check for v-pre early - prevents all interpolation and directive processing
 			if helpers.HasAttr(node, "v-pre") {
 				newNode := helpers.ShallowCloneWithAttrs(node)
