@@ -21,7 +21,7 @@ import (
 // 2. Maintain a separate mapping of nodes to source positions
 // 3. Wait for upstream support in golang.org/x/net/html
 func TestRequiredAttributeError(t *testing.T) {
-	vue := vuego.NewVue(os.DirFS("testdata/pages"))
+	vue := vuego.NewVue(os.DirFS("testdata"))
 
 	data := map[string]any{
 		// Both pageTitle and pageAuthor are missing to trigger validation errors
@@ -37,7 +37,7 @@ func TestRequiredAttributeError(t *testing.T) {
 // TestRootLevelTemplateRequired tests that a root-level template with :required attribute
 // validates the required attribute at the document root level.
 func TestRootLevelTemplateRequired(t *testing.T) {
-	vue := vuego.NewVue(os.DirFS("testdata/pages"))
+	vue := vuego.NewVue(os.DirFS("testdata"))
 
 	data := map[string]any{
 		// Missing 'title' which is required by the template
@@ -52,7 +52,7 @@ func TestRootLevelTemplateRequired(t *testing.T) {
 // TestRootLevelTemplateRequiredSuccess tests that a root-level template with :required attribute
 // renders successfully when the required attribute is provided.
 func TestRootLevelTemplateRequiredSuccess(t *testing.T) {
-	vue := vuego.NewVue(os.DirFS("testdata/pages"))
+	vue := vuego.NewVue(os.DirFS("testdata"))
 
 	data := map[string]any{
 		"title": "My Page Title",
