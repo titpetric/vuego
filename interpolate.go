@@ -3,32 +3,69 @@ package vuego
 import (
 	"fmt"
 	"html"
-	"regexp"
+	"io"
 	"strings"
+	"sync"
 
 	"github.com/titpetric/vuego/internal/helpers"
 )
 
-// {{ expr }} regex (non-greedy, no nested braces)
-var interpRe = regexp.MustCompile(`\{\{\s*([^{}\s][^{}]*?)\s*\}\}`)
+// bufferPool reuses strings.Builder instances to reduce allocations.
+var bufferPool = sync.Pool{
+	New: func() any { return &strings.Builder{} },
+}
 
-// interpolate escapes interpolated values for HTML safety.
-func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
+// interpolateToWriter writes interpolated values to w, escaping for HTML safety.
+// This is the core implementation that does not allocate a string result.
+func (v *Vue) interpolateToWriter(ctx VueContext, w io.Writer, input string) error {
 	if !strings.Contains(input, "{{") {
-		return input, nil
+		_, err := io.WriteString(w, input)
+		return err
 	}
 
-	var out strings.Builder
+	// Sanity check: {{ should match }}
+	if strings.Count(input, "{{") != strings.Count(input, "}}") {
+		return fmt.Errorf("mismatched interpolation braces: %d {{ vs %d }}", strings.Count(input, "{{"), strings.Count(input, "}}"))
+	}
+
 	last := 0
-	for _, match := range interpRe.FindAllStringSubmatchIndex(input, -1) {
-		start := match[0]
-		end := match[1]
-		exprStart := match[2]
-		exprEnd := match[3]
 
-		out.WriteString(input[last:start])
+	for {
+		// Find the next {{ occurrence
+		start := strings.Index(input[last:], "{{")
+		if start < 0 {
+			break
+		}
+		start += last
 
-		expr := strings.TrimSpace(input[exprStart:exprEnd])
+		// Find the closing }}
+		endPos := strings.Index(input[start+2:], "}}")
+		if endPos < 0 {
+			break
+		}
+		endPos += start + 2  // Position of first }
+		endPos += 2          // Skip past }}
+
+		// Write the text before the interpolation
+		if _, err := io.WriteString(w, input[last:start]); err != nil {
+			return err
+		}
+
+		// Extract the expression between {{ and }}, trim whitespace
+		exprStart := start + 2
+		exprEnd := endPos - 2
+
+		// Skip leading whitespace
+		for exprStart < exprEnd && (input[exprStart] == ' ' || input[exprStart] == '\t' || input[exprStart] == '\n' || input[exprStart] == '\r') {
+			exprStart++
+		}
+
+		// Skip trailing whitespace
+		for exprEnd > exprStart && (input[exprEnd-1] == ' ' || input[exprEnd-1] == '\t' || input[exprEnd-1] == '\n' || input[exprEnd-1] == '\r') {
+			exprEnd--
+		}
+
+		expr := input[exprStart:exprEnd]
 
 		var val any
 		var err error
@@ -38,7 +75,7 @@ func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 			pipe := parsePipeExpr(expr)
 			val, err = v.evalPipe(ctx, pipe)
 			if err != nil {
-				return "", fmt.Errorf("in expression '{{ %s }}': %w", expr, err)
+				return fmt.Errorf("in expression '{{ %s }}': %w", expr, err)
 			}
 		} else {
 			// Simple variable reference
@@ -51,15 +88,39 @@ func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 
 		if val != nil {
 			// Escape value for HTML output
-			out.WriteString(html.EscapeString(fmt.Sprint(val)))
-		} else {
-			out.WriteString("")
+			if _, err := io.WriteString(w, html.EscapeString(fmt.Sprint(val))); err != nil {
+				return err
+			}
 		}
 
-		last = end
+		last = endPos
 	}
 
-	out.WriteString(input[last:])
+	// Write remaining text
+	if _, err := io.WriteString(w, input[last:]); err != nil {
+		return err
+	}
 
-	return out.String(), nil
+	return nil
+}
+
+// interpolate escapes interpolated values for HTML safety.
+// Uses a buffer pool to minimize allocations.
+func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
+	buf := bufferPool.Get().(*strings.Builder)
+	defer func() {
+		buf.Reset()
+		bufferPool.Put(buf)
+	}()
+
+	if err := v.interpolateToWriter(ctx, buf, input); err != nil {
+		return "", err
+	}
+
+	// Early return for no-interpolation case
+	if !strings.Contains(input, "{{") {
+		return input, nil
+	}
+
+	return buf.String(), nil
 }
