@@ -1,0 +1,14 @@
+<div>
+  <div v-if="showWelcome">
+    <h1>Welcome!</h1>
+  </div>
+  <div v-if="!showWelcome">
+    <h1>Goodbye!</h1>
+  </div>
+  <div v-if="len(users)">
+    <h3>Users ({{ users | len }}):</h3>
+    <ul>
+      <li v-for="user in users">{{ user.name }} - {{ user.email }}</li>
+    </ul>
+  </div>
+</div>

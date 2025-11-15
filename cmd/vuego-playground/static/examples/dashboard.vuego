@@ -1,0 +1,34 @@
+<div>
+  <h1>My Dashboard</h1>
+  <p>{{ date }}</p>
+
+  <h2>🌤️ Weather</h2>
+  <p><strong>{{ weather.location }}</strong></p>
+  <p>{{ weather.temperature }}°C - {{ weather.condition }}</p>
+  <p><em>Feels like {{ weather.feelsLike }}°C</em></p>
+  <ul>
+    <li>Humidity: {{ weather.humidity }}%</li>
+    <li>Wind: {{ weather.wind }} km/h</li>
+  </ul>
+
+  <h2>📅 Calendar</h2>
+  <ul>
+    <li v-for="event in calendar">
+      <strong>{{ event.time }}</strong> - {{ event.title }}
+      <div v-if="event.location" style="padding-left: 1.5em; color: #666;">
+        📍 {{ event.location }}
+      </div>
+    </li>
+  </ul>
+
+  <h2>✅ Today's Tasks</h2>
+  <ul style="list-style: none; padding-left: 0;">
+    <li v-for="task in tasks">
+      <input type="checkbox" v-bind:checked="task.done" v-bind:id="task.id">
+      <label v-bind:for="task.id" v-bind:style="task.done ? 'text-decoration: line-through; color: #999;' : ''">
+        {{ task.title }}
+      </label>
+      <div v-if="task.priority === 'high'" style="display: inline; color: #c53030; margin-left: 0.5em;">⚠️</div>
+    </li>
+  </ul>
+</div>

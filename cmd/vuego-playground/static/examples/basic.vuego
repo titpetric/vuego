@@ -1,0 +1,7 @@
+<div>
+  <h1>{{ title }}</h1>
+  <p>Hello, {{ name }}!</p>
+  <ul>
+    <li v-for="item in items">{{ item }}</li>
+  </ul>
+</div>

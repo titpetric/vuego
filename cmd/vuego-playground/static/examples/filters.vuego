@@ -1,0 +1,6 @@
+<div>
+  <h2>{{ heading | upper }}</h2>
+  <p>{{ text | trim | title }}</p>
+  <p>Count: {{ items | len }}</p>
+  <p>Default: {{ missing | default("Not provided") }}</p>
+</div>

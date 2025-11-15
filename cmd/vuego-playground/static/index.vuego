@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VueGo Playground</title>
+    <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <header>
+        <h1>VueGo Playground</h1>
+        <div class="subtitle">Test your VueGo templates in real-time</div>
+    </header>
+
+    <div class="config-bar">
+        <label>
+            <input type="checkbox" id="autoRefresh" checked>
+            Auto-refresh
+        </label>
+        <button onclick="render()">Render Now</button>
+        <span v-for="example in ExampleList">
+            <button class="{{ example.ButtonClass }}" v-bind:onclick="example.OnClick">{{ example.Label }}</button>
+        </span>
+        <div class="spinner" id="spinner"></div>
+        <span class="status-text" id="status"></span>
+    </div>
+
+    <main>
+        <div class="panel">
+            <div class="panel-header">Data (JSON)</div>
+            <div class="panel-content">
+                <textarea id="data" placeholder="Enter JSON data here...">{{ FirstExample.Data }}</textarea>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Template</div>
+            <div class="panel-content">
+                <textarea id="template" placeholder="Enter your VueGo template here...">{{ FirstExample.Template }}</textarea>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Output</div>
+            <div class="panel-content">
+                <iframe id="preview"></iframe>
+                <div id="error"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/index.js"></script>
+</body>
+</html>
