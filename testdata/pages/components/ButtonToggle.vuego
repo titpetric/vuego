@@ -1,0 +1,149 @@
+<template>
+  <div class="button-toggle">
+    <div class="button-group" id="buttonGroup">
+      <button class="button-toggle__btn" data-option="draft">
+        <span class="button-toggle__icon">📝</span>
+        <span class="button-toggle__label">Draft</span>
+      </button>
+      <button class="button-toggle__btn" data-option="review">
+        <span class="button-toggle__icon">👁️</span>
+        <span class="button-toggle__label">Review</span>
+      </button>
+      <button class="button-toggle__btn" data-option="published">
+        <span class="button-toggle__icon">✅</span>
+        <span class="button-toggle__label">Published</span>
+      </button>
+      <button class="button-toggle__btn" data-option="archived">
+        <span class="button-toggle__icon">📦</span>
+        <span class="button-toggle__label">Archived</span>
+      </button>
+    </div>
+    <div class="button-toggle__info" id="infoPanel" style="display: none;">
+      <p class="button-toggle__description" id="description"></p>
+      <div class="button-toggle__badge" id="badge"></div>
+    </div>
+  </div>
+</template>
+
+<script v-once>
+const descriptions = {
+  draft: 'Work in progress, not published',
+  review: 'Pending review from team',
+  published: 'Live and visible to all',
+  archived: 'Stored for historical reference'
+};
+
+let selectedId = 'draft';
+
+function selectOption(optionId) {
+  selectedId = optionId;
+  
+  // Update button states
+  const buttons = document.querySelectorAll('.button-toggle__btn');
+  buttons.forEach(btn => {
+    btn.classList.remove('button-toggle__btn--active');
+    if (btn.dataset.option === optionId) {
+      btn.classList.add('button-toggle__btn--active');
+    }
+  });
+  
+  // Update info panel
+  const infoPanel = document.getElementById('infoPanel');
+  const description = document.getElementById('description');
+  const badge = document.getElementById('badge');
+  
+  infoPanel.style.display = 'block';
+  description.textContent = descriptions[optionId];
+  badge.textContent = optionId;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+  const buttons = document.querySelectorAll('.button-toggle__btn');
+  
+  buttons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      selectOption(this.dataset.option);
+    });
+  });
+  
+  // Set initial state
+  selectOption('draft');
+});
+</script>
+
+<style v-once>
+.button-toggle {
+  padding: 24px;
+  max-width: 500px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.button-toggle__btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 2px solid #e0e0e0;
+  background-color: #ffffff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.button-toggle__btn:hover {
+  border-color: #999;
+  background-color: #f5f5f5;
+}
+
+.button-toggle__btn--active {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+  color: #1e40af;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.button-toggle__icon {
+  font-size: 18px;
+}
+
+.button-toggle__label {
+  font-weight: 600;
+}
+
+.button-toggle__info {
+  padding: 16px;
+  background-color: #f9fafb;
+  border-left: 4px solid #2563eb;
+  border-radius: 4px;
+}
+
+.button-toggle__description {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.button-toggle__badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+</style>

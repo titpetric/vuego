@@ -1,0 +1,34 @@
+{
+  "title": "Button Toggle Component",
+  "description": "Interactive button toggle component for status selection",
+  "componentName": "ButtonToggle",
+  "exampleData": {
+    "options": [
+      {
+        "id": "draft",
+        "label": "Draft",
+        "icon": "📝",
+        "description": "Work in progress, not published"
+      },
+      {
+        "id": "review",
+        "label": "Review",
+        "icon": "👁️",
+        "description": "Pending review from team"
+      },
+      {
+        "id": "published",
+        "label": "Published",
+        "icon": "✅",
+        "description": "Live and visible to all"
+      },
+      {
+        "id": "archived",
+        "label": "Archived",
+        "icon": "📦",
+        "description": "Stored for historical reference"
+      }
+    ],
+    "initialSelection": "draft"
+  }
+}
