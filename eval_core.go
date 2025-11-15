@@ -90,6 +90,22 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			}
 
 			if tag == "template" {
+				// Validate :required attributes on root-level templates
+				var requiredAttrs []string
+				for _, attr := range node.Attr {
+					if attr.Key == ":require" || attr.Key == ":required" {
+						requiredAttrs = append(requiredAttrs, attr.Val)
+					}
+				}
+
+				// Check if all required attributes are provided in context
+				for _, required := range requiredAttrs {
+					_, exists := ctx.stack.Lookup(required)
+					if !exists {
+						return nil, fmt.Errorf("required attribute '%s' not provided", required)
+					}
+				}
+
 				// Omit template tags at the top level
 				evaluated, err := v.evaluateChildren(ctx, node, depth+1)
 				if err != nil {

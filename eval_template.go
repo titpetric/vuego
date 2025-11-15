@@ -2,7 +2,6 @@ package vuego
 
 import (
 	"fmt"
-	"strings"
 
 	"golang.org/x/net/html"
 )
@@ -24,7 +23,7 @@ func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map
 		// Validate :required attributes
 		var requiredAttrs []string
 		for _, attr := range templateNode.Attr {
-			if strings.HasPrefix(attr.Key, ":required") || strings.HasPrefix(attr.Key, ":require") {
+			if attr.Key == ":require" || attr.Key == ":required" {
 				requiredAttrs = append(requiredAttrs, attr.Val)
 			}
 		}
