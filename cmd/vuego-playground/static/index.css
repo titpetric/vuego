@@ -127,6 +127,38 @@ h1 {
     margin: 0;
 }
 
+h1 a {
+    color: white;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+h1 a:hover {
+    opacity: 0.8;
+}
+
+.github-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.github-badge:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.github-badge svg {
+    width: 24px;
+    height: 24px;
+}
+
 .subtitle {
     font-size: 0.9rem;
     opacity: 0.9;
