@@ -19,9 +19,76 @@ header {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+.header-left {
+    flex: 1;
+}
+
+.header-right {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.header-right button {
+    background: white;
+    color: #007d9c;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.header-right button:hover:not(:disabled) {
+    background: #f0f0f0;
+    transform: translateY(-1px);
+}
+
+.header-right button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-render {
+    background: #28a745 !important;
+    color: white !important;
+}
+
+.btn-render:hover:not(:disabled) {
+    background: #218838 !important;
+}
+
+.btn-save {
+    background: #ffc107 !important;
+    color: #333 !important;
+}
+
+.btn-save:hover:not(:disabled) {
+    background: #e0a800 !important;
+}
+
+.btn-create {
+    background: #17a2b8 !important;
+    color: white !important;
+}
+
+.btn-create:hover:not(:disabled) {
+    background: #138496 !important;
+}
+
 h1 {
     font-size: 1.5rem;
     font-weight: 500;
+    margin: 0;
 }
 
 .subtitle {
@@ -173,4 +240,156 @@ button.example-nested:hover {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Footer with cheatsheet */
+.cheatsheet-footer {
+    background: white;
+    border-top: 1px solid #e9ecef;
+    padding: 1rem 2rem;
+    height: 150px;
+    overflow-y: auto;
+    box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
+}
+
+.cheatsheet-content {
+    max-width: 100%;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #495057;
+}
+
+.cheatsheet-content h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #007d9c;
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.cheatsheet-content h4:first-child {
+    margin-top: 0;
+}
+
+.cheatsheet-content ul {
+    margin: 0.25rem 0 0.5rem 1.5rem;
+    padding: 0;
+}
+
+.cheatsheet-content li {
+    margin: 0.1rem 0;
+}
+
+.cheatsheet-content code {
+    background: #f5f5f5;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.8em;
+}
+
+/* Modal for creating new files */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 2rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 400px;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #007d9c;
+}
+
+.modal-content > div {
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.modal-content label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.modal-content input[type="radio"] {
+    cursor: pointer;
+}
+
+.modal-content input[type="text"] {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.modal-content input[type="text"]:focus {
+    outline: none;
+    border-color: #007d9c;
+    box-shadow: 0 0 0 3px rgba(0, 125, 156, 0.1);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.modal-buttons button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.modal-buttons button:first-child {
+    background: #007d9c;
+    color: white;
+}
+
+.modal-buttons button:first-child:hover {
+    background: #006080;
+}
+
+.modal-buttons button:last-child {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.modal-buttons button:last-child:hover {
+    background: #dee2e6;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #007d9c;
 }

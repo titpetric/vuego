@@ -1,6 +1,7 @@
 let examples = {};
 let debounceTimer = null;
 let isRendering = false;
+let isEmbedFS = true; // Will be set by server
 
 // Load examples from the server (for getting template/data when a button is clicked)
 async function loadExamples() {
@@ -208,10 +209,126 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// Load and display the cheatsheet footer
+async function loadCheatsheet() {
+    try {
+        const response = await fetch('/api/cheatsheet');
+        const result = await response.json();
+        if (result.content) {
+            document.getElementById('cheatsheetContent').innerHTML = result.content;
+        }
+    } catch (e) {
+        console.error('Failed to load cheatsheet:', e);
+    }
+}
+
+// Show/hide create modal
+function showCreateDialog() {
+    document.getElementById('createModal').style.display = 'block';
+    document.getElementById('fileName').focus();
+}
+
+function closeCreateDialog() {
+    document.getElementById('createModal').style.display = 'none';
+    document.getElementById('fileName').value = '';
+}
+
+// Create a new file (page or component)
+async function createFile() {
+    const fileName = document.getElementById('fileName').value.trim();
+    const fileType = document.querySelector('input[name="fileType"]:checked').value;
+    
+    if (!fileName) {
+        alert('Please enter a file name');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: fileName,
+                type: fileType
+            })
+        });
+        
+        const result = await response.json();
+        if (result.error) {
+            alert(`Error: ${result.error}`);
+        } else {
+            alert(`Created ${result.path}`);
+            closeCreateDialog();
+            // Reload examples
+            await loadExamples();
+        }
+    } catch (e) {
+        alert(`Failed to create file: ${e.message}`);
+    }
+}
+
+// Save current template and data to files
+async function save() {
+    const template = document.getElementById('template').value;
+    const data = document.getElementById('data').value;
+    
+    try {
+        const response = await fetch('/api/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                template: template,
+                data: data
+            })
+        });
+        
+        const result = await response.json();
+        if (result.error) {
+            alert(`Error: ${result.error}`);
+        } else {
+            alert('Files saved successfully');
+        }
+    } catch (e) {
+        alert(`Failed to save: ${e.message}`);
+    }
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('createModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+};
+
 // Auto-render on load
 window.addEventListener('load', async () => {
     // Load examples from server
     await loadExamples();
+    
+    // Load cheatsheet
+    await loadCheatsheet();
+    
+    // Check if using embedded FS and disable create/save
+    try {
+        const response = await fetch('/api/status');
+        const result = await response.json();
+        isEmbedFS = result.isEmbedFS || true;
+        
+        document.getElementById('saveBtn').disabled = isEmbedFS;
+        document.getElementById('createBtn').disabled = isEmbedFS;
+        
+        if (isEmbedFS) {
+            document.getElementById('saveBtn').title = 'Save is disabled when using embedded filesystem';
+            document.getElementById('createBtn').title = 'Create is disabled when using embedded filesystem';
+        }
+    } catch (e) {
+        console.error('Failed to check server status:', e);
+    }
     
     // Render with server-provided initial template and data
     setTimeout(render, 100);

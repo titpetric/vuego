@@ -124,10 +124,15 @@ func NewIndexPageData(examples map[string]Example) IndexPageData {
 func main() {
 	// Determine the examples filesystem
 	var examplesFS fs.FS
+	var examplesDir string
+	isEmbedded := true
+
 	if len(os.Args) > 1 {
 		// Use command-line argument as the source folder
-		examplesFS = os.DirFS(os.Args[1])
-		log.Printf("Loading examples from: %s", os.Args[1])
+		examplesDir = os.Args[1]
+		examplesFS = os.DirFS(examplesDir)
+		isEmbedded = false
+		log.Printf("Loading examples from: %s", examplesDir)
 	} else {
 		// Use embedded static/examples
 		var err error
@@ -177,6 +182,29 @@ func main() {
 	// API endpoint for loading examples
 	mux.HandleFunc("/api/examples", func(w http.ResponseWriter, r *http.Request) {
 		handleExamples(w, r, examplesFS)
+	})
+
+	// API endpoint for server status
+	mux.HandleFunc("/api/status", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]bool{
+			"isEmbedFS": isEmbedded,
+		})
+	})
+
+	// API endpoint for cheatsheet
+	mux.HandleFunc("/api/cheatsheet", func(w http.ResponseWriter, r *http.Request) {
+		handleCheatsheet(w, r)
+	})
+
+	// API endpoint for saving files
+	mux.HandleFunc("/api/save", func(w http.ResponseWriter, r *http.Request) {
+		handleSave(w, r, examplesDir, isEmbedded)
+	})
+
+	// API endpoint for creating files
+	mux.HandleFunc("/api/create", func(w http.ResponseWriter, r *http.Request) {
+		handleCreate(w, r, examplesDir, isEmbedded)
 	})
 
 	port := ":8080"
@@ -352,4 +380,173 @@ func (cfs *combinedFilesystem) Open(name string) (fs.File, error) {
 // Ensure combinedFilesystem implements fs.ReadDirFS
 func (cfs *combinedFilesystem) ReadDir(name string) ([]fs.DirEntry, error) {
 	return fs.ReadDir(cfs.secondary, name)
+}
+
+// handleCheatsheet renders the footer.vuego component and returns HTML
+func handleCheatsheet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var buf bytes.Buffer
+	vue := vuego.NewVue(staticFS)
+	err := vue.RenderFragment(&buf, "static/footer.vuego", map[string]any{})
+
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"content": buf.String(),
+	})
+}
+
+// SaveRequest contains template and data to be saved
+type SaveRequest struct {
+	Template string `json:"template"`
+	Data     string `json:"data"`
+}
+
+// SaveResponse contains the save operation result
+type SaveResponse struct {
+	Error string `json:"error,omitempty"`
+	Path  string `json:"path,omitempty"`
+}
+
+// handleSave saves the current template and data to files
+func handleSave(w http.ResponseWriter, r *http.Request, examplesDir string, isEmbedded bool) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		json.NewEncoder(w).Encode(SaveResponse{
+			Error: "Method not allowed",
+		})
+		return
+	}
+
+	if isEmbedded {
+		json.NewEncoder(w).Encode(SaveResponse{
+			Error: "cannot save to embedded filesystem",
+		})
+		return
+	}
+
+	var req SaveRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		json.NewEncoder(w).Encode(SaveResponse{
+			Error: fmt.Sprintf("Invalid JSON: %v", err),
+		})
+		return
+	}
+
+	// Save template to template.vuego
+	templatePath := filepath.Join(examplesDir, "template.vuego")
+	if err := os.WriteFile(templatePath, []byte(req.Template), 0644); err != nil {
+		json.NewEncoder(w).Encode(SaveResponse{
+			Error: fmt.Sprintf("Failed to save template: %v", err),
+		})
+		return
+	}
+
+	// Save data to data.json
+	dataPath := filepath.Join(examplesDir, "data.json")
+	if err := os.WriteFile(dataPath, []byte(req.Data), 0644); err != nil {
+		json.NewEncoder(w).Encode(SaveResponse{
+			Error: fmt.Sprintf("Failed to save data: %v", err),
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(SaveResponse{
+		Path: "template.vuego and data.json",
+	})
+}
+
+// CreateRequest contains file creation parameters
+type CreateRequest struct {
+	Name string `json:"name"`
+	Type string `json:"type"` // "page" or "component"
+}
+
+// CreateResponse contains the creation result
+type CreateResponse struct {
+	Error string `json:"error,omitempty"`
+	Path  string `json:"path,omitempty"`
+}
+
+// handleCreate creates a new template or component file
+func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, isEmbedded bool) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		json.NewEncoder(w).Encode(CreateResponse{
+			Error: "Method not allowed",
+		})
+		return
+	}
+
+	if isEmbedded {
+		json.NewEncoder(w).Encode(CreateResponse{
+			Error: "cannot create files in embedded filesystem",
+		})
+		return
+	}
+
+	var req CreateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		json.NewEncoder(w).Encode(CreateResponse{
+			Error: fmt.Sprintf("Invalid JSON: %v", err),
+		})
+		return
+	}
+
+	// Sanitize filename
+	filename := filepath.Base(req.Name)
+	if filename == "" || filename == "." || filename == ".." {
+		json.NewEncoder(w).Encode(CreateResponse{
+			Error: "invalid filename",
+		})
+		return
+	}
+
+	var filePath string
+	if req.Type == "component" {
+		// Create components directory if it doesn't exist
+		compDir := filepath.Join(examplesDir, "components")
+		if err := os.MkdirAll(compDir, 0755); err != nil {
+			json.NewEncoder(w).Encode(CreateResponse{
+				Error: fmt.Sprintf("Failed to create components directory: %v", err),
+			})
+			return
+		}
+		filePath = filepath.Join(compDir, filename+".vuego")
+	} else {
+		// Page type (default)
+		filePath = filepath.Join(examplesDir, filename+".vuego")
+	}
+
+	// Check if file already exists
+	if _, err := os.Stat(filePath); err == nil {
+		json.NewEncoder(w).Encode(CreateResponse{
+			Error: "file already exists",
+		})
+		return
+	}
+
+	// Create the file with a basic template
+	templateContent := `<div class="` + filename + `">
+  <!-- Add your template here -->
+</div>
+`
+	if err := os.WriteFile(filePath, []byte(templateContent), 0644); err != nil {
+		json.NewEncoder(w).Encode(CreateResponse{
+			Error: fmt.Sprintf("Failed to create file: %v", err),
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(CreateResponse{
+		Path: filePath,
+	})
 }

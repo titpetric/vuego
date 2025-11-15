@@ -8,8 +8,17 @@
 </head>
 <body>
     <header>
-        <h1>VueGo Playground</h1>
-        <div class="subtitle">Test your VueGo templates in real-time</div>
+        <div class="header-container">
+            <div class="header-left">
+                <h1>VueGo Playground</h1>
+                <div class="subtitle">Test your VueGo templates in real-time</div>
+            </div>
+            <div class="header-right">
+                <button class="btn-render" onclick="render()">Render Now</button>
+                <button class="btn-save" id="saveBtn" onclick="save()">Save</button>
+                <button class="btn-create" id="createBtn" onclick="showCreateDialog()">Create</button>
+            </div>
+        </div>
     </header>
 
     <div class="config-bar">
@@ -17,7 +26,6 @@
             <input type="checkbox" id="autoRefresh" checked>
             Auto-refresh
         </label>
-        <button onclick="render()">Render Now</button>
         <span v-for="example in ExampleList">
             <button class="{{ example.ButtonClass }}" v-bind:onclick="example.OnClick">{{ example.Label }}</button>
         </span>
@@ -48,6 +56,31 @@
             </div>
         </div>
     </main>
+
+    <footer id="footer" class="cheatsheet-footer">
+        <div class="cheatsheet-content" id="cheatsheetContent"></div>
+    </footer>
+
+    <!-- Modal for creating new files -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateDialog()">&times;</span>
+            <h2>Create New File</h2>
+            <div>
+                <label>
+                    <input type="radio" name="fileType" value="page" checked> Page (root)
+                </label>
+                <label>
+                    <input type="radio" name="fileType" value="component"> Component (components/)
+                </label>
+            </div>
+            <input type="text" id="fileName" placeholder="Enter file name (without extension)" />
+            <div class="modal-buttons">
+                <button onclick="createFile()">Create</button>
+                <button onclick="closeCreateDialog()">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <script src="/index.js"></script>
 </body>
