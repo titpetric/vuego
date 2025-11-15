@@ -1,0 +1,12 @@
+.git
+testdata
+tests
+.vale
+.vale.ini
+*.json
+*.out
+*.cov
+*.txt
+*.test
+vuego
+vuego-playground

@@ -1,13 +1,12 @@
-version: "3.8"
-
 services:
   vuego-playground:
     build:
-      context: .
+      context: ${PWD}
       dockerfile: docker/playground/Dockerfile
+      network: host
     ports:
       - "8080:8080"
     volumes:
-      - ./cmd/vuego-playground/static:/app/examples
+      - $PWD/docker/playground/cmd/vuego-playground/static:/app/examples
     environment:
       - LOG_LEVEL=info

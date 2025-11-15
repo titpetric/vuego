@@ -14,7 +14,7 @@ COPY . .
 # Build the playground binary
 RUN go build -o vuego-playground ./cmd/vuego-playground
 
-FROM alpine:latest
+FROM golang:latest
 
 WORKDIR /app
 
@@ -23,4 +23,4 @@ COPY --from=builder /build/vuego-playground .
 
 EXPOSE 8080
 
-CMD ["./vuego-playground"]
+ENTRYPOINT ["./vuego-playground"]

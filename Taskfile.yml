@@ -3,7 +3,8 @@ version: "3"
 
 includes:
   mdox: ./Taskfile.mdox.yml
-  docker: ./docker/playground/Taskfile.yml
+  docker:
+    taskfile: ./docker/playground/Taskfile.yml
 
 vars:
   goversion:

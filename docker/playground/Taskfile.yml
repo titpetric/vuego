@@ -5,12 +5,10 @@ tasks:
   build:
     desc: "Build the vuego-playground Docker image"
     cmds:
-      - docker build --network=host -t vuego-playground:latest -f docker/playground/Dockerfile .
+      - docker compose -f docker/playground/docker-compose.yml --progress=plain build --no-cache
 
   up:
     desc: "Start the vuego-playground with docker compose"
-    deps:
-      - build
     cmds:
       - docker compose -f docker/playground/docker-compose.yml up -d
 
