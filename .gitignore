@@ -1,5 +1,8 @@
 # Coverage files
 *.out
+*.test
+*.txt
+*.prof
 pkg.cov
 pkg.cov.json
 go-fsck.json
