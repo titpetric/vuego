@@ -854,7 +854,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "cannot convert argument 0")
+		require.Equal(t, "in test.vuego: in expression '{{ convert(\"not-a-number\") }}': convert(): cannot convert argument 0 from string to int", err.Error())
 	})
 
 	t.Run("invalid string to float", func(t *testing.T) {
@@ -875,7 +875,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "cannot convert argument 0")
+		require.Equal(t, "in test.vuego: in expression '{{ convert(\"not-a-float\") }}': convert(): cannot convert argument 0 from string to float64", err.Error())
 	})
 
 	t.Run("invalid string to bool", func(t *testing.T) {
@@ -896,7 +896,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "cannot convert argument 0")
+		require.Equal(t, "in test.vuego: in expression '{{ convert(\"maybe\") }}': convert(): cannot convert argument 0 from string to bool", err.Error())
 	})
 }
 
@@ -1133,6 +1133,90 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		require.Contains(t, output, `"status":"active"`)
 		require.Contains(t, output, `"count":42`)
 		require.NotContains(t, output, `&#34;`)
+	})
+}
+
+func TestVue_Funcs_LoadSVG(t *testing.T) {
+	t.Run("loadSVG returns file content as string", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ loadSVG("icons/star.svg") }}</div>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"loadSVG": func(path string) (string, error) {
+				return "svg content", nil
+			},
+		})
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.NoError(t, err)
+		require.Contains(t, buf.String(), "svg content")
+	})
+
+	t.Run("loadSVG breaks rendering on missing file", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ loadSVG("missing.svg") }}</div>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"loadSVG": func(path string) (string, error) {
+				return "", fmt.Errorf("failed to load SVG file '%s'", path)
+			},
+		})
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.Error(t, err)
+		require.Equal(t, "in test.vuego: in expression '{{ loadSVG(\"missing.svg\") }}': loadSVG(): failed to load SVG file 'missing.svg'", err.Error())
+	})
+
+	t.Run("loadSVG error propagates through pipe", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ path | loadSVG }}</div>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"loadSVG": func(path string) (string, error) {
+				return "", fmt.Errorf("failed to load SVG file '%s'", path)
+			},
+		})
+		data := map[string]any{
+			"path": "icons/check.svg",
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.Error(t, err)
+		require.Equal(t, "in test.vuego: in expression '{{ path | loadSVG }}': loadSVG(): failed to load SVG file 'icons/check.svg'", err.Error())
+	})
+
+	t.Run("loadSVG error context includes template name", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ loadSVG("icons/nonexistent.svg") }}</div>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"loadSVG": func(path string) (string, error) {
+				return "", fmt.Errorf("failed to load SVG file '%s'", path)
+			},
+		})
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		require.Error(t, err)
+		require.Equal(t, "in test.vuego: in expression '{{ loadSVG(\"icons/nonexistent.svg\") }}': loadSVG(): failed to load SVG file 'icons/nonexistent.svg'", err.Error())
 	})
 }
 

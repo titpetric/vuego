@@ -412,6 +412,23 @@ func convertValue(val reflect.Value, targetType reflect.Type) (reflect.Value, bo
 }
 
 // DefaultFuncMap returns a FuncMap with built-in utility functions
+func (v *Vue) DefaultFuncMap() FuncMap {
+	return FuncMap{
+		"upper":      upperFunc,
+		"lower":      lowerFunc,
+		"title":      titleFunc,
+		"formatTime": formatTimeFunc,
+		"default":    defaultFunc,
+		"len":        lenFunc,
+		"trim":       trimFunc,
+		"escape":     escapeFunc,
+		"int":        intFunc,
+		"string":     stringFunc,
+		"json":       jsonFunc,
+	}
+}
+
+// DefaultFuncMap returns a FuncMap with built-in utility functions (package-level convenience)
 func DefaultFuncMap() FuncMap {
 	return FuncMap{
 		"upper":      upperFunc,

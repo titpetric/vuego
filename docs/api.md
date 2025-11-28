@@ -158,6 +158,7 @@ type VueContext struct {
 - `func (*Stack) Push (m map[string]any)`
 - `func (*Stack) Resolve (expr string) (any, bool)`
 - `func (*Stack) Set (key string, val any)`
+- `func (*Vue) DefaultFuncMap () FuncMap`
 - `func (*Vue) Funcs (funcMap FuncMap) *Vue`
 - `func (*Vue) RegisterNodeProcessor (processor NodeProcessor) *Vue`
 - `func (*Vue) Render (w io.Writer, filename string, data any) error`
@@ -170,7 +171,7 @@ type VueContext struct {
 
 ### DefaultFuncMap
 
-DefaultFuncMap returns a FuncMap with built-in utility functions
+DefaultFuncMap returns a FuncMap with built-in utility functions (package-level convenience)
 
 ```go
 func DefaultFuncMap() FuncMap
@@ -397,6 +398,14 @@ Set sets a key in the top-most Stack.
 func (*Stack) Set(key string, val any)
 ```
 
+### DefaultFuncMap
+
+DefaultFuncMap returns a FuncMap with built-in utility functions
+
+```go
+func (*Vue) DefaultFuncMap() FuncMap
+```
+
 ### Funcs
 
 Funcs sets custom template functions. Returns the Vue instance for chaining.
@@ -415,7 +424,7 @@ func (*Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue
 
 ### Render
 
-Render processes a full-page template file and writes the output to w.
+Render processes a full-page template file and writes the output to w. Render is safe to call concurrently from multiple goroutines.
 
 ```go
 func (*Vue) Render(w io.Writer, filename string, data any) error

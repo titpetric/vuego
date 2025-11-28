@@ -119,14 +119,15 @@ func (ctx *VueContext) nextSeenID() string {
 // NewVue creates a new Vue backed by the given filesystem.
 // The returned Vue is safe for concurrent use by multiple goroutines.
 func NewVue(templateFS fs.FS) *Vue {
-	return &Vue{
+	v := &Vue{
 		templateFS:    templateFS,
 		loader:        NewLoader(templateFS),
 		renderer:      NewRenderer(),
-		funcMap:       DefaultFuncMap(),
 		exprEval:      NewExprEvaluator(),
 		templateCache: make(map[string][]*html.Node),
 	}
+	v.funcMap = v.DefaultFuncMap()
+	return v
 }
 
 // Funcs sets custom template functions. Returns the Vue instance for chaining.

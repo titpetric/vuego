@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.75%   | 763       | 2516  |
+| ✅     | titpetric/vuego                      | 84.95%   | 763       | 2534  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 487   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.32%   | 172       | 512   |
@@ -53,10 +53,11 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Stack.Lookup                      | 100.00%  | 6         |
 | ✅     | titpetric/vuego                      | Stack.Pop                         | 90.90%   | 6         |
 | ✅     | titpetric/vuego                      | Stack.Push                        | 100.00%  | 1         |
-| ✅     | titpetric/vuego                      | Stack.Resolve                     | 86.70%   | 8         |
+| ✅     | titpetric/vuego                      | Stack.Resolve                     | 93.30%   | 8         |
 | ✅     | titpetric/vuego                      | Stack.Set                         | 66.70%   | 1         |
 | ✅     | titpetric/vuego                      | Stack.resolveStep                 | 100.00%  | 8         |
 | ✅     | titpetric/vuego                      | Stack.splitPath                   | 0.00%    | 0         |
+| ✅     | titpetric/vuego                      | Vue.DefaultFuncMap                | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Vue.Funcs                         | 80.00%   | 2         |
 | ✅     | titpetric/vuego                      | Vue.RegisterNodeProcessor         | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | Vue.Render                        | 81.80%   | 3         |

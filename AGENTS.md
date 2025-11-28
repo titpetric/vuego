@@ -69,6 +69,8 @@ require.True(t, condition, "optional message")
 
 **Error message assertions:**
 
+When asserting on `err.Error()`, always assert the **full error message**, not partial components:
+
 ```go
 // Good: Assert on complete error message
 require.Equal(t, "in test.html: in expression '{{ items | double }}': double(): cannot convert argument 0 from []string to int", err.Error())
@@ -77,6 +79,12 @@ require.Equal(t, "in test.html: in expression '{{ items | double }}': double(): 
 require.Contains(t, err.Error(), "double()") // Don't decompose errors
 require.Contains(t, err.Error(), "cannot convert")
 ```
+
+This approach:
+- Documents the exact error message users will see
+- Makes it easier to refactor error messages in the future
+- Prevents brittle tests that pass with misleading partial matches
+- Better serves as API documentation
 
 **Avoid:**
 

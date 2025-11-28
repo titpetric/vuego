@@ -86,7 +86,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "function 'unknownFunc' not found")
+		require.Equal(t, "in test.vuego: in expression '{{ unknownFunc(10) }}': function 'unknownFunc' not found", err.Error())
 	})
 
 	t.Run("direct function call result used in expression", func(t *testing.T) {
@@ -172,7 +172,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "function 'badfilter' not found")
+		require.Equal(t, "in test.vuego: in expression '{{ name | upper | badfilter }}': function 'badfilter' not found", err.Error())
 	})
 }
 
@@ -213,7 +213,7 @@ func TestVue_CallFunc(t *testing.T) {
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", map[string]any{})
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "expects 1 arguments, got 2")
+		require.Equal(t, "in test.vuego: in expression '{{ needs_one(1, 2) }}': needs_one(): function expects 1 arguments, got 2", err.Error())
 	})
 
 	t.Run("string to int conversion in function call", func(t *testing.T) {
@@ -332,7 +332,7 @@ func TestVue_CallFunc(t *testing.T) {
 			"complex_obj": map[string]any{"nested": "value"},
 		})
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "cannot convert")
+		require.Equal(t, "in test.vuego: in expression '{{ process(complex_obj) }}': process(): cannot convert argument 0 from map[string]interface {} to int", err.Error())
 	})
 
 	t.Run("variadic function with multiple args", func(t *testing.T) {
@@ -374,7 +374,7 @@ func TestVue_CallFunc(t *testing.T) {
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", map[string]any{})
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "at least 2 arguments")
+		require.Equal(t, "in test.vuego: in expression '{{ needs_two(1) }}': needs_two(): function expects at least 2 arguments, got 1", err.Error())
 	})
 
 	t.Run("function returns multiple values with error", func(t *testing.T) {
