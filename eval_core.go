@@ -104,6 +104,16 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				continue
 			}
 
+			if helpers.HasAttr(node, "v-for") {
+				chainResult, skipCount, err := v.evalVFor(ctx, node, nodes[i:], depth)
+				if err != nil {
+					return nil, err
+				}
+				result = append(result, chainResult...)
+				i += skipCount
+				continue
+			}
+
 			if tag == "template" {
 				evaluated, err := v.evalTemplate(ctx, []*html.Node{node}, ctx.stack.EnvMap(), depth+1)
 				if err != nil {
@@ -128,48 +138,6 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			// Skip v-else-if and v-else if they appear without v-if
 			// (they should be handled as part of a chain)
 			if helpers.HasAttr(node, "v-else-if") || helpers.HasAttr(node, "v-else") {
-				continue
-			}
-
-			if vFor := helpers.GetAttr(node, "v-for"); vFor != "" {
-				loopNodes, err := v.evalFor(ctx, node, vFor, depth+1)
-				if err != nil {
-					return nil, err
-				}
-
-				for _, n := range loopNodes {
-					if err := v.evalVHtml(ctx, n); err != nil {
-						return nil, err
-					}
-					if err := v.evalAttributes(ctx, n); err != nil {
-						return nil, err
-					}
-				}
-
-				result = append(result, loopNodes...)
-
-				// If v-for produced no results, check for v-else on the next sibling
-				if len(loopNodes) == 0 {
-					for j := i + 1; j < len(nodes); j++ {
-						nextNode := nodes[j]
-						// Skip text nodes (whitespace)
-						if nextNode.Type != html.ElementNode {
-							continue
-						}
-						// Found the next element - check if it's v-else
-						if helpers.HasAttr(nextNode, "v-else") {
-							// Evaluate the v-else node without cloning yet - let evaluateNodeAsElement handle it
-							vElseResult, err := v.evaluateNodeAsElement(ctx, nextNode, depth)
-							if err != nil {
-								return nil, err
-							}
-							result = append(result, vElseResult...)
-							i = j // Skip to the v-else node since we've processed it
-						}
-						// Stop looking after the first element node (v-else or not)
-						break
-					}
-				}
 				continue
 			}
 

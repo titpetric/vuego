@@ -37,6 +37,52 @@ func parseFor(s string) ([]string, string, error) {
 	return vars, right, nil
 }
 
+func (v *Vue) evalVFor(ctx VueContext, node *html.Node, nodes []*html.Node, depth int) ([]*html.Node, int, error) {
+	skipCount := 0
+	result := []*html.Node{}
+	if vFor := helpers.GetAttr(node, "v-for"); vFor != "" {
+		loopNodes, err := v.evalFor(ctx, node, vFor, depth+1)
+		if err != nil {
+			return result, skipCount, err
+		}
+
+		for _, n := range loopNodes {
+			if err := v.evalVHtml(ctx, n); err != nil {
+				return result, skipCount, err
+			}
+			if err := v.evalAttributes(ctx, n); err != nil {
+				return result, skipCount, err
+			}
+		}
+
+		result = append(result, loopNodes...)
+
+		// If v-for produced no results, check for v-else on the next sibling
+		if len(loopNodes) == 0 {
+			for j := 1; j < len(nodes); j++ {
+				nextNode := nodes[j]
+				// Skip text nodes (whitespace)
+				if nextNode.Type != html.ElementNode {
+					continue
+				}
+				// Found the next element - check if it's v-else
+				if helpers.HasAttr(nextNode, "v-else") {
+					// Evaluate the v-else node without cloning yet - let evaluateNodeAsElement handle it
+					vElseResult, err := v.evaluateNodeAsElement(ctx, nextNode, depth)
+					if err != nil {
+						return result, skipCount, err
+					}
+					result = append(result, vElseResult...)
+					skipCount = j
+				}
+				// Stop looking after the first element node (v-else or not)
+				break
+			}
+		}
+	}
+	return result, skipCount, nil
+}
+
 func (v *Vue) evalFor(ctx VueContext, node *html.Node, expr string, depth int) ([]*html.Node, error) {
 	vars, collectionName, err := parseFor(expr)
 	if err != nil {

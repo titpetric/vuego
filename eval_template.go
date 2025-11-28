@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"golang.org/x/net/html"
-
-	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // evalTemplate processes `<template>` entries from nodes.
@@ -38,10 +36,8 @@ func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map
 		}
 
 		// Set v-html if attribute is provided.
-		if helpers.HasAttr(node, "v-html") {
-			if err := v.evalVHtml(ctx, nodes[0]); err != nil {
-				return nil, err
-			}
+		if err := v.evalVHtml(ctx, nodes[0]); err != nil {
+			return nil, err
 		}
 
 		// Return only the children of the template tag, omitting the template tag itself
