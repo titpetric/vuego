@@ -12,9 +12,9 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.58%   | 784       | 2535  |
+| ✅     | titpetric/vuego                      | 85.58%   | 784       | 2534  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
-| ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 487   |
+| ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.28%   | 171       | 508   |
 | ✅     | titpetric/vuego/internal/reflect     | 92.65%   | 55        | 198   |
 
