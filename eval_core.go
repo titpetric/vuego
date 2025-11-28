@@ -68,6 +68,10 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			}
 
 			if tag == "vuego" {
+				if err := v.evalAttributes(ctx, node); err != nil {
+					return nil, err
+				}
+
 				name := helpers.GetAttr(node, "include")
 				compDom, err := v.loader.LoadFragment(name)
 				if err != nil {
