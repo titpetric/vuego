@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
+	"io/fs"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -425,27 +426,21 @@ func (v *Vue) DefaultFuncMap() FuncMap {
 		"int":        intFunc,
 		"string":     stringFunc,
 		"json":       jsonFunc,
-	}
-}
-
-// DefaultFuncMap returns a FuncMap with built-in utility functions (package-level convenience)
-func DefaultFuncMap() FuncMap {
-	return FuncMap{
-		"upper":      upperFunc,
-		"lower":      lowerFunc,
-		"title":      titleFunc,
-		"formatTime": formatTimeFunc,
-		"default":    defaultFunc,
-		"len":        lenFunc,
-		"trim":       trimFunc,
-		"escape":     escapeFunc,
-		"int":        intFunc,
-		"string":     stringFunc,
-		"json":       jsonFunc,
+		"file":       fileFunc(v.templateFS),
 	}
 }
 
 // Built-in filter functions
+
+func fileFunc(templateFS fs.FS) func(string) (string, error) {
+	return func(filename string) (string, error) {
+		d, err := fs.ReadFile(templateFS, filename)
+		if err != nil {
+			return "", err
+		}
+		return string(d), nil
+	}
+}
 
 func upperFunc(v any) any {
 	if s, ok := v.(string); ok {

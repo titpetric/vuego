@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.19%   | 763       | 2534  |
+| ✅     | titpetric/vuego                      | 84.45%   | 765       | 2528  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 487   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.32%   | 172       | 512   |
@@ -22,7 +22,6 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Function                          | Coverage | Cognitive |
 |--------|--------------------------------------|-----------------------------------|----------|-----------|
-| ✅     | titpetric/vuego                      | DefaultFuncMap                    | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | ExprEvaluator.ClearCache          | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | ExprEvaluator.Eval                | 85.70%   | 2         |
 | ✅     | titpetric/vuego                      | ExprEvaluator.getProgram          | 100.00%  | 2         |
@@ -103,6 +102,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego                      | convertValue                      | 65.00%   | 24        |
 | ✅     | titpetric/vuego                      | defaultFunc                       | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | escapeFunc                        | 100.00%  | 1         |
+| ✅     | titpetric/vuego                      | fileFunc                          | 20.00%   | 2         |
 | ✅     | titpetric/vuego                      | formatTimeFunc                    | 62.50%   | 4         |
 | ✅     | titpetric/vuego                      | getCachedPath                     | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | getIndent                         | 66.70%   | 1         |

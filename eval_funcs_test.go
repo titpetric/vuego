@@ -798,11 +798,6 @@ func TestVue_EvalAttributes(t *testing.T) {
 
 // TestEscapeFunc - tests for the built-in escape function
 func TestEscapeFunc(t *testing.T) {
-	t.Run("escape filter available in funcmap", func(t *testing.T) {
-		funcMap := vuego.DefaultFuncMap()
-		require.NotNil(t, funcMap["escape"])
-	})
-
 	t.Run("escape works on simple strings", func(t *testing.T) {
 		fs := fstest.MapFS{
 			"test.vuego": &fstest.MapFile{

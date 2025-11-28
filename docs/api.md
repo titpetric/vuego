@@ -130,7 +130,6 @@ type VueContext struct {
 
 ## Function symbols
 
-- `func DefaultFuncMap () FuncMap`
 - `func NewExprEvaluator () *ExprEvaluator`
 - `func NewLessProcessor (fsys ...fs.FS) *LessProcessor`
 - `func NewLoader (fs fs.FS) *Loader`
@@ -168,14 +167,6 @@ type VueContext struct {
 - `func (VueContext) CurrentTag () string`
 - `func (VueContext) FormatTemplateChain () string`
 - `func (VueContext) WithTemplate (filename string) VueContext`
-
-### DefaultFuncMap
-
-DefaultFuncMap returns a FuncMap with built-in utility functions (package-level convenience)
-
-```go
-func DefaultFuncMap() FuncMap
-```
 
 ### NewExprEvaluator
 
