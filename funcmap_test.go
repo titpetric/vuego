@@ -3,6 +3,7 @@ package vuego_test
 import (
 	"bytes"
 	"fmt"
+	"net/http"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -118,7 +119,7 @@ func TestVue_Funcs_LenFilter(t *testing.T) {
 
 	vue := vuego.NewVue(fs)
 	data := map[string]any{
-		"items": []string{"a", "b", "c"},
+		"items": []*http.Request{nil, nil, nil},
 	}
 
 	var buf bytes.Buffer

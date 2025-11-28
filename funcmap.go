@@ -493,18 +493,13 @@ func defaultFunc(v any, def any) any {
 }
 
 func lenFunc(v any) any {
-	switch t := v.(type) {
-	case string:
-		return len(t)
-	case []any:
-		return len(t)
-	case []string:
-		return len(t)
-	case []int:
-		return len(t)
-	case map[string]any:
-		return len(t)
+	rv := reflect.ValueOf(v)
+
+	switch rv.Kind() {
+	case reflect.String, reflect.Slice, reflect.Array, reflect.Map:
+		return rv.Len()
 	}
+
 	return 0
 }
 
