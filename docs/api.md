@@ -9,9 +9,10 @@ import (
 ## Types
 
 ```go
-// Component loads and parses .vuego component files from an fs.FS.
-type Component struct {
-	FS fs.FS
+// Component is a renderable .vuego template component.
+type Component interface {
+	// Render renders the component template to the given writer.
+	Render(ctx context.Context, w io.Writer, filename string, data any) error
 }
 ```
 
@@ -32,6 +33,53 @@ type FuncMap map[string]any
 ```
 
 ```go
+// LessProcessor implements vuego.NodeProcessor to compile LESS to CSS in <script type="text/css+less"> tags.
+type LessProcessor struct {
+	// fs is optional filesystem for loading @import statements in LESS files
+	fs fs.FS
+}
+```
+
+```go
+// LessProcessorError wraps processing errors with context.
+type LessProcessorError struct {
+	Err    error
+	Reason string
+}
+```
+
+```go
+// Loader loads and parses .vuego files from an fs.FS.
+type Loader struct {
+	FS fs.FS
+}
+```
+
+```go
+// NodeProcessor is an interface for post-processing []*html.Node after template evaluation.
+// Implementations can inspect and modify HTML nodes to implement custom tags and attributes.
+// NodeProcessor receives the complete rendered DOM and can transform it in place.
+//
+// Processors are called after all Vue directives and interpolations have been evaluated.
+// Multiple processors can be registered and are applied in order of registration.
+//
+// See docs/nodeprocessor.md for examples and best practices.
+type NodeProcessor interface {
+	// Process receives the rendered nodes and may modify them in place.
+	// It should return an error if processing fails.
+	Process(nodes []*html.Node) error
+}
+```
+
+```go
+// Renderer renders parsed HTML nodes to output.
+type Renderer interface {
+	// Render renders HTML nodes to the given writer.
+	Render(ctx context.Context, w io.Writer, nodes []*html.Node) error
+}
+```
+
+```go
 // Stack provides stack-based variable lookup and convenient typed accessors.
 type Stack struct {
 	stack    []map[string]any // bottom..top, top is last element
@@ -44,13 +92,17 @@ type Stack struct {
 // After initialization, Vue is safe for concurrent use by multiple goroutines.
 type Vue struct {
 	templateFS fs.FS
-	loader     *Component
+	loader     *Loader
+	renderer   Renderer
 	funcMap    FuncMap
 	exprEval   *ExprEvaluator
 
 	// Template cache to avoid re-parsing the same template
 	templateCache map[string][]*html.Node
 	templateMu    sync.RWMutex
+
+	// Custom node processors for post-processing rendered DOM
+	nodeProcessors []NodeProcessor
 }
 ```
 
@@ -71,7 +123,7 @@ type VueContext struct {
 	TagStack []string
 
 	// v-once element tracking for deep clones
-	seen         map[string]bool
+	seen        map[string]bool
 	seenCounter int
 }
 ```
@@ -79,8 +131,10 @@ type VueContext struct {
 ## Function symbols
 
 - `func DefaultFuncMap () FuncMap`
-- `func NewComponent (fs fs.FS) *Component`
 - `func NewExprEvaluator () *ExprEvaluator`
+- `func NewLessProcessor (fsys ...fs.FS) *LessProcessor`
+- `func NewLoader (fs fs.FS) *Loader`
+- `func NewRenderer () Renderer`
 - `func NewStack (root map[string]any) *Stack`
 - `func NewStackWithData (root map[string]any, originalData any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
@@ -88,6 +142,11 @@ type VueContext struct {
 - `func NewVueContextWithData (fromFilename string, data map[string]any, originalData any) VueContext`
 - `func (*ExprEvaluator) ClearCache ()`
 - `func (*ExprEvaluator) Eval (expression string, env map[string]any) (any, error)`
+- `func (*LessProcessor) Process (nodes []*html.Node) error`
+- `func (*LessProcessorError) Error () string`
+- `func (*Loader) Load (filename string) ([]*html.Node, error)`
+- `func (*Loader) LoadFragment (filename string) ([]*html.Node, error)`
+- `func (*Loader) Stat (filename string) error`
 - `func (*Stack) EnvMap () map[string]any`
 - `func (*Stack) ForEach (expr string, fn func(index int, value any) error) error`
 - `func (*Stack) GetInt (expr string) (int, bool)`
@@ -100,14 +159,11 @@ type VueContext struct {
 - `func (*Stack) Resolve (expr string) (any, bool)`
 - `func (*Stack) Set (key string, val any)`
 - `func (*Vue) Funcs (funcMap FuncMap) *Vue`
+- `func (*Vue) RegisterNodeProcessor (processor NodeProcessor) *Vue`
 - `func (*Vue) Render (w io.Writer, filename string, data any) error`
 - `func (*Vue) RenderFragment (w io.Writer, filename string, data any) error`
 - `func (*VueContext) PopTag ()`
 - `func (*VueContext) PushTag (tag string)`
-- `func (*VueContext) nextSeenID () string`
-- `func (Component) Load (filename string) ([]*html.Node, error)`
-- `func (Component) LoadFragment (filename string) ([]*html.Node, error)`
-- `func (Component) Stat (filename string) error`
 - `func (VueContext) CurrentTag () string`
 - `func (VueContext) FormatTemplateChain () string`
 - `func (VueContext) WithTemplate (filename string) VueContext`
@@ -120,20 +176,36 @@ DefaultFuncMap returns a FuncMap with built-in utility functions
 func DefaultFuncMap() FuncMap
 ```
 
-### NewComponent
-
-NewComponent creates a Component backed by fs.
-
-```go
-func NewComponent(fs fs.FS) *Component
-```
-
 ### NewExprEvaluator
 
 NewExprEvaluator creates a new ExprEvaluator with an empty cache.
 
 ```go
 func NewExprEvaluator() *ExprEvaluator
+```
+
+### NewLessProcessor
+
+NewLessProcessor creates a new LESS processor.
+
+```go
+func NewLessProcessor(fsys ...fs.FS) *LessProcessor
+```
+
+### NewLoader
+
+NewLoader creates a Loader backed by fs.
+
+```go
+func NewLoader(fs fs.FS) *Loader
+```
+
+### NewRenderer
+
+NewRenderer creates a new Renderer.
+
+```go
+func NewRenderer() Renderer
 ```
 
 ### NewStack
@@ -195,6 +267,40 @@ Eval evaluates an expression against the given environment (stack). It returns t
 
 ```go
 func (*ExprEvaluator) Eval(expression string, env map[string]any) (any, error)
+```
+
+### Process
+
+Process walks the DOM tree and compiles LESS in
+<script type="text/css+less">
+ tags to CSS.
+
+```go
+func (*LessProcessor) Process(nodes []*html.Node) error
+```
+
+### Load
+
+Load parses a full HTML document from the given filename.
+
+```go
+func (*Loader) Load(filename string) ([]*html.Node, error)
+```
+
+### LoadFragment
+
+LoadFragment parses a template fragment; if the file is a full document, it falls back to Load.
+
+```go
+func (*Loader) LoadFragment(filename string) ([]*html.Node, error)
+```
+
+### Stat
+
+Stat checks that filename exists in the loader filesystem.
+
+```go
+func (*Loader) Stat(filename string) error
 ```
 
 ### EnvMap
@@ -299,9 +405,17 @@ Funcs sets custom template functions. Returns the Vue instance for chaining.
 func (*Vue) Funcs(funcMap FuncMap) *Vue
 ```
 
+### RegisterNodeProcessor
+
+RegisterNodeProcessor adds a custom node processor to the Vue instance. Processors are applied in order after template evaluation completes.
+
+```go
+func (*Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue
+```
+
 ### Render
 
-Render processes a full-page template file and writes the output to w. Render is safe to call concurrently from multiple goroutines.
+Render processes a full-page template file and writes the output to w.
 
 ```go
 func (*Vue) Render(w io.Writer, filename string, data any) error
@@ -331,30 +445,6 @@ PushTag adds a tag to the tag stack.
 func (*VueContext) PushTag(tag string)
 ```
 
-### Load
-
-Load parses a full HTML document from the given filename.
-
-```go
-func (Component) Load(filename string) ([]*html.Node, error)
-```
-
-### LoadFragment
-
-LoadFragment parses a template fragment; if the file is a full document, it falls back to Load.
-
-```go
-func (Component) LoadFragment(filename string) ([]*html.Node, error)
-```
-
-### Stat
-
-Stat checks that filename exists in the component filesystem.
-
-```go
-func (Component) Stat(filename string) error
-```
-
 ### CurrentTag
 
 CurrentTag returns the current parent tag, or empty string if no tag is on the stack.
@@ -377,4 +467,10 @@ WithTemplate returns a copy of the context extended with filename in the inclusi
 
 ```go
 func (VueContext) WithTemplate(filename string) VueContext
+```
+
+### Error
+
+```go
+func (*LessProcessorError) Error() string
 ```

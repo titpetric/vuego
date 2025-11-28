@@ -5,6 +5,7 @@ go 1.25.4
 require (
 	github.com/expr-lang/expr v1.17.6
 	github.com/stretchr/testify v1.11.1
+	github.com/titpetric/lessgo v0.0.0-20251125120946-438d5532ca1d
 	golang.org/x/net v0.47.0
 )
 

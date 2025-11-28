@@ -1,64 +1,164 @@
 package vuego
 
 import (
-	"bytes"
-	"fmt"
-	"io/fs"
+	"context"
+	"io"
+	"strings"
 
-	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
 )
 
-// Component loads and parses .vuego component files from an fs.FS.
-type Component struct {
-	FS fs.FS
+// Component is a renderable .vuego template component.
+type Component interface {
+	// Render renders the component template to the given writer.
+	Render(ctx context.Context, w io.Writer, filename string, data any) error
 }
 
-// NewComponent creates a Component backed by fs.
-func NewComponent(fs fs.FS) *Component {
-	return &Component{
-		FS: fs,
+// Renderer renders parsed HTML nodes to output.
+type Renderer interface {
+	// Render renders HTML nodes to the given writer.
+	Render(ctx context.Context, w io.Writer, nodes []*html.Node) error
+}
+
+// htmlRenderer is the default Renderer implementation.
+type htmlRenderer struct{}
+
+// Render renders HTML nodes to the given writer.
+func (r *htmlRenderer) Render(ctx context.Context, w io.Writer, nodes []*html.Node) error {
+	for _, node := range nodes {
+		if err := renderNode(w, node, 0); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// NewRenderer creates a new Renderer.
+func NewRenderer() Renderer {
+	return &htmlRenderer{}
+}
+
+// shouldIgnoreAttr returns true if an attribute should be skipped in HTML output.
+// This includes Vue directives and binding attributes that are only used during evaluation.
+func shouldIgnoreAttr(key string) bool {
+	// Vue directives that should not appear in final HTML
+	switch key {
+	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-show", "v-once", "v-once-id":
+		return true
+	}
+	// v-bind: and : prefixed attributes are processed and shouldn't appear in output
+	if strings.HasPrefix(key, "v-bind:") || strings.HasPrefix(key, ":") {
+		return true
+	}
+	return false
+}
+
+func renderAttrs(attrs []html.Attribute) string {
+	if len(attrs) == 0 {
+		return ""
+	}
+	var sb strings.Builder
+	for _, a := range attrs {
+		// Skip Vue directives and internal binding attributes
+		if shouldIgnoreAttr(a.Key) {
+			continue
+		}
+		sb.WriteByte(' ')
+		sb.WriteString(a.Key)
+		sb.WriteByte('=')
+		sb.WriteByte('"')
+		sb.WriteString(a.Val)
+		sb.WriteByte('"')
+	}
+	return sb.String()
+}
+
+var indentCache = [256]string{}
+
+func init() {
+	for i := 0; i < len(indentCache); i++ {
+		indentCache[i] = strings.Repeat(" ", i)
 	}
 }
 
-// Stat checks that filename exists in the component filesystem.
-func (c Component) Stat(filename string) error {
-	_, err := fs.Stat(c.FS, filename)
-	return err
+func getIndent(indent int) string {
+	if indent < len(indentCache) {
+		return indentCache[indent]
+	}
+	return strings.Repeat(" ", indent)
 }
 
-// Load parses a full HTML document from the given filename.
-func (c Component) Load(filename string) ([]*html.Node, error) {
-	template, err := fs.ReadFile(c.FS, filename)
-	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %w", filename, err)
+// shouldEscapeTextNode checks if a text node needs HTML escaping.
+// Returns false if the text appears to be already HTML-escaped (from interpolation),
+// true if it contains raw HTML special characters that need escaping.
+func shouldEscapeTextNode(data string) bool {
+	// If the text contains HTML entity references like &lt; &amp; &#39; etc,
+	// it's likely from interpolation and already escaped
+	if strings.Contains(data, "&") && strings.Contains(data, ";") {
+		return false
 	}
-
-	doc, err := html.Parse(bytes.NewReader(template))
-	if err != nil {
-		return nil, err
-	}
-
-	var result []*html.Node
-	for node := range doc.ChildNodes() {
-		result = append(result, node)
-	}
-	return result, nil
+	// Check if text contains unescaped HTML special characters
+	return strings.ContainsAny(data, "<>&\"'")
 }
 
-// LoadFragment parses a template fragment; if the file is a full document, it falls back to Load.
-func (c Component) LoadFragment(filename string) ([]*html.Node, error) {
-	template, err := fs.ReadFile(c.FS, filename)
-	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %w", filename, err)
+func renderNode(w io.Writer, node *html.Node, indent int) error {
+	ctx := VueContext{}
+	return renderNodeWithContext(w, node, indent, &ctx)
+}
+
+func renderNodeWithContext(w io.Writer, node *html.Node, indent int, ctx *VueContext) error {
+	switch node.Type {
+	case html.TextNode:
+		if strings.TrimSpace(node.Data) == "" {
+			return nil
+		}
+		spaces := getIndent(indent)
+		parentTag := ctx.CurrentTag()
+		// Skip HTML escaping inside script and style tags
+		if parentTag == "script" || parentTag == "style" {
+			_, _ = w.Write([]byte(spaces + node.Data))
+		} else if shouldEscapeTextNode(node.Data) {
+			_, _ = w.Write([]byte(spaces + html.EscapeString(node.Data)))
+		} else {
+			_, _ = w.Write([]byte(spaces + node.Data))
+		}
+
+	case html.ElementNode:
+		// Count children without allocating slice
+		childCount := 0
+		firstChild := node.FirstChild
+		for c := firstChild; c != nil; c = c.NextSibling {
+			childCount++
+		}
+
+		spaces := getIndent(indent)
+		tagName := node.Data
+		// compact single-entry text nodes
+		if childCount == 0 {
+			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + "></" + tagName + ">\n"))
+		} else if childCount == 1 && firstChild.Type == html.TextNode {
+			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + ">"))
+			// Skip HTML escaping inside script and style tags
+			if tagName == "script" || tagName == "style" {
+				_, _ = w.Write([]byte(firstChild.Data))
+			} else if shouldEscapeTextNode(firstChild.Data) {
+				_, _ = w.Write([]byte(html.EscapeString(firstChild.Data)))
+			} else {
+				_, _ = w.Write([]byte(firstChild.Data))
+			}
+			_, _ = w.Write([]byte("</" + tagName + ">\n"))
+		} else {
+			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + ">\n"))
+			ctx.PushTag(tagName)
+			for c := firstChild; c != nil; c = c.NextSibling {
+				if err := renderNodeWithContext(w, c, indent+2, ctx); err != nil {
+					return err
+				}
+			}
+			ctx.PopTag()
+			_, _ = w.Write([]byte(spaces + "</" + tagName + ">\n"))
+		}
 	}
 
-	// Input template contains html/body
-	if bytes.Contains(template, []byte("</html>")) {
-		return c.Load(filename)
-	}
-
-	// Parse the fragment using cached body element
-	body := helpers.GetBodyNode()
-	return html.ParseFragment(bytes.NewReader(template), body)
+	return nil
 }

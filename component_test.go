@@ -13,7 +13,7 @@ func TestNewComponent(t *testing.T) {
 		"test.vuego": &fstest.MapFile{Data: []byte("<div>test</div>")},
 	}
 
-	comp := vuego.NewComponent(fs)
+	comp := vuego.NewLoader(fs)
 	require.NotNil(t, comp)
 }
 
@@ -22,7 +22,7 @@ func TestComponent_Stat(t *testing.T) {
 		"exists.html": &fstest.MapFile{Data: []byte("<div>test</div>")},
 	}
 
-	comp := vuego.NewComponent(fs)
+	comp := vuego.NewLoader(fs)
 
 	t.Run("file exists", func(t *testing.T) {
 		err := comp.Stat("exists.html")
@@ -40,7 +40,7 @@ func TestComponent_Load(t *testing.T) {
 		"doc.html": &fstest.MapFile{Data: []byte("<html><body><h1>Test</h1></body></html>")},
 	}
 
-	comp := vuego.NewComponent(fs)
+	comp := vuego.NewLoader(fs)
 
 	t.Run("valid document", func(t *testing.T) {
 		nodes, err := comp.Load("doc.html")
@@ -58,7 +58,7 @@ func TestComponent_Load(t *testing.T) {
 		fs := fstest.MapFS{
 			"bad.html": &fstest.MapFile{Data: []byte("<<<>>>")},
 		}
-		comp := vuego.NewComponent(fs)
+		comp := vuego.NewLoader(fs)
 		nodes, err := comp.Load("bad.html")
 		require.NoError(t, err)
 		require.NotNil(t, nodes)
@@ -71,7 +71,7 @@ func TestComponent_LoadFragment(t *testing.T) {
 		"document.html": &fstest.MapFile{Data: []byte("<html><body><div>doc</div></body></html>")},
 	}
 
-	comp := vuego.NewComponent(fs)
+	comp := vuego.NewLoader(fs)
 
 	t.Run("fragment without html tag", func(t *testing.T) {
 		nodes, err := comp.LoadFragment("fragment.html")

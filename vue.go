@@ -16,13 +16,17 @@ import (
 // After initialization, Vue is safe for concurrent use by multiple goroutines.
 type Vue struct {
 	templateFS fs.FS
-	loader     *Component
+	loader     *Loader
+	renderer   Renderer
 	funcMap    FuncMap
 	exprEval   *ExprEvaluator
 
 	// Template cache to avoid re-parsing the same template
 	templateCache map[string][]*html.Node
 	templateMu    sync.RWMutex
+
+	// Custom node processors for post-processing rendered DOM
+	nodeProcessors []NodeProcessor
 }
 
 // VueContext carries template inclusion context and request-scoped state used during evaluation.
@@ -41,7 +45,7 @@ type VueContext struct {
 	TagStack []string
 
 	// v-once element tracking for deep clones
-	seen         map[string]bool
+	seen        map[string]bool
 	seenCounter int
 }
 
@@ -117,7 +121,8 @@ func (ctx *VueContext) nextSeenID() string {
 func NewVue(templateFS fs.FS) *Vue {
 	return &Vue{
 		templateFS:    templateFS,
-		loader:        NewComponent(templateFS),
+		loader:        NewLoader(templateFS),
+		renderer:      NewRenderer(),
 		funcMap:       DefaultFuncMap(),
 		exprEval:      NewExprEvaluator(),
 		templateCache: make(map[string][]*html.Node),
@@ -163,6 +168,11 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 
 	result, err := v.evaluate(ctx, dom, 0)
 	if err != nil {
+		return err
+	}
+
+	// Apply custom node processors for post-processing
+	if err := v.processNodes(result); err != nil {
 		return err
 	}
 
@@ -225,6 +235,11 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 		return err
 	}
 
+	// Apply custom node processors for post-processing
+	if err := v.processNodes(result); err != nil {
+		return err
+	}
+
 	return v.render(w, result)
 }
 
@@ -235,129 +250,4 @@ func (v *Vue) render(w io.Writer, nodes []*html.Node) error {
 		}
 	}
 	return nil
-}
-
-var indentCache = [256]string{}
-
-func init() {
-	for i := 0; i < len(indentCache); i++ {
-		indentCache[i] = strings.Repeat(" ", i)
-	}
-}
-
-func getIndent(indent int) string {
-	if indent < len(indentCache) {
-		return indentCache[indent]
-	}
-	return strings.Repeat(" ", indent)
-}
-
-// shouldEscapeTextNode checks if a text node needs HTML escaping.
-// Returns false if the text appears to be already HTML-escaped (from interpolation),
-// true if it contains raw HTML special characters that need escaping.
-func shouldEscapeTextNode(data string) bool {
-	// If the text contains HTML entity references like &lt; &amp; &#39; etc,
-	// it's likely from interpolation and already escaped
-	if strings.Contains(data, "&") && strings.Contains(data, ";") {
-		return false
-	}
-	// Check if text contains unescaped HTML special characters
-	return strings.ContainsAny(data, "<>&\"'")
-}
-
-func renderNode(w io.Writer, node *html.Node, indent int) error {
-	ctx := VueContext{}
-	return renderNodeWithContext(w, node, indent, &ctx)
-}
-
-func renderNodeWithContext(w io.Writer, node *html.Node, indent int, ctx *VueContext) error {
-	switch node.Type {
-	case html.TextNode:
-		if strings.TrimSpace(node.Data) == "" {
-			return nil
-		}
-		spaces := getIndent(indent)
-		parentTag := ctx.CurrentTag()
-		// Skip HTML escaping inside script and style tags
-		if parentTag == "script" || parentTag == "style" {
-			_, _ = w.Write([]byte(spaces + node.Data))
-		} else if shouldEscapeTextNode(node.Data) {
-			_, _ = w.Write([]byte(spaces + html.EscapeString(node.Data)))
-		} else {
-			_, _ = w.Write([]byte(spaces + node.Data))
-		}
-
-	case html.ElementNode:
-		// Count children without allocating slice
-		childCount := 0
-		firstChild := node.FirstChild
-		for c := firstChild; c != nil; c = c.NextSibling {
-			childCount++
-		}
-
-		spaces := getIndent(indent)
-		tagName := node.Data
-		// compact single-entry text nodes
-		if childCount == 0 {
-			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + "></" + tagName + ">\n"))
-		} else if childCount == 1 && firstChild.Type == html.TextNode {
-			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + ">"))
-			// Skip HTML escaping inside script and style tags
-			if tagName == "script" || tagName == "style" {
-				_, _ = w.Write([]byte(firstChild.Data))
-			} else if shouldEscapeTextNode(firstChild.Data) {
-				_, _ = w.Write([]byte(html.EscapeString(firstChild.Data)))
-			} else {
-				_, _ = w.Write([]byte(firstChild.Data))
-			}
-			_, _ = w.Write([]byte("</" + tagName + ">\n"))
-		} else {
-			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + ">\n"))
-			ctx.PushTag(tagName)
-			for c := firstChild; c != nil; c = c.NextSibling {
-				if err := renderNodeWithContext(w, c, indent+2, ctx); err != nil {
-					return err
-				}
-			}
-			ctx.PopTag()
-			_, _ = w.Write([]byte(spaces + "</" + tagName + ">\n"))
-		}
-	}
-
-	return nil
-}
-
-// shouldIgnoreAttr returns true if an attribute should be skipped in HTML output.
-// This includes Vue directives and binding attributes that are only used during evaluation.
-func shouldIgnoreAttr(key string) bool {
-	// Vue directives that should not appear in final HTML
-	switch key {
-	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-show", "v-once", "v-once-id":
-		return true
-	}
-	// v-bind: and : prefixed attributes are processed and shouldn't appear in output
-	if strings.HasPrefix(key, "v-bind:") || strings.HasPrefix(key, ":") {
-		return true
-	}
-	return false
-}
-
-func renderAttrs(attrs []html.Attribute) string {
-	if len(attrs) == 0 {
-		return ""
-	}
-	var sb strings.Builder
-	for _, a := range attrs {
-		// Skip Vue directives and internal binding attributes
-		if shouldIgnoreAttr(a.Key) {
-			continue
-		}
-		sb.WriteByte(' ')
-		sb.WriteString(a.Key)
-		sb.WriteByte('=')
-		sb.WriteByte('"')
-		sb.WriteString(a.Val)
-		sb.WriteByte('"')
-	}
-	return sb.String()
 }
