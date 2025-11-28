@@ -111,6 +111,26 @@ VueGo comes with several built-in utility functions:
   {{ userInput | escape }}
   ```
 
+- **`int`** - Converts value to integer
+
+  ```html
+  {{ stringValue | int }}
+  <div v-if="int(count) > 0">Count is positive</div>
+  ```
+
+- **`string`** - Converts value to string
+
+  ```html
+  {{ count | string }}
+  ```
+
+- **`json`** - Converts value to JSON string
+
+  ```html
+  {{ data | json }}
+  <script>var data = {{ user | json }};</script>
+  ```
+
 ### Date/Time Functions
 
 - **`formatTime(layout)`** - Formats time.Time using Go layout format
