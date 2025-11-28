@@ -74,12 +74,16 @@ func TestVue_EvalFor(t *testing.T) {
 		},
 		{
 			name:     "v-for with struct field access and negation",
-			template: "<span v-for=\"item in items\"><button v-if=\"!item.disabled\">{{ item.name }}</button></span>",
-			data: map[string]any{"items": []map[string]any{
-				{"name": "Page 1", "disabled": false},
-				{"name": "Page 2", "disabled": true},
-				{"name": "Page 3", "disabled": false},
-			}},
+			template: "<span v-for=\"item in navigation.items\"><button v-if=\"!item.disabled\">{{ item.name }}</button></span>",
+			data: map[string]any{
+				"navigation": map[string]any{
+					"items": []map[string]any{
+						{"name": "Page 1", "disabled": false},
+						{"name": "Page 2", "disabled": true},
+						{"name": "Page 3", "disabled": false},
+					},
+				},
+			},
 			expected: "<span><button>Page 1</button></span><span></span><span><button>Page 3</button></span>",
 		},
 	}

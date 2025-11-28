@@ -149,14 +149,11 @@ func (s *Stack) Resolve(expr string) (any, bool) {
 
 	// first part must come from Stack
 	cur, ok := s.Lookup(parts[0])
-	if !ok {
+	if cur == nil || !ok {
 		return nil, false
 	}
 	// walk the rest
 	for _, p := range parts[1:] {
-		if cur == nil {
-			return nil, false
-		}
 		cur = s.resolveStep(cur, p)
 		if cur == nil {
 			return nil, false

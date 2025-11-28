@@ -1,0 +1,1 @@
+<template v-html="file(src)"></template>

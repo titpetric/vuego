@@ -3,5 +3,6 @@
   "items": [
     {"name":"One"},
     {"name":"Two"}
-   ]
+  ],
+  "avatar": "avatar"
 }

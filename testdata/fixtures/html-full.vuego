@@ -5,7 +5,7 @@
     <li v-for="item in items">{{item.name}}</li>
   </ul>
 
-  <template v-html="file('icons/avatar.svg')"></template>
+  <vuego include="components/inline-svg.vuego" src="icons/{{avatar}}.svg"></template>
 
 </body>
 </html>
