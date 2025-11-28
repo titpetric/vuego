@@ -133,12 +133,7 @@ func NewVue(templateFS fs.FS) *Vue {
 
 // Funcs sets custom template functions. Returns the Vue instance for chaining.
 func (v *Vue) Funcs(funcMap FuncMap) *Vue {
-	if v.funcMap == nil {
-		v.funcMap = make(FuncMap)
-	}
-	for name, fn := range funcMap {
-		v.funcMap[name] = fn
-	}
+	v.funcMap = funcMap
 	return v
 }
 
