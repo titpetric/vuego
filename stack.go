@@ -313,67 +313,30 @@ func (s *Stack) ForEach(expr string, fn func(index int, value any) error) error 
 		// treat missing as no-op
 		return nil
 	}
-	switch t := v.(type) {
-	case []any:
-		for i := range t {
-			if err := fn(i, t[i]); err != nil {
+
+	rv := reflect.ValueOf(v)
+
+	switch rv.Kind() {
+	case reflect.Slice, reflect.Array:
+		// []V
+		for i := 0; i < rv.Len(); i++ {
+			if err := fn(i, rv.Index(i).Interface()); err != nil {
 				return err
 			}
 		}
 		return nil
-	case []map[string]any:
-		for i := range t {
-			if err := fn(i, t[i]); err != nil {
+	case reflect.Map:
+		keys := rv.MapKeys()
+		for i, key := range keys {
+			if err := fn(i, rv.MapIndex(key).Interface()); err != nil {
 				return err
 			}
 		}
-		return nil
-	case []string:
-		for i := range t {
-			if err := fn(i, t[i]); err != nil {
-				return err
-			}
-		}
-		return nil
-	case []int:
-		for i := range t {
-			if err := fn(i, t[i]); err != nil {
-				return err
-			}
-		}
-		return nil
-	case map[string]any:
-		i := 0
-		for _, val := range t {
-			if err := fn(i, val); err != nil {
-				return err
-			}
-			i++
-		}
-		return nil
-	case map[string]string:
-		i := 0
-		for _, val := range t {
-			if err := fn(i, val); err != nil {
-				return err
-			}
-			i++
-		}
-		return nil
-	default:
-		// Try reflection for generic slice types
-		rv := reflect.ValueOf(v)
-		if rv.Kind() == reflect.Slice {
-			for i := 0; i < rv.Len(); i++ {
-				if err := fn(i, rv.Index(i).Interface()); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-		// unsupported collection type
 		return nil
 	}
+
+	return nil
+	// return fmt.Errorf("unsupported collection type: %T, expr: %s", v, expr)
 }
 
 // Helpers
