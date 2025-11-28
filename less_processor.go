@@ -3,6 +3,7 @@ package vuego
 import (
 	"bytes"
 	"io/fs"
+	"strings"
 
 	"github.com/titpetric/lessgo/dst"
 	"github.com/titpetric/lessgo/renderer"
@@ -150,7 +151,7 @@ func (lp *LessProcessor) replaceWithStyleTag(styleNode *html.Node, css string) {
 	// Create a text node with the compiled CSS
 	textNode := &html.Node{
 		Type: html.TextNode,
-		Data: css,
+		Data: "\n" + strings.TrimSpace(css) + "\n",
 	}
 	styleNode.FirstChild = textNode
 	styleNode.LastChild = textNode
