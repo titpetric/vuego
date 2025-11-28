@@ -79,16 +79,18 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				}
 
 				// Push component attributes to stack for :required validation
-				componentData := make(map[string]any)
-				for _, attr := range node.Attr {
-					if attr.Key != "include" {
-						componentData[attr.Key] = attr.Val
+				/*
+					componentData := make(map[string]any)
+					for _, attr := range node.Attr {
+						if attr.Key != "include" {
+							componentData[attr.Key] = attr.Val
+						}
 					}
-				}
-				ctx.stack.Push(componentData)
+					ctx.stack.Push(componentData)
+				*/
 
 				// Validate and process template tag
-				processedDom, err := v.evalTemplate(ctx, compDom, componentData, depth+1)
+				processedDom, err := v.evalTemplate(ctx, compDom, ctx.stack.EnvMap(), depth+1)
 				if err != nil {
 					ctx.stack.Pop()
 					return nil, fmt.Errorf("error in %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)

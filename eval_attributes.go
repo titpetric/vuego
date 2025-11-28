@@ -16,8 +16,11 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 		return nil
 	}
 
+	skipAttributeUpdate := (n.Data == "vuego" || n.Data == "template")
+
+	results := map[string]any{}
+
 	var newAttrs []html.Attribute
-	boundAttrs := make(map[string]string) // Track bound attributes to merge with static ones
 
 	// First pass: collect static attributes and evaluate bound ones
 	for _, a := range n.Attr {
@@ -25,26 +28,22 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 		val := strings.TrimSpace(a.Val)
 
 		switch {
-		case strings.HasPrefix(key, ":"):
-			boundName := strings.TrimPrefix(key, ":")
+		case strings.HasPrefix(key, ":") || strings.HasPrefix(key, "v-bind:"):
+			boundName := key
+			boundName = strings.TrimPrefix(boundName, "v-bind:")
+			boundName = strings.TrimPrefix(boundName, ":")
+
 			boundValue := v.evalBoundAttribute(ctx, boundName, val)
-			if boundValue != "" {
-				boundAttrs[boundName] = boundValue
+			if !helpers.IsTruthy(boundValue) {
+				continue
 			}
 
-		case strings.HasPrefix(key, "v-bind:"):
-			boundName := strings.TrimPrefix(key, "v-bind:")
-			boundValue := v.evalBoundAttribute(ctx, boundName, val)
-			if boundValue != "" {
-				boundAttrs[boundName] = boundValue
-			}
-
+			results[boundName] = boundValue
 		default:
 			// run interpolation on normal attributes
 			interpolated, err := v.interpolate(ctx, val)
 			if err != nil {
-				// For now, use original value on error in attributes
-				interpolated = val
+				return fmt.Errorf("eval attribute: %s=%s: %w", key, val, err)
 			}
 			newAttrs = append(newAttrs, html.Attribute{
 				Key: key,
@@ -54,7 +53,7 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 	}
 
 	// Second pass: merge bound attributes with static ones
-	for attrName, boundValue := range boundAttrs {
+	for attrName, boundValue := range results {
 		// Check if there's a static attribute with the same name
 		staticIdx := -1
 		for i, a := range newAttrs {
@@ -67,31 +66,43 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 		if staticIdx >= 0 {
 			// Merge with static attribute (special handling for class and style)
 			if attrName == "class" {
-				newAttrs[staticIdx].Val = newAttrs[staticIdx].Val + " " + boundValue
-			} else if attrName == "style" {
+				newAttrs[staticIdx].Val = fmt.Sprintf("%s %s", newAttrs[staticIdx].Val, boundValue)
+				continue
+			}
+			if attrName == "style" {
 				// Merge styles, with bound value taking precedence
 				staticStyle := newAttrs[staticIdx].Val
-				mergedStyle := v.mergeStyles(staticStyle, boundValue)
+				mergedStyle := v.mergeStyles(staticStyle, boundValue.(string))
 				newAttrs[staticIdx].Val = mergedStyle
-			} else {
-				// For other attributes, bound value replaces static
-				newAttrs[staticIdx].Val = boundValue
+				continue
+			}
+			// For other attributes, bound value replaces static
+			if !skipAttributeUpdate {
+				newAttrs[staticIdx].Val = boundValue.(string)
 			}
 		} else {
-			// No static attribute, just add the bound one
-			newAttrs = append(newAttrs, html.Attribute{
-				Key: attrName,
-				Val: boundValue,
-			})
+			if helpers.IsTruthy(boundValue) {
+				newAttrs = append(newAttrs, html.Attribute{
+					Key: attrName,
+					Val: fmt.Sprint(boundValue),
+				})
+			}
 		}
+
+		ctx.stack.Set(attrName, boundValue)
 	}
 
 	n.Attr = newAttrs
+
+	for _, v := range newAttrs {
+		ctx.stack.Set(v.Key, v.Val)
+	}
+
 	return nil
 }
 
 // evalBoundAttribute evaluates a bound attribute, handling objects for class/style.
-func (v *Vue) evalBoundAttribute(ctx VueContext, attrName, expr string) string {
+func (v *Vue) evalBoundAttribute(ctx VueContext, attrName, expr string) any {
 	// Check if the expression is an object literal
 	if strings.HasPrefix(strings.TrimSpace(expr), "{") && strings.HasSuffix(strings.TrimSpace(expr), "}") {
 		return v.evalObjectBinding(ctx, attrName, expr)
@@ -100,7 +111,7 @@ func (v *Vue) evalBoundAttribute(ctx VueContext, attrName, expr string) string {
 	// Regular variable binding
 	valResolved, _ := ctx.stack.Resolve(expr)
 	if helpers.IsTruthy(valResolved) {
-		return fmt.Sprint(valResolved)
+		return valResolved
 	}
 	return ""
 }
