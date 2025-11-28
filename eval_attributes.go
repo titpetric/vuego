@@ -6,8 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {

@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 func TestGetAttr(t *testing.T) {

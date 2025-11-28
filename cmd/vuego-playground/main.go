@@ -258,7 +258,6 @@ func loadExamplesMap(examplesFS fs.FS) map[string]Example {
 
 		return nil
 	})
-
 	if err != nil {
 		log.Printf("could not walk examples directory: %v", err)
 		return examples
@@ -348,7 +347,6 @@ func handleRender(w http.ResponseWriter, r *http.Request, examplesFS fs.FS) {
 	vue := vuego.NewVue(combinedFS)
 	var buf bytes.Buffer
 	err := vue.RenderFragment(&buf, "template.html", data)
-
 	if err != nil {
 		json.NewEncoder(w).Encode(RenderResponse{
 			Error: err.Error(),
@@ -389,7 +387,6 @@ func handleCheatsheet(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(staticFS)
 	err := vue.RenderFragment(&buf, "static/footer.vuego", map[string]any{})
-
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": err.Error(),
@@ -453,7 +450,7 @@ func handleSave(w http.ResponseWriter, r *http.Request, examplesDir string, isEm
 
 	// Create directories if they don't exist (for nested paths)
 	if dir := filepath.Dir(templatePath); dir != examplesDir {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
 			json.NewEncoder(w).Encode(SaveResponse{
 				Error: fmt.Sprintf("Failed to create directory: %v", err),
 			})
@@ -462,7 +459,7 @@ func handleSave(w http.ResponseWriter, r *http.Request, examplesDir string, isEm
 	}
 
 	// Save template file
-	if err := os.WriteFile(templatePath, []byte(req.Template), 0644); err != nil {
+	if err := os.WriteFile(templatePath, []byte(req.Template), 0o644); err != nil {
 		json.NewEncoder(w).Encode(SaveResponse{
 			Error: fmt.Sprintf("Failed to save template: %v", err),
 		})
@@ -470,7 +467,7 @@ func handleSave(w http.ResponseWriter, r *http.Request, examplesDir string, isEm
 	}
 
 	// Save data file
-	if err := os.WriteFile(dataPath, []byte(req.Data), 0644); err != nil {
+	if err := os.WriteFile(dataPath, []byte(req.Data), 0o644); err != nil {
 		json.NewEncoder(w).Encode(SaveResponse{
 			Error: fmt.Sprintf("Failed to save data: %v", err),
 		})
@@ -538,7 +535,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 	if req.Type == "component" {
 		// Create components directory if it doesn't exist
 		compDir := filepath.Join(examplesDir, "components")
-		if err := os.MkdirAll(compDir, 0755); err != nil {
+		if err := os.MkdirAll(compDir, 0o755); err != nil {
 			json.NewEncoder(w).Encode(CreateResponse{
 				Error: fmt.Sprintf("Failed to create components directory: %v", err),
 			})
@@ -563,7 +560,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
   <!-- Add your template here -->
 </div>
 `
-	if err := os.WriteFile(filePath, []byte(templateContent), 0644); err != nil {
+	if err := os.WriteFile(filePath, []byte(templateContent), 0o644); err != nil {
 		json.NewEncoder(w).Encode(CreateResponse{
 			Error: fmt.Sprintf("Failed to create file: %v", err),
 		})
@@ -572,7 +569,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 
 	// Also create a corresponding .json data file
 	jsonPath := filepath.Join(filepath.Dir(filePath), strings.TrimSuffix(filepath.Base(filePath), ".vuego")+".json")
-	if err := os.WriteFile(jsonPath, []byte("{}"), 0644); err != nil {
+	if err := os.WriteFile(jsonPath, []byte("{}"), 0o644); err != nil {
 		json.NewEncoder(w).Encode(CreateResponse{
 			Error: fmt.Sprintf("Failed to create data file: %v", err),
 		})

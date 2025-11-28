@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // parseLoops parses v-for strings like:
@@ -68,7 +69,6 @@ func (v *Vue) evalFor(ctx VueContext, node *html.Node, expr string, depth int) (
 		result = append(result, evaluated...)
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}

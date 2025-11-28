@@ -12,10 +12,10 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.45%   | 765       | 2528  |
+| ✅     | titpetric/vuego                      | 85.58%   | 784       | 2535  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 487   |
-| ✅     | titpetric/vuego/internal/helpers     | 95.32%   | 172       | 512   |
+| ✅     | titpetric/vuego/internal/helpers     | 95.28%   | 171       | 508   |
 | ✅     | titpetric/vuego/internal/reflect     | 92.65%   | 55        | 198   |
 
 ## Functions
@@ -55,7 +55,6 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Stack.Resolve                     | 93.30%   | 8         |
 | ✅     | titpetric/vuego                      | Stack.Set                         | 66.70%   | 1         |
 | ✅     | titpetric/vuego                      | Stack.resolveStep                 | 100.00%  | 8         |
-| ✅     | titpetric/vuego                      | Stack.splitPath                   | 0.00%    | 0         |
 | ✅     | titpetric/vuego                      | Vue.DefaultFuncMap                | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Vue.Funcs                         | 80.00%   | 2         |
 | ✅     | titpetric/vuego                      | Vue.RegisterNodeProcessor         | 100.00%  | 1         |
@@ -74,18 +73,18 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego                      | Vue.evalObjectBinding             | 57.10%   | 7         |
 | ✅     | titpetric/vuego                      | Vue.evalPipe                      | 81.80%   | 16        |
 | ✅     | titpetric/vuego                      | Vue.evalSegment                   | 70.00%   | 5         |
-| ✅     | titpetric/vuego                      | Vue.evalTemplate                  | 87.50%   | 16        |
-| ✅     | titpetric/vuego                      | Vue.evalVHtml                     | 96.30%   | 8         |
+| ❌     | titpetric/vuego                      | Vue.evalTemplate                  | 78.90%   | 21        |
+| ✅     | titpetric/vuego                      | Vue.evalVHtml                     | 93.90%   | 15        |
 | ✅     | titpetric/vuego                      | Vue.evalVShow                     | 100.00%  | 5         |
-| ✅     | titpetric/vuego                      | Vue.evaluate                      | 93.10%   | 147       |
+| ✅     | titpetric/vuego                      | Vue.evaluate                      | 89.40%   | 147       |
 | ✅     | titpetric/vuego                      | Vue.evaluateChildren              | 100.00%  | 1         |
-| ❌     | titpetric/vuego                      | Vue.evaluateNodeAsElement         | 70.00%   | 16        |
+| ❌     | titpetric/vuego                      | Vue.evaluateNodeAsElement         | 61.80%   | 24        |
 | ✅     | titpetric/vuego                      | Vue.interpolate                   | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | Vue.interpolateToWriter           | 82.40%   | 49        |
 | ✅     | titpetric/vuego                      | Vue.loadCached                    | 91.70%   | 2         |
 | ✅     | titpetric/vuego                      | Vue.mergeStyles                   | 100.00%  | 2         |
 | ❌     | titpetric/vuego                      | Vue.parseObjectPairs              | 65.00%   | 10        |
-| ✅     | titpetric/vuego                      | Vue.processNodes                  | 83.30%   | 5         |
+| ✅     | titpetric/vuego                      | Vue.processNodes                  | 83.30%   | 4         |
 | ✅     | titpetric/vuego                      | Vue.render                        | 75.00%   | 3         |
 | ✅     | titpetric/vuego                      | Vue.resolveArgument               | 92.30%   | 10        |
 | ✅     | titpetric/vuego                      | Vue.setStyleProperty              | 100.00%  | 1         |
@@ -102,7 +101,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego                      | convertValue                      | 65.00%   | 24        |
 | ✅     | titpetric/vuego                      | defaultFunc                       | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | escapeFunc                        | 100.00%  | 1         |
-| ✅     | titpetric/vuego                      | fileFunc                          | 20.00%   | 2         |
+| ✅     | titpetric/vuego                      | fileFunc                          | 80.00%   | 2         |
 | ✅     | titpetric/vuego                      | formatTimeFunc                    | 62.50%   | 4         |
 | ✅     | titpetric/vuego                      | getCachedPath                     | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | getIndent                         | 66.70%   | 1         |
@@ -164,7 +163,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego/internal/helpers     | ShallowCloneWithAttrs             | 100.00%  | 1         |
 | ✅     | titpetric/vuego/internal/helpers     | SignificantChildren               | 95.80%   | 30        |
 | ✅     | titpetric/vuego/internal/helpers     | SliceToAny                        | 100.00%  | 1         |
-| ✅     | titpetric/vuego/internal/helpers     | attrsEqual                        | 81.00%   | 16        |
+| ❌     | titpetric/vuego/internal/helpers     | attrsEqual                        | 80.00%   | 15        |
 | ✅     | titpetric/vuego/internal/helpers     | classEqual                        | 87.50%   | 4         |
 | ✅     | titpetric/vuego/internal/helpers     | compareNodeRecursive              | 87.50%   | 17        |
 | ✅     | titpetric/vuego/internal/helpers     | filteredChildren                  | 100.00%  | 3         |

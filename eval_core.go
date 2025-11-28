@@ -3,8 +3,9 @@ package vuego
 import (
 	"fmt"
 
-	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // evaluateChildren evaluates the children of a node without allocating a temporary slice.
@@ -83,7 +84,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				ctx.stack.Push(componentData)
 
 				// Validate and process template tag
-				processedDom, err := v.evalTemplate(ctx, compDom, componentData)
+				processedDom, err := v.evalTemplate(ctx, compDom, componentData, depth+1)
 				if err != nil {
 					ctx.stack.Pop()
 					return nil, fmt.Errorf("error in %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
@@ -100,24 +101,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			}
 
 			if tag == "template" {
-				// Validate :required attributes on root-level templates
-				var requiredAttrs []string
-				for _, attr := range node.Attr {
-					if attr.Key == ":require" || attr.Key == ":required" {
-						requiredAttrs = append(requiredAttrs, attr.Val)
-					}
-				}
-
-				// Check if all required attributes are provided in context
-				for _, required := range requiredAttrs {
-					_, exists := ctx.stack.Lookup(required)
-					if !exists {
-						return nil, fmt.Errorf("required attribute '%s' not provided", required)
-					}
-				}
-
-				// Omit template tags at the top level
-				evaluated, err := v.evaluateChildren(ctx, node, depth+1)
+				evaluated, err := v.evalTemplate(ctx, []*html.Node{node}, ctx.stack.EnvMap(), depth+1)
 				if err != nil {
 					return nil, err
 				}
@@ -150,8 +134,12 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				}
 
 				for _, n := range loopNodes {
-					v.evalVHtml(ctx, n)
-					v.evalAttributes(ctx, n)
+					if err := v.evalVHtml(ctx, n); err != nil {
+						return nil, err
+					}
+					if err := v.evalAttributes(ctx, n); err != nil {
+						return nil, err
+					}
 				}
 
 				result = append(result, loopNodes...)
@@ -192,9 +180,15 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				newNode = helpers.ShallowCloneWithAttrs(node)
 			}
 
-			v.evalVHtml(ctx, newNode)
-			v.evalVShow(ctx, newNode)
-			v.evalAttributes(ctx, newNode)
+			if err := v.evalVHtml(ctx, newNode); err != nil {
+				return nil, err
+			}
+			if err := v.evalVShow(ctx, newNode); err != nil {
+				return nil, err
+			}
+			if err := v.evalAttributes(ctx, newNode); err != nil {
+				return nil, err
+			}
 
 			if !hasVHtml {
 				ctx.PushTag(node.Data)

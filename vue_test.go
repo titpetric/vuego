@@ -10,6 +10,7 @@ import (
 	"testing/fstest"
 
 	"github.com/stretchr/testify/require"
+
 	"github.com/titpetric/vuego"
 	"github.com/titpetric/vuego/internal/helpers"
 )

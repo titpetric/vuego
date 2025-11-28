@@ -166,8 +166,7 @@ func isIgnorable(n *html.Node) bool {
 // For class attributes, compares classes order-insensitively.
 func attrsEqual(a, b []html.Attribute) bool {
 	if len(a) != len(b) {
-		// quick fail, but still need to account for duplicate attribute keys (rare)
-		// we'll still do full map compare
+		return false
 	}
 	ma := make(map[string]string, len(a))
 	for _, at := range a {
@@ -176,9 +175,6 @@ func attrsEqual(a, b []html.Attribute) bool {
 	mb := make(map[string]string, len(b))
 	for _, at := range b {
 		mb[at.Key] = at.Val
-	}
-	if len(ma) != len(mb) {
-		return false
 	}
 	for k, v := range ma {
 		if vb, ok := mb[k]; !ok {

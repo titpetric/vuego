@@ -15,8 +15,9 @@ tasks:
   fmt:
     desc: "Format code and tidy dependencies"
     cmds:
-      - goimports -w .
-      - go fmt ./...
+      - goimports -w -local $(go list .) .
+      - goimports-reviser -set-alias -format -imports-order "std,blanked,general,company,project" ./...
+      - gofumpt -w .
       - go mod tidy
 
   fmt:docs:
@@ -33,7 +34,10 @@ tasks:
     desc: "Lint codebase"
     cmds:
       - task: fmt
-      - task: docs
+      - task: lint:tools:golangci-lint
+
+  lint:tools:golangci-lint:
+    cmd: go tool -modfile=go.tools.mod golangci-lint run ./...
 
   test:
     desc: "Run tests and collect coverage"

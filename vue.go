@@ -8,8 +8,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // Vue is the main template renderer for .vuego templates.

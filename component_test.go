@@ -5,6 +5,7 @@ import (
 	"testing/fstest"
 
 	"github.com/stretchr/testify/require"
+
 	"github.com/titpetric/vuego"
 )
 

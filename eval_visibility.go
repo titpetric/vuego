@@ -3,8 +3,9 @@ package vuego
 import (
 	"strings"
 
-	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // evalVShow handles v-show="condition" directive.

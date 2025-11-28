@@ -28,7 +28,7 @@ func (v *Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue {
 
 // processNodes applies all registered node processors to the rendered nodes.
 func (v *Vue) processNodes(nodes []*html.Node) error {
-	if v.nodeProcessors == nil || len(v.nodeProcessors) == 0 {
+	if len(v.nodeProcessors) == 0 {
 		return nil
 	}
 	for _, processor := range v.nodeProcessors {

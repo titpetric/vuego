@@ -3,8 +3,9 @@ package vuego
 import (
 	"strings"
 
-	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // evalCondition evaluates a v-if condition without modifying any node attributes.
@@ -135,8 +136,12 @@ func (v *Vue) evaluateNodeAsElement(ctx VueContext, node *html.Node, depth int) 
 		}
 
 		for _, n := range loopNodes {
-			v.evalVHtml(ctx, n)
-			v.evalAttributes(ctx, n)
+			if err := v.evalVHtml(ctx, n); err != nil {
+				return nil, err
+			}
+			if err := v.evalAttributes(ctx, n); err != nil {
+				return nil, err
+			}
 		}
 
 		result = append(result, loopNodes...)
@@ -152,8 +157,12 @@ func (v *Vue) evaluateNodeAsElement(ctx VueContext, node *html.Node, depth int) 
 		newNode = helpers.ShallowCloneWithAttrs(node)
 	}
 
-	v.evalVHtml(ctx, newNode)
-	v.evalAttributes(ctx, newNode)
+	if err := v.evalVHtml(ctx, newNode); err != nil {
+		return nil, err
+	}
+	if err := v.evalAttributes(ctx, newNode); err != nil {
+		return nil, err
+	}
 
 	if !hasVHtml {
 		ctx.PushTag(node.Data)

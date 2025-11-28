@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/titpetric/vuego/internal/helpers"
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // Loader loads and parses .vuego files from an fs.FS.

@@ -381,17 +381,6 @@ func (s *Stack) ForEach(expr string, fn func(index int, value any) error) error 
 
 // Helpers
 
-// splitPath turns expressions into path parts. Supports dot notation and bracket numeric/string indexes.
-// Now delegates to splitPathImpl which is cached by getCachedPath.
-// examples:
-//
-//	"items[0].name" -> ["items","0","name"]
-//	"user.name" -> ["user","name"]
-//	"a['b'].c" -> ["a","b","c"]
-func (s *Stack) splitPath(expr string) []string {
-	return getCachedPath(expr)
-}
-
 // splitPathImpl is the actual implementation of path splitting.
 // Called by getCachedPath which caches the results.
 func splitPathImpl(expr string) []string {

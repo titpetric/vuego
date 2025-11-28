@@ -40,10 +40,8 @@ const (
 	segmentExpr   = "expr"
 )
 
-var (
-	// matches function calls like "fn(arg1, arg2)" or just "fn"
-	filterRe = regexp.MustCompile(`^(\w+)(?:\((.*?)\))?$`)
-)
+// matches function calls like "fn(arg1, arg2)" or just "fn"
+var filterRe = regexp.MustCompile(`^(\w+)(?:\((.*?)\))?$`)
 
 // parsePipeExpr parses "item | double | . > 5" into segments, auto-detecting expressions vs filters
 func parsePipeExpr(expr string) pipeExpr {
@@ -432,8 +430,8 @@ func (v *Vue) DefaultFuncMap() FuncMap {
 
 // Built-in filter functions
 
-func fileFunc(templateFS fs.FS) func(string) (string, error) {
-	return func(filename string) (string, error) {
+func fileFunc(templateFS fs.FS) func(string) (any, error) {
+	return func(filename string) (any, error) {
 		d, err := fs.ReadFile(templateFS, filename)
 		if err != nil {
 			return "", err

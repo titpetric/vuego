@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/titpetric/vuego"
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego"
 )
 
 func getBlogData() map[string]any {
