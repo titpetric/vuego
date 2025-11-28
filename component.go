@@ -103,10 +103,10 @@ func shouldEscapeTextNode(data string) bool {
 
 func renderNode(w io.Writer, node *html.Node, indent int) error {
 	ctx := VueContext{}
-	return renderNodeWithContext(w, node, indent, &ctx)
+	return renderNodeWithContext(ctx, w, node, indent)
 }
 
-func renderNodeWithContext(w io.Writer, node *html.Node, indent int, ctx *VueContext) error {
+func renderNodeWithContext(ctx VueContext, w io.Writer, node *html.Node, indent int) error {
 	switch node.Type {
 	case html.TextNode:
 		if strings.TrimSpace(node.Data) == "" {
@@ -151,7 +151,7 @@ func renderNodeWithContext(w io.Writer, node *html.Node, indent int, ctx *VueCon
 			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + ">\n"))
 			ctx.PushTag(tagName)
 			for c := firstChild; c != nil; c = c.NextSibling {
-				if err := renderNodeWithContext(w, c, indent+2, ctx); err != nil {
+				if err := renderNodeWithContext(ctx, w, c, indent+2); err != nil {
 					return err
 				}
 			}

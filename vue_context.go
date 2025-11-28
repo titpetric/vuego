@@ -64,6 +64,7 @@ func (ctx VueContext) WithTemplate(filename string) VueContext {
 		TemplateStack: newStack,
 		TagStack:      ctx.TagStack, // Share the same tag stack
 		seen:          ctx.seen,     // Share the v-once tracking map
+		Processors:    ctx.Processors,
 	}
 }
 
