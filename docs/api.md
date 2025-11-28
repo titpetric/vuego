@@ -33,7 +33,7 @@ type FuncMap map[string]any
 ```
 
 ```go
-// LessProcessor implements vuego.NodeProcessor to compile LESS to CSS in <script type="text/css+less"> tags.
+// LessProcessor implements vuego.NodeProcessor to compile LESS to CSS in <style type="text/css+less"> tags.
 type LessProcessor struct {
 	// fs is optional filesystem for loading @import statements in LESS files
 	fs fs.FS
@@ -273,7 +273,7 @@ func (*ExprEvaluator) Eval(expression string, env map[string]any) (any, error)
 ### Process
 
 Process walks the DOM tree and compiles LESS in
-<script type="text/css+less">
+<style type="text/css+less">
  tags to CSS.
 
 ```go

@@ -9,7 +9,7 @@ import (
 	"github.com/titpetric/vuego"
 )
 
-// TestLessProcessor_LessCompilation tests LESS compilation in <script type="text/css+less"> tags.
+// TestLessProcessor_LessCompilation tests LESS compilation in <style type="text/css+less"> tags.
 func TestLessProcessor_LessCompilation(t *testing.T) {
 	// Create a test filesystem with a simple template
 	templateFS := os.DirFS("testdata/nodeprocessor")

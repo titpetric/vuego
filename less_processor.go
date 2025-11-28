@@ -19,7 +19,7 @@ func (e *LessProcessorError) Error() string {
 	return e.Reason + ": " + e.Err.Error()
 }
 
-// LessProcessor implements vuego.NodeProcessor to compile LESS to CSS in <script type="text/css+less"> tags.
+// LessProcessor implements vuego.NodeProcessor to compile LESS to CSS in <style type="text/css+less"> tags.
 type LessProcessor struct {
 	// fs is optional filesystem for loading @import statements in LESS files
 	fs fs.FS
@@ -34,7 +34,7 @@ func NewLessProcessor(fsys ...fs.FS) *LessProcessor {
 	return &LessProcessor{fs: fsVal}
 }
 
-// Process walks the DOM tree and compiles LESS in <script type="text/css+less"> tags to CSS.
+// Process walks the DOM tree and compiles LESS in <style type="text/css+less"> tags to CSS.
 func (lp *LessProcessor) Process(nodes []*html.Node) error {
 	for _, node := range nodes {
 		if err := lp.processNode(node); err != nil {
@@ -50,9 +50,9 @@ func (lp *LessProcessor) processNode(node *html.Node) error {
 		return nil
 	}
 
-	// Check if this is a script tag with type="text/css+less"
-	if node.Type == html.ElementNode && node.Data == "script" {
-		if lp.isLessScriptTag(node) {
+	// Check if this is a style tag with type="text/css+less"
+	if node.Type == html.ElementNode && node.Data == "style" {
+		if lp.isLessStyleTag(node) {
 			if err := lp.compileLessTag(node); err != nil {
 				return err
 			}
@@ -69,8 +69,8 @@ func (lp *LessProcessor) processNode(node *html.Node) error {
 	return nil
 }
 
-// isLessScriptTag checks if a script tag has type="text/css+less".
-func (lp *LessProcessor) isLessScriptTag(node *html.Node) bool {
+// isLessStyleTag checks if a style tag has type="text/css+less".
+func (lp *LessProcessor) isLessStyleTag(node *html.Node) bool {
 	for _, attr := range node.Attr {
 		if attr.Key == "type" && attr.Val == "text/css+less" {
 			return true
@@ -79,18 +79,18 @@ func (lp *LessProcessor) isLessScriptTag(node *html.Node) bool {
 	return false
 }
 
-// compileLessTag extracts LESS content from the script tag, compiles it to CSS, and replaces the tag with a style tag.
-func (lp *LessProcessor) compileLessTag(scriptNode *html.Node) error {
-	// Extract the LESS content from the script tag's text content
+// compileLessTag extracts LESS content from the style tag, compiles it to CSS, and replaces the tag with a style tag.
+func (lp *LessProcessor) compileLessTag(styleNode *html.Node) error {
+	// Extract the LESS content from the style tag's text content
 	lessContent := ""
-	for c := scriptNode.FirstChild; c != nil; c = c.NextSibling {
+	for c := styleNode.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.TextNode {
 			lessContent += c.Data
 		}
 	}
 
 	if lessContent == "" {
-		return nil // Empty script tag, nothing to compile
+		return nil // Empty style tag, nothing to compile
 	}
 
 	// Parse and compile LESS to CSS
@@ -111,35 +111,35 @@ func (lp *LessProcessor) compileLessTag(scriptNode *html.Node) error {
 		return &LessProcessorError{Err: err, Reason: "failed to render LESS to CSS"}
 	}
 
-	// Replace the <script type="text/css+less"> tag with a <style> tag
-	lp.replaceWithStyleTag(scriptNode, css)
+	// Replace the <style type="text/css+less"> tag with a <style> tag
+	lp.replaceWithStyleTag(styleNode, css)
 
 	return nil
 }
 
-// replaceWithStyleTag converts a script tag to a style tag with compiled CSS.
-func (lp *LessProcessor) replaceWithStyleTag(scriptNode *html.Node, css string) {
+// replaceWithStyleTag converts a style tag to a style tag with compiled CSS.
+func (lp *LessProcessor) replaceWithStyleTag(styleNode *html.Node, css string) {
 	// Change tag name to "style"
-	scriptNode.Data = "style"
+	styleNode.Data = "style"
 
 	// Keep only relevant attributes (remove type="text/css+less")
 	newAttrs := []html.Attribute{}
-	for _, attr := range scriptNode.Attr {
+	for _, attr := range styleNode.Attr {
 		if attr.Key != "type" {
 			newAttrs = append(newAttrs, attr)
 		}
 	}
-	scriptNode.Attr = newAttrs
+	styleNode.Attr = newAttrs
 
 	// Clear children and set CSS content
-	scriptNode.FirstChild = nil
-	scriptNode.LastChild = nil
+	styleNode.FirstChild = nil
+	styleNode.LastChild = nil
 
 	// Create a text node with the compiled CSS
 	textNode := &html.Node{
 		Type: html.TextNode,
 		Data: css,
 	}
-	scriptNode.FirstChild = textNode
-	scriptNode.LastChild = textNode
+	styleNode.FirstChild = textNode
+	styleNode.LastChild = textNode
 }
