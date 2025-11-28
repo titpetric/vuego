@@ -1,11 +1,8 @@
 package vuego
 
 import (
-	"fmt"
 	"io"
 	"io/fs"
-	"path"
-	"strings"
 	"sync"
 
 	"golang.org/x/net/html"
@@ -28,93 +25,6 @@ type Vue struct {
 
 	// Custom node processors for post-processing rendered DOM
 	nodeProcessors []NodeProcessor
-}
-
-// VueContext carries template inclusion context and request-scoped state used during evaluation.
-// Each render operation gets its own VueContext, making concurrent rendering safe.
-type VueContext struct {
-	// Variable scope and data resolution
-	stack *Stack
-
-	// Template inclusion chain context
-	BaseDir       string
-	CurrentDir    string
-	FromFilename  string
-	TemplateStack []string
-
-	// HTML rendering state
-	TagStack []string
-
-	// v-once element tracking for deep clones
-	seen        map[string]bool
-	seenCounter int
-}
-
-// NewVueContext returns a VueContext initialized for the given template filename with initial data.
-func NewVueContext(fromFilename string, data map[string]any) VueContext {
-	return NewVueContextWithData(fromFilename, data, nil)
-}
-
-// NewVueContextWithData returns a VueContext with both map data and original root data for struct field fallback.
-func NewVueContextWithData(fromFilename string, data map[string]any, originalData any) VueContext {
-	return VueContext{
-		stack:         NewStackWithData(data, originalData),
-		CurrentDir:    path.Dir(fromFilename),
-		FromFilename:  fromFilename,
-		TemplateStack: []string{fromFilename},
-		TagStack:      []string{},
-		seen:          make(map[string]bool),
-	}
-}
-
-// WithTemplate returns a copy of the context extended with filename in the inclusion chain.
-func (ctx VueContext) WithTemplate(filename string) VueContext {
-	newStack := make([]string, len(ctx.TemplateStack)+1)
-	copy(newStack, ctx.TemplateStack)
-	newStack[len(ctx.TemplateStack)] = filename
-	return VueContext{
-		stack:         ctx.stack, // Share the same stack across template chain
-		BaseDir:       ctx.BaseDir,
-		CurrentDir:    path.Dir(filename),
-		FromFilename:  filename,
-		TemplateStack: newStack,
-		TagStack:      ctx.TagStack, // Share the same tag stack
-		seen:          ctx.seen,     // Share the v-once tracking map
-	}
-}
-
-// FormatTemplateChain returns the template inclusion chain formatted for error messages.
-func (ctx VueContext) FormatTemplateChain() string {
-	if len(ctx.TemplateStack) <= 1 {
-		return ctx.FromFilename
-	}
-	return strings.Join(ctx.TemplateStack, " -> ")
-}
-
-// PushTag adds a tag to the tag stack.
-func (ctx *VueContext) PushTag(tag string) {
-	ctx.TagStack = append(ctx.TagStack, tag)
-}
-
-// PopTag removes the current tag from the tag stack.
-func (ctx *VueContext) PopTag() {
-	if len(ctx.TagStack) > 0 {
-		ctx.TagStack = ctx.TagStack[:len(ctx.TagStack)-1]
-	}
-}
-
-// CurrentTag returns the current parent tag, or empty string if no tag is on the stack.
-func (ctx VueContext) CurrentTag() string {
-	if len(ctx.TagStack) == 0 {
-		return ""
-	}
-	return ctx.TagStack[len(ctx.TagStack)-1]
-}
-
-// nextSeenID returns a unique ID for tracking v-once elements across deep clones.
-func (ctx *VueContext) nextSeenID() string {
-	ctx.seenCounter++
-	return fmt.Sprint(ctx.seenCounter)
 }
 
 // NewVue creates a new Vue backed by the given filesystem.
@@ -161,7 +71,15 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 
 	// Convert data to map[string]any and create context with original data for struct fallback
 	dataMap := toMapData(data)
-	ctx := NewVueContextWithData(filename, dataMap, data)
+	ctx := NewVueContext(filename, &VueContextOptions{
+		Data:         dataMap,
+		OriginalData: data,
+		Processors:   v.nodeProcessors,
+	})
+
+	if err := v.preProcessNodes(ctx, dom); err != nil {
+		return err
+	}
 
 	result, err := v.evaluate(ctx, dom, 0)
 	if err != nil {
@@ -169,7 +87,7 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 	}
 
 	// Apply custom node processors for post-processing
-	if err := v.processNodes(result); err != nil {
+	if err := v.postProcessNodes(ctx, result); err != nil {
 		return err
 	}
 
@@ -220,7 +138,15 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 
 	// Convert data to map[string]any and create context with original data for struct fallback
 	dataMap := toMapData(data)
-	ctx := NewVueContextWithData(filename, dataMap, data)
+	ctx := NewVueContext(filename, &VueContextOptions{
+		Data:         dataMap,
+		OriginalData: data,
+		Processors:   v.nodeProcessors,
+	})
+
+	if err := v.preProcessNodes(ctx, dom); err != nil {
+		return err
+	}
 
 	// Assign unique IDs to all v-once elements for tracking across deep clones
 	for _, node := range dom {
@@ -233,7 +159,7 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 	}
 
 	// Apply custom node processors for post-processing
-	if err := v.processNodes(result); err != nil {
+	if err := v.postProcessNodes(ctx, result); err != nil {
 		return err
 	}
 

@@ -11,9 +11,15 @@ import "golang.org/x/net/html"
 //
 // See docs/nodeprocessor.md for examples and best practices.
 type NodeProcessor interface {
-	// Process receives the rendered nodes and may modify them in place.
+	// New ensures that we can have render-scoped allocations.
+	New() NodeProcessor
+
+	// PreProcess receives the nodes as they are decoded.
+	PreProcess(nodes []*html.Node) error
+
+	// PostProcess receives the rendered nodes and may modify them in place.
 	// It should return an error if processing fails.
-	Process(nodes []*html.Node) error
+	PostProcess(nodes []*html.Node) error
 }
 
 // RegisterNodeProcessor adds a custom node processor to the Vue instance.
@@ -26,13 +32,20 @@ func (v *Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue {
 	return v
 }
 
-// processNodes applies all registered node processors to the rendered nodes.
-func (v *Vue) processNodes(nodes []*html.Node) error {
-	if len(v.nodeProcessors) == 0 {
-		return nil
+// preProcessNodes applies all registered node processors to the rendered nodes.
+func (v *Vue) preProcessNodes(ctx VueContext, nodes []*html.Node) error {
+	for _, processor := range ctx.Processors {
+		if err := processor.PreProcess(nodes); err != nil {
+			return err
+		}
 	}
-	for _, processor := range v.nodeProcessors {
-		if err := processor.Process(nodes); err != nil {
+	return nil
+}
+
+// postProcessNodes applies all registered node processors to the rendered nodes.
+func (v *Vue) postProcessNodes(ctx VueContext, nodes []*html.Node) error {
+	for _, processor := range ctx.Processors {
+		if err := processor.PostProcess(nodes); err != nil {
 			return err
 		}
 	}

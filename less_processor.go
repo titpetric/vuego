@@ -34,8 +34,20 @@ func NewLessProcessor(fsys ...fs.FS) *LessProcessor {
 	return &LessProcessor{fs: fsVal}
 }
 
-// Process walks the DOM tree and compiles LESS in <style type="text/css+less"> tags to CSS.
-func (lp *LessProcessor) Process(nodes []*html.Node) error {
+// New creates a new allocation of *LessProcessor.
+func (lp *LessProcessor) New() NodeProcessor {
+	return &LessProcessor{
+		fs: lp.fs,
+	}
+}
+
+// PreProcess.
+func (lp *LessProcessor) PreProcess(nodes []*html.Node) error {
+	return nil
+}
+
+// PostProcess walks the DOM tree and compiles LESS in <style type="text/css+less"> tags to CSS.
+func (lp *LessProcessor) PostProcess(nodes []*html.Node) error {
 	for _, node := range nodes {
 		if err := lp.processNode(node); err != nil {
 			return err

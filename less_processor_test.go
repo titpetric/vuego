@@ -10,6 +10,8 @@ import (
 	"github.com/titpetric/vuego"
 )
 
+var _ vuego.NodeProcessor = &vuego.LessProcessor{}
+
 // TestLessProcessor_LessCompilation tests LESS compilation in <style type="text/css+less"> tags.
 func TestLessProcessor_LessCompilation(t *testing.T) {
 	// Create a test filesystem with a simple template
