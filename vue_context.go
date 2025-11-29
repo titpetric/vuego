@@ -1,9 +1,10 @@
 package vuego
 
 import (
-	"fmt"
 	"path"
 	"strings"
+
+	"github.com/titpetric/platform/pkg/ulid"
 )
 
 // VueContext carries template inclusion context and request-scoped state used during evaluation.
@@ -24,8 +25,7 @@ type VueContext struct {
 	Processors []NodeProcessor
 
 	// v-once element tracking for deep clones
-	seen        map[string]bool
-	seenCounter int
+	seen map[string]bool
 }
 
 // VueContextOptions holds configurable options for a new VueContext.
@@ -98,6 +98,5 @@ func (ctx VueContext) CurrentTag() string {
 
 // nextSeenID returns a unique ID for tracking v-once elements across deep clones.
 func (ctx *VueContext) nextSeenID() string {
-	ctx.seenCounter++
-	return fmt.Sprint(ctx.seenCounter)
+	return ulid.String()
 }
