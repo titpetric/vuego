@@ -68,6 +68,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			}
 
 			if tag == "vuego" {
+				ctx.stack.Push(nil)
 				if err := v.evalAttributes(ctx, node); err != nil {
 					return nil, err
 				}
