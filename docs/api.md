@@ -65,9 +65,15 @@ type Loader struct {
 //
 // See docs/nodeprocessor.md for examples and best practices.
 type NodeProcessor interface {
-	// Process receives the rendered nodes and may modify them in place.
+	// New ensures that we can have render-scoped allocations.
+	New() NodeProcessor
+
+	// PreProcess receives the nodes as they are decoded.
+	PreProcess(nodes []*html.Node) error
+
+	// PostProcess receives the rendered nodes and may modify them in place.
 	// It should return an error if processing fails.
-	Process(nodes []*html.Node) error
+	PostProcess(nodes []*html.Node) error
 }
 ```
 
@@ -122,9 +128,20 @@ type VueContext struct {
 	// HTML rendering state
 	TagStack []string
 
+	Processors []NodeProcessor
+
 	// v-once element tracking for deep clones
 	seen        map[string]bool
 	seenCounter int
+}
+```
+
+```go
+// VueContextOptions holds configurable options for a new VueContext.
+type VueContextOptions struct {
+	Data         map[string]any
+	OriginalData any
+	Processors   []NodeProcessor
 }
 ```
 
@@ -137,11 +154,12 @@ type VueContext struct {
 - `func NewStack (root map[string]any) *Stack`
 - `func NewStackWithData (root map[string]any, originalData any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
-- `func NewVueContext (fromFilename string, data map[string]any) VueContext`
-- `func NewVueContextWithData (fromFilename string, data map[string]any, originalData any) VueContext`
+- `func NewVueContext (fromFilename string, options *VueContextOptions) VueContext`
 - `func (*ExprEvaluator) ClearCache ()`
 - `func (*ExprEvaluator) Eval (expression string, env map[string]any) (any, error)`
-- `func (*LessProcessor) Process (nodes []*html.Node) error`
+- `func (*LessProcessor) New () NodeProcessor`
+- `func (*LessProcessor) PostProcess (nodes []*html.Node) error`
+- `func (*LessProcessor) PreProcess (nodes []*html.Node) error`
 - `func (*LessProcessorError) Error () string`
 - `func (*Loader) Load (filename string) ([]*html.Node, error)`
 - `func (*Loader) LoadFragment (filename string) ([]*html.Node, error)`
@@ -229,15 +247,7 @@ func NewVue(templateFS fs.FS) *Vue
 NewVueContext returns a VueContext initialized for the given template filename with initial data.
 
 ```go
-func NewVueContext(fromFilename string, data map[string]any) VueContext
-```
-
-### NewVueContextWithData
-
-NewVueContextWithData returns a VueContext with both map data and original root data for struct field fallback.
-
-```go
-func NewVueContextWithData(fromFilename string, data map[string]any, originalData any) VueContext
+func NewVueContext(fromFilename string, options *VueContextOptions) VueContext
 ```
 
 ### ClearCache
@@ -261,14 +271,30 @@ Eval evaluates an expression against the given environment (stack). It returns t
 func (*ExprEvaluator) Eval(expression string, env map[string]any) (any, error)
 ```
 
-### Process
+### New
 
-Process walks the DOM tree and compiles LESS in
+New creates a new allocation of *LessProcessor.
+
+```go
+func (*LessProcessor) New() NodeProcessor
+```
+
+### PostProcess
+
+PostProcess walks the DOM tree and compiles LESS in
 <style type="text/css+less">
  tags to CSS.
 
 ```go
-func (*LessProcessor) Process(nodes []*html.Node) error
+func (*LessProcessor) PostProcess(nodes []*html.Node) error
+```
+
+### PreProcess
+
+PreProcess.
+
+```go
+func (*LessProcessor) PreProcess(nodes []*html.Node) error
 ```
 
 ### Load
