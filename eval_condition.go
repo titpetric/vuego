@@ -139,7 +139,7 @@ func (v *Vue) evaluateNodeAsElement(ctx VueContext, node *html.Node, depth int) 
 			if err := v.evalVHtml(ctx, n); err != nil {
 				return nil, err
 			}
-			if err := v.evalAttributes(ctx, n); err != nil {
+			if _, err := v.evalAttributes(ctx, n); err != nil {
 				return nil, err
 			}
 		}
@@ -160,7 +160,7 @@ func (v *Vue) evaluateNodeAsElement(ctx VueContext, node *html.Node, depth int) 
 	if err := v.evalVHtml(ctx, newNode); err != nil {
 		return nil, err
 	}
-	if err := v.evalAttributes(ctx, newNode); err != nil {
+	if _, err := v.evalAttributes(ctx, newNode); err != nil {
 		return nil, err
 	}
 

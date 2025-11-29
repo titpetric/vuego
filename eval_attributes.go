@@ -11,12 +11,10 @@ import (
 	"github.com/titpetric/vuego/internal/helpers"
 )
 
-func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
+func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) (map[string]any, error) {
 	if n.Type != html.ElementNode {
-		return nil
+		return nil, nil
 	}
-
-	skipAttributeUpdate := (n.Data == "vuego" || n.Data == "template")
 
 	results := map[string]any{}
 
@@ -43,7 +41,7 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 			// run interpolation on normal attributes
 			interpolated, err := v.interpolate(ctx, val)
 			if err != nil {
-				return fmt.Errorf("eval attribute: %s=%s: %w", key, val, err)
+				return nil, fmt.Errorf("eval attribute: %s=%s: %w", key, val, err)
 			}
 			newAttrs = append(newAttrs, html.Attribute{
 				Key: key,
@@ -77,28 +75,25 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) error {
 				continue
 			}
 			// For other attributes, bound value replaces static
-			if !skipAttributeUpdate {
-				newAttrs[staticIdx].Val = boundValue.(string)
-			}
+			newAttrs[staticIdx].Val = fmt.Sprint(boundValue)
 		} else {
 			if helpers.IsTruthy(boundValue) {
 				newAttrs = append(newAttrs, html.Attribute{
 					Key: attrName,
 					Val: fmt.Sprint(boundValue),
 				})
+				continue
 			}
 		}
-
-		ctx.stack.Set(attrName, boundValue)
 	}
 
 	n.Attr = newAttrs
 
 	for _, v := range newAttrs {
-		ctx.stack.Set(v.Key, v.Val)
+		results[v.Key] = v.Val
 	}
 
-	return nil
+	return results, nil
 }
 
 // evalBoundAttribute evaluates a bound attribute, handling objects for class/style.

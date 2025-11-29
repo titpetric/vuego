@@ -68,9 +68,10 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			}
 
 			if tag == "vuego" {
-				ctx.stack.Push(nil)
-				if err := v.evalAttributes(ctx, node); err != nil {
+				if vars, err := v.evalAttributes(ctx, node); err != nil {
 					return nil, err
+				} else {
+					ctx.stack.Push(vars)
 				}
 
 				name := helpers.GetAttr(node, "include")
@@ -161,8 +162,12 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			if err := v.evalVShow(ctx, newNode); err != nil {
 				return nil, err
 			}
-			if err := v.evalAttributes(ctx, newNode); err != nil {
+			if vars, err := v.evalAttributes(ctx, newNode); err != nil {
 				return nil, err
+			} else {
+				for k, v := range vars {
+					ctx.stack.Set(k, v)
+				}
 			}
 
 			if !hasVHtml {

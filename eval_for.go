@@ -50,7 +50,7 @@ func (v *Vue) evalVFor(ctx VueContext, node *html.Node, nodes []*html.Node, dept
 			if err := v.evalVHtml(ctx, n); err != nil {
 				return result, skipCount, err
 			}
-			if err := v.evalAttributes(ctx, n); err != nil {
+			if _, err := v.evalAttributes(ctx, n); err != nil {
 				return result, skipCount, err
 			}
 		}
