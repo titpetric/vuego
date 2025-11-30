@@ -417,6 +417,7 @@ func (v *Vue) DefaultFuncMap() FuncMap {
 		"lower":      lowerFunc,
 		"title":      titleFunc,
 		"formatTime": formatTimeFunc,
+		"formatDate": formatDateFunc,
 		"default":    defaultFunc,
 		"len":        lenFunc,
 		"trim":       trimFunc,
@@ -488,6 +489,15 @@ func formatTimeFunc(v any, layout any) any {
 		}
 	}
 	return v
+}
+
+func formatDateFunc(v any, layout any) any {
+	layoutStr := "2006-01-02"
+	if s, ok := layout.(string); ok {
+		layoutStr = s
+	}
+
+	return formatTimeFunc(v, layoutStr)
 }
 
 func defaultFunc(v any, def any) any {
