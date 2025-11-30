@@ -68,28 +68,17 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			}
 
 			if tag == "vuego" {
-				if vars, err := v.evalAttributes(ctx, node); err != nil {
+				vars, err := v.evalAttributes(ctx, node)
+				if err != nil {
 					return nil, err
-				} else {
-					ctx.stack.Push(vars)
 				}
+				ctx.stack.Push(vars)
 
 				name := helpers.GetAttr(node, "include")
 				compDom, err := v.loader.LoadFragment(name)
 				if err != nil {
 					return nil, fmt.Errorf("error loading %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
 				}
-
-				// Push component attributes to stack for :required validation
-				/*
-					componentData := make(map[string]any)
-					for _, attr := range node.Attr {
-						if attr.Key != "include" {
-							componentData[attr.Key] = attr.Val
-						}
-					}
-					ctx.stack.Push(componentData)
-				*/
 
 				// Validate and process template tag
 				processedDom, err := v.evalTemplate(ctx, compDom, ctx.stack.EnvMap(), depth+1)
@@ -162,12 +151,8 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			if err := v.evalVShow(ctx, newNode); err != nil {
 				return nil, err
 			}
-			if vars, err := v.evalAttributes(ctx, newNode); err != nil {
+			if _, err := v.evalAttributes(ctx, newNode); err != nil {
 				return nil, err
-			} else {
-				for k, v := range vars {
-					ctx.stack.Set(k, v)
-				}
 			}
 
 			if !hasVHtml {

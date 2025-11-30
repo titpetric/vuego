@@ -1,0 +1,2 @@
+<meta content="old-value" />
+<div v-html="content"></div>
