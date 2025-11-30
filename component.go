@@ -43,7 +43,7 @@ func NewRenderer() Renderer {
 func shouldIgnoreAttr(key string) bool {
 	// Vue directives that should not appear in final HTML
 	switch key {
-	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-show", "v-once", "v-once-id":
+	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-show", "v-once", "v-once-id", "data-v-html-content":
 		return true
 	}
 	// v-bind: and : prefixed attributes are processed and shouldn't appear in output
@@ -71,6 +71,16 @@ func renderAttrs(attrs []html.Attribute) string {
 		sb.WriteByte('"')
 	}
 	return sb.String()
+}
+
+// hasVHtmlAttr checks if a node has the v-html attribute.
+func hasVHtmlAttr(node *html.Node) bool {
+	for _, attr := range node.Attr {
+		if attr.Key == "v-html" {
+			return true
+		}
+	}
+	return false
 }
 
 var indentCache = [256]string{}
@@ -133,6 +143,39 @@ func renderNodeWithContext(ctx VueContext, w io.Writer, node *html.Node, indent 
 
 		spaces := getIndent(indent)
 		tagName := node.Data
+
+		// Check if this element has evaluated v-html content (stored in internal attribute)
+		var vhtmlContent string
+		for _, attr := range node.Attr {
+			if attr.Key == "data-v-html-content" {
+				vhtmlContent = attr.Val
+				break
+			}
+		}
+
+		// If this element has v-html content, output it directly without indentation
+		if vhtmlContent != "" {
+			// Special case for <template>: output content only, not the template tags
+			if tagName == "template" {
+				_, _ = w.Write([]byte(vhtmlContent))
+			} else {
+				_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + ">"))
+				_, _ = w.Write([]byte(vhtmlContent))
+				_, _ = w.Write([]byte("</" + tagName + ">\n"))
+			}
+			return nil
+		}
+
+		// Special handling for <template> elements without v-html: output children without template tag
+		if tagName == "template" {
+			for c := firstChild; c != nil; c = c.NextSibling {
+				if err := renderNodeWithContext(ctx, w, c, indent); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+
 		// compact single-entry text nodes
 		if childCount == 0 {
 			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + "></" + tagName + ">\n"))
@@ -150,8 +193,9 @@ func renderNodeWithContext(ctx VueContext, w io.Writer, node *html.Node, indent 
 		} else {
 			_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + ">\n"))
 			ctx.PushTag(tagName)
+			childIndent := indent + 2
 			for c := firstChild; c != nil; c = c.NextSibling {
-				if err := renderNodeWithContext(ctx, w, c, indent+2); err != nil {
+				if err := renderNodeWithContext(ctx, w, c, childIndent); err != nil {
 					return err
 				}
 			}

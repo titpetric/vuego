@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 87.23%   | 740       | 2541  |
+| ✅     | titpetric/vuego                      | 85.71%   | 766       | 2587  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.28%   | 171       | 508   |
@@ -74,9 +74,9 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego                      | Vue.evalObjectBinding             | 57.10%   | 7         |
 | ✅     | titpetric/vuego                      | Vue.evalPipe                      | 81.80%   | 16        |
 | ✅     | titpetric/vuego                      | Vue.evalSegment                   | 70.00%   | 5         |
-| ❌     | titpetric/vuego                      | Vue.evalTemplate                  | 77.80%   | 18        |
+| ✅     | titpetric/vuego                      | Vue.evalTemplate                  | 84.00%   | 25        |
 | ✅     | titpetric/vuego                      | Vue.evalVFor                      | 84.00%   | 29        |
-| ✅     | titpetric/vuego                      | Vue.evalVHtml                     | 93.90%   | 15        |
+| ✅     | titpetric/vuego                      | Vue.evalVHtml                     | 94.70%   | 9         |
 | ✅     | titpetric/vuego                      | Vue.evalVShow                     | 100.00%  | 5         |
 | ✅     | titpetric/vuego                      | Vue.evaluate                      | 89.60%   | 100       |
 | ✅     | titpetric/vuego                      | Vue.evaluateChildren              | 100.00%  | 1         |
@@ -105,9 +105,11 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | defaultFunc                       | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | escapeFunc                        | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | fileFunc                          | 80.00%   | 2         |
+| ❌     | titpetric/vuego                      | formatDateFunc                    | 0.00%    | 1         |
 | ✅     | titpetric/vuego                      | formatTimeFunc                    | 62.50%   | 4         |
 | ✅     | titpetric/vuego                      | getCachedPath                     | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | getIndent                         | 66.70%   | 1         |
+| ❌     | titpetric/vuego                      | hasVHtmlAttr                      | 0.00%    | 3         |
 | ❌     | titpetric/vuego                      | htmlRenderer.Render               | 0.00%    | 3         |
 | ❌     | titpetric/vuego                      | init                              | 0.00%    | 1         |
 | ✅     | titpetric/vuego                      | intFunc                           | 42.90%   | 3         |
@@ -123,7 +125,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego                      | parseValue                        | 66.70%   | 10        |
 | ✅     | titpetric/vuego                      | renderAttrs                       | 100.00%  | 4         |
 | ✅     | titpetric/vuego                      | renderNode                        | 100.00%  | 0         |
-| ✅     | titpetric/vuego                      | renderNodeWithContext             | 91.20%   | 27        |
+| ✅     | titpetric/vuego                      | renderNodeWithContext             | 86.50%   | 48        |
 | ✅     | titpetric/vuego                      | shouldEscapeTextNode              | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | shouldIgnoreAttr                  | 80.00%   | 3         |
 | ✅     | titpetric/vuego                      | splitPathImpl                     | 85.40%   | 31        |

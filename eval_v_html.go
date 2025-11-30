@@ -29,37 +29,17 @@ func (v *Vue) evalVHtml(ctx VueContext, n *html.Node) error {
 		}
 	}
 
-	htmlStr := fmt.Sprint(val)
 	if !ok {
 		return nil
 	}
 
+	// Evaluate v-html expression to its string value and store in internal attribute
+	htmlStr := fmt.Sprint(val)
+	n.Attr = append(n.Attr, html.Attribute{Key: "data-v-html-content", Val: htmlStr})
+
+	// Clear children - v-html content will be output directly during rendering
 	n.FirstChild = nil
 	n.LastChild = nil
-
-	// parse fragment using cached body element
-	body := helpers.GetBodyNode()
-	nodes, err := html.ParseFragment(strings.NewReader(htmlStr), body)
-	if err != nil {
-		return fmt.Errorf("v-html parse fragment error: %w", err)
-	}
-	if len(nodes) == 0 {
-		return nil
-	}
-
-	// append parsed nodes as children
-	var prev *html.Node
-	for _, c := range nodes {
-		c.Parent = n
-		c.PrevSibling = prev
-		if prev != nil {
-			prev.NextSibling = c
-		} else {
-			n.FirstChild = c
-		}
-		prev = c
-	}
-	n.LastChild = prev
 
 	return nil
 }

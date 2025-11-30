@@ -77,3 +77,54 @@ func TestVue_EvalVHtml(t *testing.T) {
 		})
 	}
 }
+
+func TestVue_EvalVHtml_PreservesWhitespace(t *testing.T) {
+	// Test that v-html content preserves its original whitespace without re-indenting
+	tests := []struct {
+		name     string
+		template string
+		data     map[string]any
+		expected string // exact expected output (not normalized)
+	}{
+		{
+			name:     "v-html preserves newlines in text",
+			template: "<div v-html=\"html\"></div>",
+			data:     map[string]any{"html": "line1\nline2"},
+			expected: "<div>line1\nline2</div>\n",
+		},
+		{
+			name:     "v-html preserves indentation in HTML without re-indenting",
+			template: "<div v-html=\"html\"></div>",
+			data: map[string]any{
+				"html": "<span>\n  indented\n</span>",
+			},
+			// v-html content is output as-is without any system indentation
+			expected: "<div><span>\n  indented\n</span></div>\n",
+		},
+		{
+			name:     "v-html does not re-indent multi-element content",
+			template: "<div v-html=\"html\"></div>",
+			data: map[string]any{
+				"html": "<p>one</p>\n<p>two</p>",
+			},
+			// v-html content preserves its own whitespace exactly
+			expected: "<div><p>one</p>\n<p>two</p></div>\n",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			template := []byte(tc.template)
+			fs := fstest.MapFS{
+				"test.vuego": &fstest.MapFile{Data: template},
+			}
+			vue := vuego.NewVue(fs)
+
+			var buf bytes.Buffer
+			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			require.NoError(t, err)
+			// Compare exact output to verify whitespace is preserved
+			require.Equal(t, tc.expected, buf.String())
+		})
+	}
+}

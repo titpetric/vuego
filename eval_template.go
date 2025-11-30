@@ -35,12 +35,26 @@ func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map
 			}
 		}
 
-		// Set v-html if attribute is provided.
+		// Evaluate v-html if attribute is provided
 		if err := v.evalVHtml(ctx, nodes[0]); err != nil {
 			return nil, err
 		}
 
-		// Return only the children of the template tag, omitting the template tag itself
+		// Check if v-html was evaluated (internal attribute set)
+		hasVHtml := false
+		for _, attr := range node.Attr {
+			if attr.Key == "data-v-html-content" {
+				hasVHtml = true
+				break
+			}
+		}
+
+		// If v-html was evaluated, return the template node for rendering to output its content
+		if hasVHtml {
+			return nodes, nil
+		}
+
+		// Otherwise, evaluate children and return them (omitting the template tag)
 		evaluated, err := v.evaluateChildren(ctx, node, depth+1)
 		if err != nil {
 			return nil, err
