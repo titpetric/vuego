@@ -104,8 +104,8 @@ func (v *Vue) evalBoundAttribute(ctx VueContext, attrName, expr string) any {
 	}
 
 	// Regular variable binding
-	valResolved, _ := ctx.stack.Resolve(expr)
-	if helpers.IsTruthy(valResolved) {
+	valResolved, ok := ctx.stack.Resolve(expr)
+	if ok {
 		return valResolved
 	}
 	return ""

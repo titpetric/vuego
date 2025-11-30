@@ -923,8 +923,8 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		require.NoError(t, err)
 		output := buf.String()
 		// JSON is not HTML-escaped inside script tags
-		require.Contains(t, output, `"age":30`)
-		require.Contains(t, output, `"name":"Alice"`)
+		require.Contains(t, output, `"age": 30`)
+		require.Contains(t, output, `"name": "Alice"`)
 		require.NotContains(t, output, `&#34;`)
 	})
 
@@ -1012,8 +1012,8 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		require.NoError(t, err)
 		output := buf.String()
 		// Check unescaped JSON
-		require.Contains(t, output, `"name":"Charlie"`)
-		require.Contains(t, output, `"status":"active"`)
+		require.Contains(t, output, `"name": "Charlie"`)
+		require.Contains(t, output, `"status": "active"`)
 		require.NotContains(t, output, `&#34;`)
 	})
 
@@ -1057,7 +1057,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		// JSON should be HTML-escaped inside code tags
 		require.Contains(t, output, `&#34;key&#34;`)
 		require.Contains(t, output, `&#34;value&#34;`)
-		require.NotContains(t, output, `"key":"value"`)
+		require.NotContains(t, output, `"key": "value"`)
 	})
 
 	t.Run("JSON escaped in pre tag", func(t *testing.T) {
@@ -1083,7 +1083,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		require.Contains(t, output, `&#34;name&#34;`)
 		require.Contains(t, output, `&#34;Alice&#34;`)
 		require.Contains(t, output, `&#34;age&#34;`)
-		require.NotContains(t, output, `"name":"Alice"`)
+		require.NotContains(t, output, `"name": "Alice"`)
 	})
 
 	t.Run("JSON escaped in pre+code tags", func(t *testing.T) {
@@ -1109,7 +1109,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		require.Contains(t, output, `&#34;status&#34;`)
 		require.Contains(t, output, `&#34;active&#34;`)
 		require.Contains(t, output, `&#34;count&#34;`)
-		require.NotContains(t, output, `"status":"active"`)
+		require.NotContains(t, output, `"status": "active"`)
 	})
 
 	t.Run("JSON unescaped in script tag (comparison)", func(t *testing.T) {
@@ -1132,8 +1132,8 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		require.NoError(t, err)
 		output := buf.String()
 		// JSON should NOT be escaped inside script tags
-		require.Contains(t, output, `"status":"active"`)
-		require.Contains(t, output, `"count":42`)
+		require.Contains(t, output, `"status": "active"`)
+		require.Contains(t, output, `"count": 42`)
 		require.NotContains(t, output, `&#34;`)
 	})
 }

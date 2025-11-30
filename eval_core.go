@@ -72,6 +72,8 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				if err != nil {
 					return nil, err
 				}
+
+				delete(vars, "include")
 				ctx.stack.Push(vars)
 
 				name := helpers.GetAttr(node, "include")
@@ -83,7 +85,6 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				// Validate and process template tag
 				processedDom, err := v.evalTemplate(ctx, compDom, ctx.stack.EnvMap(), depth+1)
 				if err != nil {
-					ctx.stack.Pop()
 					return nil, fmt.Errorf("error in %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
 				}
 

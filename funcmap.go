@@ -538,7 +538,7 @@ func stringFunc(v any) any {
 }
 
 func jsonFunc(v any) (string, error) {
-	b, err := json.Marshal(v)
+	b, err := json.MarshalIndent(v, "  ", "")
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal to JSON: %w", err)
 	}
