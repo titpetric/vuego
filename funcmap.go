@@ -424,6 +424,7 @@ func (v *Vue) DefaultFuncMap() FuncMap {
 		"int":        intFunc,
 		"string":     stringFunc,
 		"json":       jsonFunc,
+		"type":       typeFunc,
 		"file":       fileFunc(v.templateFS),
 	}
 }
@@ -438,6 +439,10 @@ func fileFunc(templateFS fs.FS) func(string) (any, error) {
 		}
 		return string(d), nil
 	}
+}
+
+func typeFunc(v any) any {
+	return fmt.Sprintf("%T", v)
 }
 
 func upperFunc(v any) any {

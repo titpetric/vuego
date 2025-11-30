@@ -89,8 +89,14 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) (map[string]any, erro
 
 	n.Attr = newAttrs
 
+	// Don't overwrite results with stringified attributes
+	// The results map already contains the correctly typed bound values from line 39
+	// Only add static attributes to results (they are naturally strings from interpolation)
 	for _, v := range newAttrs {
-		results[v.Key] = v.Val
+		// Only add if not already in results (bound attributes take precedence and keep their type)
+		if _, exists := results[v.Key]; !exists {
+			results[v.Key] = v.Val
+		}
 	}
 
 	return results, nil

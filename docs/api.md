@@ -131,8 +131,7 @@ type VueContext struct {
 	Processors []NodeProcessor
 
 	// v-once element tracking for deep clones
-	seen        map[string]bool
-	seenCounter int
+	seen map[string]bool
 }
 ```
 

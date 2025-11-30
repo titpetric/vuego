@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 87.12%   | 743       | 2546  |
+| ✅     | titpetric/vuego                      | 87.23%   | 740       | 2541  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.28%   | 171       | 508   |
@@ -64,7 +64,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.buildClassString              | 85.70%   | 7         |
 | ✅     | titpetric/vuego                      | Vue.buildStyleString              | 87.50%   | 10        |
 | ✅     | titpetric/vuego                      | Vue.callFunc                      | 92.30%   | 24        |
-| ✅     | titpetric/vuego                      | Vue.evalAttributes                | 95.20%   | 29        |
+| ✅     | titpetric/vuego                      | Vue.evalAttributes                | 95.30%   | 31        |
 | ✅     | titpetric/vuego                      | Vue.evalBoundAttribute            | 100.00%  | 3         |
 | ✅     | titpetric/vuego                      | Vue.evalCondition                 | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Vue.evalConditionExpr             | 88.90%   | 2         |
@@ -78,7 +78,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.evalVFor                      | 84.00%   | 29        |
 | ✅     | titpetric/vuego                      | Vue.evalVHtml                     | 93.90%   | 15        |
 | ✅     | titpetric/vuego                      | Vue.evalVShow                     | 100.00%  | 5         |
-| ✅     | titpetric/vuego                      | Vue.evaluate                      | 89.70%   | 105       |
+| ✅     | titpetric/vuego                      | Vue.evaluate                      | 89.60%   | 100       |
 | ✅     | titpetric/vuego                      | Vue.evaluateChildren              | 100.00%  | 1         |
 | ❌     | titpetric/vuego                      | Vue.evaluateNodeAsElement         | 61.80%   | 24        |
 | ✅     | titpetric/vuego                      | Vue.interpolate                   | 100.00%  | 2         |
@@ -131,6 +131,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | titleFunc                         | 85.70%   | 6         |
 | ✅     | titpetric/vuego                      | toMapData                         | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | trimFunc                          | 66.70%   | 1         |
+| ✅     | titpetric/vuego                      | typeFunc                          | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | upperFunc                         | 66.70%   | 1         |
 | ❌     | titpetric/vuego/cmd/vuego            | main                              | 0.00%    | 1         |
 | ❌     | titpetric/vuego/cmd/vuego            | start                             | 0.00%    | 4         |
