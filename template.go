@@ -9,6 +9,9 @@ import (
 	"golang.org/x/net/html"
 )
 
+// LoadOption is a functional option for configuring Load()
+type LoadOption func(*Vue)
+
 // Template represents a loaded and prepared vuego template.
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {
@@ -25,6 +28,12 @@ type Template interface {
 	// Returns an empty string if the value is not a string.
 	GetString(key string) string
 
+	// Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
+	Funcs(funcMap FuncMap) Template
+
+	// RegisterProcessor registers a node processor. Returns the Template for chaining.
+	RegisterProcessor(processor NodeProcessor) Template
+
 	// Render processes the template and writes output to w.
 	// If an error occurs, w is unmodified (uses internal buffering).
 	// The context can be used to cancel the rendering operation.
@@ -40,10 +49,16 @@ type template struct {
 	frontMatter map[string]any
 }
 
-// Load loads a template from the given filesystem and filename.
+// Load loads a template from the given filesystem and filename with optional configurations.
 // The template's initial variables are populated from front-matter data.
-func Load(templateFS fs.FS, filename string) (Template, error) {
+// Supports functional options to register processors and configure template rendering.
+func Load(templateFS fs.FS, filename string, opts ...LoadOption) (Template, error) {
 	vue := NewVue(templateFS)
+
+	// Apply functional options
+	for _, opt := range opts {
+		opt(vue)
+	}
 
 	// Load the template with front-matter
 	frontMatter, dom, err := vue.loader.loadFragmentInternal(filename)
@@ -66,6 +81,20 @@ func Load(templateFS fs.FS, filename string) (Template, error) {
 		vars:        vars,
 		frontMatter: frontMatter,
 	}, nil
+}
+
+// WithLessProcessor returns a LoadOption that registers a LESS processor
+func WithLessProcessor() LoadOption {
+	return func(vue *Vue) {
+		vue.RegisterNodeProcessor(NewLessProcessor(vue.templateFS))
+	}
+}
+
+// WithProcessor returns a LoadOption that registers a custom node processor
+func WithProcessor(processor NodeProcessor) LoadOption {
+	return func(vue *Vue) {
+		vue.RegisterNodeProcessor(processor)
+	}
 }
 
 // Fill sets all variables from the map.
@@ -97,6 +126,23 @@ func (t *template) GetString(key string) string {
 		return s
 	}
 	return ""
+}
+
+// Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
+func (t *template) Funcs(funcMap FuncMap) Template {
+	// Merge funcMap into the default funcMap, overwriting keys
+	defaultFuncs := t.vue.funcMap
+	for k, v := range funcMap {
+		defaultFuncs[k] = v
+	}
+	t.vue.funcMap = defaultFuncs
+	return t
+}
+
+// RegisterProcessor registers a node processor. Returns the Template for chaining.
+func (t *template) RegisterProcessor(processor NodeProcessor) Template {
+	t.vue.RegisterNodeProcessor(processor)
+	return t
 }
 
 // Render processes the template and writes the output to w.
