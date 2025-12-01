@@ -94,6 +94,30 @@ type Stack struct {
 ```
 
 ```go
+// Template represents a loaded and prepared vuego template.
+// It allows variable assignment and rendering with internal buffering.
+type Template interface {
+	// Fill sets all variables from the map at once.
+	Fill(vars map[string]any) Template
+
+	// Assign sets a single variable.
+	Assign(key string, value any) Template
+
+	// GetVar retrieves a variable value.
+	GetVar(key string) any
+
+	// GetString retrieves a variable value as a string.
+	// Returns an empty string if the value is not a string.
+	GetString(key string) string
+
+	// Render processes the template and writes output to w.
+	// If an error occurs, w is unmodified (uses internal buffering).
+	// The context can be used to cancel the rendering operation.
+	Render(ctx context.Context, w io.Writer) error
+}
+```
+
+```go
 // Vue is the main template renderer for .vuego templates.
 // After initialization, Vue is safe for concurrent use by multiple goroutines.
 type Vue struct {
@@ -146,6 +170,7 @@ type VueContextOptions struct {
 
 ## Function symbols
 
+- `func Load (templateFS fs.FS, filename string) (Template, error)`
 - `func NewExprEvaluator () *ExprEvaluator`
 - `func NewLessProcessor (fsys ...fs.FS) *LessProcessor`
 - `func NewLoader (fs fs.FS) *Loader`
@@ -184,6 +209,14 @@ type VueContextOptions struct {
 - `func (VueContext) CurrentTag () string`
 - `func (VueContext) FormatTemplateChain () string`
 - `func (VueContext) WithTemplate (filename string) VueContext`
+
+### Load
+
+Load loads a template from the given filesystem and filename. The template's initial variables are populated from front-matter data.
+
+```go
+func Load(templateFS fs.FS, filename string) (Template, error)
+```
 
 ### NewExprEvaluator
 

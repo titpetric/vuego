@@ -4,7 +4,7 @@ This guide provides practical examples of using Vuego in your applications.
 
 ## Quick Start Examples
 
-### As a Go Package
+### Using the Vue Renderer (Standard API)
 
 ```bash
 go get github.com/titpetric/vuego
@@ -38,6 +38,61 @@ func main() {
 	}
 }
 ```
+
+### Using the Template API (Stateful)
+
+The Template API provides a stateful alternative to the Vue renderer, useful for workflows involving front-matter data and layout composition.
+
+```go
+package main
+
+import (
+	"github.com/titpetric/vuego"
+	"os"
+)
+
+func main() {
+	// Load a template with front-matter
+	templateFS := os.DirFS("templates")
+
+	tmpl, err := vuego.Load(templateFS, "page.vuego")
+	if err != nil {
+		panic(err)
+	}
+
+	// Access front-matter variables (e.g., layout, title)
+	layout := tmpl.GetVar("layout")
+	title := tmpl.GetVar("title")
+
+	// Assign additional variables with method chaining
+	tmpl.Assign("author", "John Doe").Assign("date", "2024-01-01")
+
+	// Render with buffering (output writer unmodified on error)
+	if err := tmpl.Render(os.Stdout); err != nil {
+		panic(err)
+	}
+}
+```
+
+**Template file example** (`page.vuego`):
+
+```yaml
+---
+layout: layouts/base.html
+title: My Page
+---
+<article>
+  <h1>{{ title }}</h1>
+  <p>By {{ author }}</p>
+  <div>{{ content }}</div>
+</article>
+```
+
+The Template API is particularly useful for:
+- Accessing layout information from front-matter
+- Building composite layouts (render page, then wrap in layout template)
+- Stateful template workflows where you load once and render multiple times with different data
+- Safe output buffering that guarantees the writer is unmodified on rendering errors
 
 ### Using Typed Values (Structs)
 
