@@ -62,15 +62,24 @@ func toMapData(data any) map[string]any {
 }
 
 // Render processes a full-page template file and writes the output to w.
+// Front-matter data in the template is authoritative and overrides passed data.
 // Render is safe to call concurrently from multiple goroutines.
 func (v *Vue) Render(w io.Writer, filename string, data any) error {
-	dom, err := v.loadCached(filename)
+	frontMatter, dom, err := v.loadCachedWithFrontMatter(filename)
 	if err != nil {
 		return err
 	}
 
 	// Convert data to map[string]any and create context with original data for struct fallback
 	dataMap := toMapData(data)
+	
+	// Merge front-matter data (authoritative - overrides passed data)
+	if frontMatter != nil {
+		for k, v := range frontMatter {
+			dataMap[k] = v
+		}
+	}
+	
 	ctx := NewVueContext(filename, &VueContextOptions{
 		Data:         dataMap,
 		OriginalData: data,
@@ -92,6 +101,33 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 	}
 
 	return v.render(w, result)
+}
+
+// loadCachedWithFrontMatter returns cached template nodes and front-matter data, or loads and caches them.
+// The cache stores only the nodes without front-matter data (front-matter is re-extracted on each load).
+func (v *Vue) loadCachedWithFrontMatter(filename string) (map[string]any, []*html.Node, error) {
+	v.templateMu.RLock()
+	if cached, ok := v.templateCache[filename]; ok {
+		v.templateMu.RUnlock()
+		// Load again to extract front-matter from the file
+		frontMatter, _, err := v.loader.loadFragmentInternal(filename)
+		if err != nil {
+			return nil, nil, err
+		}
+		return frontMatter, cached, nil
+	}
+	v.templateMu.RUnlock()
+
+	frontMatter, dom, err := v.loader.loadFragmentInternal(filename)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	v.templateMu.Lock()
+	v.templateCache[filename] = dom
+	v.templateMu.Unlock()
+
+	return frontMatter, dom, nil
 }
 
 // loadCached returns a cached template or loads and caches it.
@@ -129,15 +165,24 @@ func assignSeenAttrs(ctx *VueContext, node *html.Node) {
 }
 
 // RenderFragment processes a template fragment file and writes the output to w.
+// Front-matter data in the template is authoritative and overrides passed data.
 // RenderFragment is safe to call concurrently from multiple goroutines.
 func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
-	dom, err := v.loader.LoadFragment(filename)
+	frontMatter, dom, err := v.loader.loadFragmentInternal(filename)
 	if err != nil {
 		return err
 	}
 
 	// Convert data to map[string]any and create context with original data for struct fallback
 	dataMap := toMapData(data)
+	
+	// Merge front-matter data (authoritative - overrides passed data)
+	if frontMatter != nil {
+		for k, v := range frontMatter {
+			dataMap[k] = v
+		}
+	}
+	
 	ctx := NewVueContext(filename, &VueContextOptions{
 		Data:         dataMap,
 		OriginalData: data,

@@ -1,0 +1,14 @@
+---
+title: From Front-Matter
+count: 42
+items:
+  - apple
+  - banana
+---
+<div>
+  <h1>{{ title }}</h1>
+  <p>Count: {{ count }}</p>
+  <ul>
+    <li v-for="item in items">{{ item }}</li>
+  </ul>
+</div>

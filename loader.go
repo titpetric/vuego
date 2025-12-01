@@ -6,6 +6,7 @@ import (
 	"io/fs"
 
 	"golang.org/x/net/html"
+	"gopkg.in/yaml.v3"
 
 	"github.com/titpetric/vuego/internal/helpers"
 )
@@ -47,19 +48,78 @@ func (l *Loader) Load(filename string) ([]*html.Node, error) {
 	return result, nil
 }
 
+// extractFrontMatter extracts YAML front-matter from a template if it starts with ---.
+// Returns the front-matter data as map[string]any and the remaining template content.
+// If no front-matter is present, returns nil map and the original content.
+func extractFrontMatter(content []byte) (map[string]any, []byte, error) {
+	// Check if content starts with ---
+	if !bytes.HasPrefix(content, []byte("---")) {
+		return nil, content, nil
+	}
+
+	// Find the closing --- delimiter
+	rest := content[3:]
+	delimIdx := bytes.Index(rest, []byte("\n---"))
+	if delimIdx == -1 {
+		// No closing delimiter found
+		return nil, content, nil
+	}
+
+	// Extract front-matter YAML (between the delimiters)
+	frontMatterBytes := rest[:delimIdx]
+	remainingContent := rest[delimIdx+4:] // Skip "\n---"
+	// Skip optional newline after closing ---
+	if len(remainingContent) > 0 && remainingContent[0] == '\n' {
+		remainingContent = remainingContent[1:]
+	}
+
+	// Parse YAML
+	data := make(map[string]any)
+	if err := yaml.Unmarshal(frontMatterBytes, &data); err != nil {
+		return nil, nil, fmt.Errorf("error parsing front-matter YAML: %w", err)
+	}
+
+	return data, remainingContent, nil
+}
+
 // LoadFragment parses a template fragment; if the file is a full document, it falls back to Load.
+// Front-matter is extracted and discarded; use loadFragmentInternal to access it.
 func (l *Loader) LoadFragment(filename string) ([]*html.Node, error) {
+	_, nodes, err := l.loadFragmentInternal(filename)
+	return nodes, err
+}
+
+// loadFragmentInternal parses a template fragment and returns both front-matter data and DOM nodes.
+func (l *Loader) loadFragmentInternal(filename string) (map[string]any, []*html.Node, error) {
 	template, err := fs.ReadFile(l.FS, filename)
 	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %w", filename, err)
+		return nil, nil, fmt.Errorf("error reading %s: %w", filename, err)
+	}
+
+	// Extract front-matter
+	frontMatter, template, err := extractFrontMatter(template)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	// Input template contains html/body
+	var nodes []*html.Node
 	if bytes.Contains(template, []byte("</html>")) {
-		return l.Load(filename)
+		doc, err := html.Parse(bytes.NewReader(template))
+		if err != nil {
+			return nil, nil, err
+		}
+		for node := range doc.ChildNodes() {
+			nodes = append(nodes, node)
+		}
+	} else {
+		// Parse the fragment using cached body element
+		body := helpers.GetBodyNode()
+		nodes, err = html.ParseFragment(bytes.NewReader(template), body)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
-	// Parse the fragment using cached body element
-	body := helpers.GetBodyNode()
-	return html.ParseFragment(bytes.NewReader(template), body)
+	return frontMatter, nodes, nil
 }

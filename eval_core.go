@@ -77,9 +77,16 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				ctx.stack.Push(vars)
 
 				name := helpers.GetAttr(node, "include")
-				compDom, err := v.loader.LoadFragment(name)
+				frontMatter, compDom, err := v.loader.loadFragmentInternal(name)
 				if err != nil {
 					return nil, fmt.Errorf("error loading %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
+				}
+
+				// Merge front-matter data (authoritative - overrides passed data)
+				if frontMatter != nil {
+					for k, v := range frontMatter {
+						ctx.stack.Set(k, v)
+					}
 				}
 
 				// Validate and process template tag

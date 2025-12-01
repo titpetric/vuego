@@ -7,6 +7,7 @@ This document covers component composition in Vuego using the `<vuego include>` 
 - [Basic Component Composition](#basic-component-composition)
 - [The Template Tag](#the-template-tag)
 - [Required Attributes](#required-attributes)
+- [YAML Front-Matter for Single File Components](#yaml-front-matter-for-single-file-components)
 - [Complete Examples](#complete-examples)
 
 ## Basic Component Composition
@@ -137,6 +138,111 @@ You can specify multiple required attributes:
 ```
 
 Error: `required attribute 'name' not provided`
+
+## YAML Front-Matter for Single File Components
+
+Vuego supports YAML front-matter at the beginning of `.vuego` files. This allows you to define component data directly in the template file, similar to single-file components (SFCs) in other frameworks.
+
+### Syntax
+
+Place YAML between `---` delimiters at the start of your template file:
+
+```html
+---
+title: Component Title
+count: 42
+items:
+  - apple
+  - banana
+---
+<template>
+  <div>
+    <h1>{{ title }}</h1>
+    <p>Count: {{ count }}</p>
+  </div>
+</template>
+```
+
+### How It Works
+
+1. Front-matter is extracted and parsed as YAML
+2. Variables are automatically added to the template context
+3. Front-matter values are **authoritative** - they override any data passed to `Render()` or `RenderFragment()`
+4. Each included component can have its own front-matter
+
+### Use Cases
+
+Front-matter is useful for:
+- Defining default/static component data
+- Storing component metadata
+- Simplifying single-purpose components that don't need external data
+- Creating self-contained components with built-in defaults
+
+### Example: Static Component with Front-Matter
+
+**components/Card.vuego**
+
+```html
+---
+backgroundColor: "#f5f5f5"
+borderColor: "#ddd"
+---
+<template>
+  <div style="background: {{ backgroundColor }}; border: 1px solid {{ borderColor }};">
+    <slot></slot>
+  </div>
+</template>
+```
+
+### Example: Component with Default Data
+
+**components/Hero.vuego**
+
+```html
+---
+title: "Welcome to Our Site"
+subtitle: "Your tagline here"
+cta-text: "Get Started"
+background-image: "/images/hero.jpg"
+---
+<template>
+  <section class="hero" style="background-image: url({{ background-image }})">
+    <h1>{{ title }}</h1>
+    <p>{{ subtitle }}</p>
+    <button>{{ cta-text }}</button>
+  </section>
+</template>
+```
+
+YAML keys with hyphens work directly in templates (e.g., `background-image`, `data-value`, `aria-label`).
+
+### Front-Matter Overrides Passed Data
+
+When a component is included with attributes, front-matter values take precedence:
+
+**components/Config.vuego**
+
+```html
+---
+environment: "production"
+debug: false
+---
+<div>Environment: {{ environment }}</div>
+```
+
+**Usage with conflicting data:**
+
+```html
+<vuego include="components/Config.vuego" environment="development" debug="true"></vuego>
+```
+
+**Output:**
+
+```html
+<div>Environment: production</div>
+```
+
+The front-matter values (`production`, `false`) override the passed attributes (`development`, `true`).
 
 ## Complete Examples
 
@@ -272,11 +378,15 @@ With JSON data:
 
 2. **Use `:require` for essential props** - If your component cannot function without certain data, mark it as required
 
-3. **Use relative paths** - Keep component paths relative to your template filesystem root for portability
+3. **Use front-matter for static data** - For components with built-in defaults or static data, use YAML front-matter to keep them self-contained
 
-4. **Organize components in directories** - Use a `components/` directory structure for better organization
+4. **Use relative paths** - Keep component paths relative to your template filesystem root for portability
 
-5. **Keep components focused** - Each component should have a single, clear responsibility
+5. **Organize components in directories** - Use a `components/` directory structure for better organization
+
+6. **Keep components focused** - Each component should have a single, clear responsibility
+
+7. **Remember front-matter is authoritative** - Front-matter values always override passed attributes, so don't use it for optional/overridable data
 
 ## Component File Structure Example
 
