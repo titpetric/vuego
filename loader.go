@@ -6,7 +6,7 @@ import (
 	"io/fs"
 
 	"golang.org/x/net/html"
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/titpetric/vuego/internal/helpers"
 )

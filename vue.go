@@ -72,14 +72,14 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 
 	// Convert data to map[string]any and create context with original data for struct fallback
 	dataMap := toMapData(data)
-	
+
 	// Merge front-matter data (authoritative - overrides passed data)
 	if frontMatter != nil {
 		for k, v := range frontMatter {
 			dataMap[k] = v
 		}
 	}
-	
+
 	ctx := NewVueContext(filename, &VueContextOptions{
 		Data:         dataMap,
 		OriginalData: data,
@@ -175,14 +175,14 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 
 	// Convert data to map[string]any and create context with original data for struct fallback
 	dataMap := toMapData(data)
-	
+
 	// Merge front-matter data (authoritative - overrides passed data)
 	if frontMatter != nil {
 		for k, v := range frontMatter {
 			dataMap[k] = v
 		}
 	}
-	
+
 	ctx := NewVueContext(filename, &VueContextOptions{
 		Data:         dataMap,
 		OriginalData: data,

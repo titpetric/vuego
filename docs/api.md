@@ -306,7 +306,7 @@ func (*Loader) Load(filename string) ([]*html.Node, error)
 
 ### LoadFragment
 
-LoadFragment parses a template fragment; if the file is a full document, it falls back to Load.
+LoadFragment parses a template fragment; if the file is a full document, it falls back to Load. Front-matter is extracted and discarded; use loadFragmentInternal to access it.
 
 ```go
 func (*Loader) LoadFragment(filename string) ([]*html.Node, error)
@@ -440,7 +440,7 @@ func (*Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue
 
 ### Render
 
-Render processes a full-page template file and writes the output to w. Render is safe to call concurrently from multiple goroutines.
+Render processes a full-page template file and writes the output to w. Front-matter data in the template is authoritative and overrides passed data. Render is safe to call concurrently from multiple goroutines.
 
 ```go
 func (*Vue) Render(w io.Writer, filename string, data any) error
@@ -448,7 +448,7 @@ func (*Vue) Render(w io.Writer, filename string, data any) error
 
 ### RenderFragment
 
-RenderFragment processes a template fragment file and writes the output to w. RenderFragment is safe to call concurrently from multiple goroutines.
+RenderFragment processes a template fragment file and writes the output to w. Front-matter data in the template is authoritative and overrides passed data. RenderFragment is safe to call concurrently from multiple goroutines.
 
 ```go
 func (*Vue) RenderFragment(w io.Writer, filename string, data any) error
