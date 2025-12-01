@@ -4,7 +4,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/titpetric/platform/pkg/ulid"
+	"github.com/titpetric/vuego/internal/ulid"
 )
 
 // VueContext carries template inclusion context and request-scoped state used during evaluation.
