@@ -49,6 +49,11 @@ type LessProcessorError struct {
 ```
 
 ```go
+// LoadOption is a functional option for configuring Load()
+type LoadOption func(*Vue)
+```
+
+```go
 // Loader loads and parses .vuego files from an fs.FS.
 type Loader struct {
 	FS fs.FS
@@ -110,6 +115,12 @@ type Template interface {
 	// Returns an empty string if the value is not a string.
 	GetString(key string) string
 
+	// Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
+	Funcs(funcMap FuncMap) Template
+
+	// RegisterProcessor registers a node processor. Returns the Template for chaining.
+	RegisterProcessor(processor NodeProcessor) Template
+
 	// Render processes the template and writes output to w.
 	// If an error occurs, w is unmodified (uses internal buffering).
 	// The context can be used to cancel the rendering operation.
@@ -170,7 +181,7 @@ type VueContextOptions struct {
 
 ## Function symbols
 
-- `func Load (templateFS fs.FS, filename string) (Template, error)`
+- `func Load (templateFS fs.FS, filename string, opts ...LoadOption) (Template, error)`
 - `func NewExprEvaluator () *ExprEvaluator`
 - `func NewLessProcessor (fsys ...fs.FS) *LessProcessor`
 - `func NewLoader (fs fs.FS) *Loader`
@@ -179,6 +190,8 @@ type VueContextOptions struct {
 - `func NewStackWithData (root map[string]any, originalData any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
 - `func NewVueContext (fromFilename string, options *VueContextOptions) VueContext`
+- `func WithLessProcessor () LoadOption`
+- `func WithProcessor (processor NodeProcessor) LoadOption`
 - `func (*ExprEvaluator) ClearCache ()`
 - `func (*ExprEvaluator) Eval (expression string, env map[string]any) (any, error)`
 - `func (*LessProcessor) New () NodeProcessor`
@@ -212,10 +225,10 @@ type VueContextOptions struct {
 
 ### Load
 
-Load loads a template from the given filesystem and filename. The template's initial variables are populated from front-matter data.
+Load loads a template from the given filesystem and filename with optional configurations. The template's initial variables are populated from front-matter data. Supports functional options to register processors and configure template rendering.
 
 ```go
-func Load(templateFS fs.FS, filename string) (Template, error)
+func Load(templateFS fs.FS, filename string, opts ...LoadOption) (Template, error)
 ```
 
 ### NewExprEvaluator
@@ -280,6 +293,22 @@ NewVueContext returns a VueContext initialized for the given template filename w
 
 ```go
 func NewVueContext(fromFilename string, options *VueContextOptions) VueContext
+```
+
+### WithLessProcessor
+
+WithLessProcessor returns a LoadOption that registers a LESS processor
+
+```go
+func WithLessProcessor() LoadOption
+```
+
+### WithProcessor
+
+WithProcessor returns a LoadOption that registers a custom node processor
+
+```go
+func WithProcessor(processor NodeProcessor) LoadOption
 ```
 
 ### ClearCache

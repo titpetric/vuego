@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.24%   | 813       | 2802  |
+| ✅     | titpetric/vuego                      | 85.13%   | 815       | 2835  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.28%   | 171       | 508   |
@@ -33,13 +33,13 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego                      | LessProcessor.processNode         | 70.00%   | 11        |
 | ✅     | titpetric/vuego                      | LessProcessor.replaceWithStyleTag | 90.90%   | 3         |
 | ✅     | titpetric/vuego                      | LessProcessorError.Error          | 0.00%    | 0         |
-| ✅     | titpetric/vuego                      | Load                              | 88.90%   | 4         |
+| ✅     | titpetric/vuego                      | Load                              | 90.90%   | 5         |
 | ✅     | titpetric/vuego                      | Loader.Load                       | 90.00%   | 3         |
 | ✅     | titpetric/vuego                      | Loader.LoadFragment               | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Loader.Stat                       | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Loader.loadFragmentInternal       | 83.30%   | 9         |
 | ✅     | titpetric/vuego                      | NewExprEvaluator                  | 100.00%  | 0         |
-| ✅     | titpetric/vuego                      | NewLessProcessor                  | 75.00%   | 1         |
+| ✅     | titpetric/vuego                      | NewLessProcessor                  | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | NewLoader                         | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | NewRenderer                       | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | NewStack                          | 100.00%  | 0         |
@@ -101,6 +101,8 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | VueContext.PushTag                | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | VueContext.WithTemplate           | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | VueContext.nextSeenID             | 100.00%  | 0         |
+| ✅     | titpetric/vuego                      | WithLessProcessor                 | 100.00%  | 0         |
+| ✅     | titpetric/vuego                      | WithProcessor                     | 0.00%    | 0         |
 | ✅     | titpetric/vuego                      | assignSeenAttrs                   | 100.00%  | 5         |
 | ✅     | titpetric/vuego                      | camelToKebab                      | 100.00%  | 5         |
 | ❌     | titpetric/vuego                      | classifySegment                   | 80.00%   | 7         |
@@ -136,8 +138,10 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | stringFunc                        | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | template.Assign                   | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | template.Fill                     | 100.00%  | 3         |
+| ✅     | titpetric/vuego                      | template.Funcs                    | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | template.GetString                | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | template.GetVar                   | 100.00%  | 0         |
+| ✅     | titpetric/vuego                      | template.RegisterProcessor        | 100.00%  | 0         |
 | ❌     | titpetric/vuego                      | template.Render                   | 66.70%   | 8         |
 | ✅     | titpetric/vuego                      | titleFunc                         | 85.70%   | 6         |
 | ✅     | titpetric/vuego                      | toMapData                         | 100.00%  | 2         |
