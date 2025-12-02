@@ -17,6 +17,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.28%   | 171       | 508   |
 | ✅     | titpetric/vuego/internal/reflect     | 92.65%   | 55        | 198   |
+| ✅     | titpetric/vuego/internal/ulid        | 50.00%   | 0         | 20    |
 
 ## Functions
 
@@ -198,3 +199,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego/internal/reflect     | resolveSliceIndex                 | 100.00%  | 2         |
 | ✅     | titpetric/vuego/internal/reflect     | resolveStruct                     | 100.00%  | 6         |
 | ✅     | titpetric/vuego/internal/reflect     | resolveValueRecursive             | 88.90%   | 4         |
+| ✅     | titpetric/vuego/internal/ulid        | Parse                             | 0.00%    | 0         |
+| ✅     | titpetric/vuego/internal/ulid        | String                            | 100.00%  | 0         |
+| ✅     | titpetric/vuego/internal/ulid        | ULID                              | 100.00%  | 0         |
+| ✅     | titpetric/vuego/internal/ulid        | Valid                             | 0.00%    | 0         |
