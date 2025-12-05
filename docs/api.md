@@ -99,7 +99,7 @@ type Stack struct {
 ```
 
 ```go
-// Template represents a loaded and prepared vuego template.
+// Template represents a prepared vuego template.
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {
 	// Fill sets all variables from the map at once.
@@ -118,13 +118,25 @@ type Template interface {
 	// Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
 	Funcs(funcMap FuncMap) Template
 
-	// RegisterProcessor registers a node processor. Returns the Template for chaining.
-	RegisterProcessor(processor NodeProcessor) Template
-
-	// Render processes the template and writes output to w.
+	// Render processes the template file and writes output to w.
 	// If an error occurs, w is unmodified (uses internal buffering).
 	// The context can be used to cancel the rendering operation.
-	Render(ctx context.Context, w io.Writer) error
+	Render(ctx context.Context, w io.Writer, filename string) error
+
+	// RenderString processes a template string and writes output to w.
+	// If an error occurs, w is unmodified (uses internal buffering).
+	// The context can be used to cancel the rendering operation.
+	RenderString(ctx context.Context, w io.Writer, templateStr string) error
+
+	// RenderByte processes template bytes and writes output to w.
+	// If an error occurs, w is unmodified (uses internal buffering).
+	// The context can be used to cancel the rendering operation.
+	RenderByte(ctx context.Context, w io.Writer, templateData []byte) error
+
+	// RenderReader processes template data from a reader and writes output to w.
+	// If an error occurs, w is unmodified (uses internal buffering).
+	// The context can be used to cancel the rendering operation.
+	RenderReader(ctx context.Context, w io.Writer, r io.Reader) error
 }
 ```
 
@@ -181,7 +193,7 @@ type VueContextOptions struct {
 
 ## Function symbols
 
-- `func Load (templateFS fs.FS, filename string, opts ...LoadOption) (Template, error)`
+- `func Load (templateFS fs.FS, opts ...LoadOption) Template`
 - `func NewExprEvaluator () *ExprEvaluator`
 - `func NewLessProcessor (fsys ...fs.FS) *LessProcessor`
 - `func NewLoader (fs fs.FS) *Loader`
@@ -225,10 +237,10 @@ type VueContextOptions struct {
 
 ### Load
 
-Load loads a template from the given filesystem and filename with optional configurations. The template's initial variables are populated from front-matter data. Supports functional options to register processors and configure template rendering.
+Load creates a new Template with access to the given filesystem and optional configurations. The returned Template can be used to render files, strings, or bytes with variable assignment.
 
 ```go
-func Load(templateFS fs.FS, filename string, opts ...LoadOption) (Template, error)
+func Load(templateFS fs.FS, opts ...LoadOption) Template
 ```
 
 ### NewExprEvaluator

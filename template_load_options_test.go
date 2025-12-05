@@ -37,19 +37,6 @@ func TestLoadWithoutProcessors(t *testing.T) {
 	}
 }
 
-func TestTemplateRegisterProcessor(t *testing.T) {
-	root := os.DirFS("testdata")
-
-	tpl := Load(root)
-
-	result := tpl.RegisterProcessor(NewLessProcessor(root))
-
-	// Verify chaining returns the template
-	if result != tpl {
-		t.Error("RegisterProcessor() should return the template for chaining")
-	}
-}
-
 func TestTemplateFuncs(t *testing.T) {
 	root := os.DirFS("testdata")
 
@@ -77,7 +64,6 @@ func TestTemplateChaining(t *testing.T) {
 	// Verify chaining works
 	result := tpl.
 		Assign("key", "value").
-		RegisterProcessor(NewLessProcessor(root)).
 		Funcs(FuncMap{"test": func() string { return "test" }})
 
 	if result != tpl {

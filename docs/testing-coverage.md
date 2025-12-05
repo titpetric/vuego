@@ -12,8 +12,8 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.13%   | 815       | 2835  |
-| ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 5         | 33    |
+| ✅     | titpetric/vuego                      | 85.20%   | 825       | 2901  |
+| ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 6         | 41    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.28%   | 171       | 508   |
 | ✅     | titpetric/vuego/internal/reflect     | 92.65%   | 55        | 198   |
@@ -34,7 +34,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego                      | LessProcessor.processNode         | 70.00%   | 11        |
 | ✅     | titpetric/vuego                      | LessProcessor.replaceWithStyleTag | 90.90%   | 3         |
 | ✅     | titpetric/vuego                      | LessProcessorError.Error          | 0.00%    | 0         |
-| ✅     | titpetric/vuego                      | Load                              | 90.90%   | 5         |
+| ✅     | titpetric/vuego                      | Load                              | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | Loader.Load                       | 90.00%   | 3         |
 | ✅     | titpetric/vuego                      | Loader.LoadFragment               | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Loader.Stat                       | 100.00%  | 0         |
@@ -142,15 +142,17 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | template.Funcs                    | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | template.GetString                | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | template.GetVar                   | 100.00%  | 0         |
-| ✅     | titpetric/vuego                      | template.RegisterProcessor        | 100.00%  | 0         |
-| ❌     | titpetric/vuego                      | template.Render                   | 66.70%   | 8         |
+| ❌     | titpetric/vuego                      | template.Render                   | 73.30%   | 13        |
+| ✅     | titpetric/vuego                      | template.RenderByte               | 100.00%  | 0         |
+| ❌     | titpetric/vuego                      | template.RenderReader             | 64.00%   | 9         |
+| ✅     | titpetric/vuego                      | template.RenderString             | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | titleFunc                         | 85.70%   | 6         |
 | ✅     | titpetric/vuego                      | toMapData                         | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | trimFunc                          | 66.70%   | 1         |
 | ✅     | titpetric/vuego                      | typeFunc                          | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | upperFunc                         | 66.70%   | 1         |
 | ❌     | titpetric/vuego/cmd/vuego            | main                              | 0.00%    | 1         |
-| ❌     | titpetric/vuego/cmd/vuego            | start                             | 0.00%    | 4         |
+| ❌     | titpetric/vuego/cmd/vuego            | start                             | 0.00%    | 5         |
 | ❌     | titpetric/vuego/cmd/vuego-playground | NewIndexPageData                  | 0.00%    | 10        |
 | ❌     | titpetric/vuego/cmd/vuego-playground | combinedFilesystem.Open           | 0.00%    | 1         |
 | ✅     | titpetric/vuego/cmd/vuego-playground | combinedFilesystem.ReadDir        | 0.00%    | 0         |

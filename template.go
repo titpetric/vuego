@@ -34,9 +34,6 @@ type Template interface {
 	// Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
 	Funcs(funcMap FuncMap) Template
 
-	// RegisterProcessor registers a node processor. Returns the Template for chaining.
-	RegisterProcessor(processor NodeProcessor) Template
-
 	// Render processes the template file and writes output to w.
 	// If an error occurs, w is unmodified (uses internal buffering).
 	// The context can be used to cancel the rendering operation.
@@ -133,12 +130,6 @@ func (t *template) Funcs(funcMap FuncMap) Template {
 		defaultFuncs[k] = v
 	}
 	t.vue.funcMap = defaultFuncs
-	return t
-}
-
-// RegisterProcessor registers a node processor. Returns the Template for chaining.
-func (t *template) RegisterProcessor(processor NodeProcessor) Template {
-	t.vue.RegisterNodeProcessor(processor)
 	return t
 }
 
