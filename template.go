@@ -15,6 +15,22 @@ import (
 // LoadOption is a functional option for configuring Load()
 type LoadOption func(*Vue)
 
+// New creates a new Template for rendering strings, bytes, or readers without a filesystem.
+// Use this when templates are provided as strings/bytes rather than loaded from files.
+// To render from files, use Load(fs) or New(WithFS(fs)) instead.
+// The returned Template can be used for variable assignment and rendering.
+func New(opts ...LoadOption) Template {
+	return Load(nil, opts...)
+}
+
+// WithFS returns a LoadOption that sets the filesystem for template loading.
+func WithFS(templateFS fs.FS) LoadOption {
+	return func(vue *Vue) {
+		vue.templateFS = templateFS
+		vue.loader = NewLoader(templateFS)
+	}
+}
+
 // Template represents a prepared vuego template.
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {

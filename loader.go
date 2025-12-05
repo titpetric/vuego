@@ -31,6 +31,9 @@ func (l *Loader) Stat(filename string) error {
 
 // Load parses a full HTML document from the given filename.
 func (l *Loader) Load(filename string) ([]*html.Node, error) {
+	if l.FS == nil {
+		return nil, fmt.Errorf("error reading %s: no filesystem configured", filename)
+	}
 	template, err := fs.ReadFile(l.FS, filename)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %w", filename, err)
@@ -91,6 +94,9 @@ func (l *Loader) LoadFragment(filename string) ([]*html.Node, error) {
 
 // loadFragmentInternal parses a template fragment and returns both front-matter data and DOM nodes.
 func (l *Loader) loadFragmentInternal(filename string) (map[string]any, []*html.Node, error) {
+	if l.FS == nil {
+		return nil, nil, fmt.Errorf("error reading %s: no filesystem configured", filename)
+	}
 	template, err := fs.ReadFile(l.FS, filename)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error reading %s: %w", filename, err)

@@ -194,6 +194,7 @@ type VueContextOptions struct {
 ## Function symbols
 
 - `func Load (templateFS fs.FS, opts ...LoadOption) Template`
+- `func New (opts ...LoadOption) Template`
 - `func NewExprEvaluator () *ExprEvaluator`
 - `func NewLessProcessor (fsys ...fs.FS) *LessProcessor`
 - `func NewLoader (fs fs.FS) *Loader`
@@ -202,6 +203,7 @@ type VueContextOptions struct {
 - `func NewStackWithData (root map[string]any, originalData any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
 - `func NewVueContext (fromFilename string, options *VueContextOptions) VueContext`
+- `func WithFS (templateFS fs.FS) LoadOption`
 - `func WithLessProcessor () LoadOption`
 - `func WithProcessor (processor NodeProcessor) LoadOption`
 - `func (*ExprEvaluator) ClearCache ()`
@@ -241,6 +243,14 @@ Load creates a new Template with access to the given filesystem and optional con
 
 ```go
 func Load(templateFS fs.FS, opts ...LoadOption) Template
+```
+
+### New
+
+New creates a new Template for rendering strings, bytes, or readers without a filesystem. Use this when templates are provided as strings/bytes rather than loaded from files. To render from files, use Load(fs) or New(WithFS(fs)) instead. The returned Template can be used for variable assignment and rendering.
+
+```go
+func New(opts ...LoadOption) Template
 ```
 
 ### NewExprEvaluator
@@ -305,6 +315,14 @@ NewVueContext returns a VueContext initialized for the given template filename w
 
 ```go
 func NewVueContext(fromFilename string, options *VueContextOptions) VueContext
+```
+
+### WithFS
+
+WithFS returns a LoadOption that sets the filesystem for template loading.
+
+```go
+func WithFS(templateFS fs.FS) LoadOption
 ```
 
 ### WithLessProcessor

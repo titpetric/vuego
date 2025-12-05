@@ -241,3 +241,43 @@ func TestTemplate_RenderReaderFromFile(t *testing.T) {
 	output := buf.String()
 	require.Contains(t, output, "Hello from File Reader")
 }
+
+func TestNew(t *testing.T) {
+	tmpl := vuego.New()
+	require.NotNil(t, tmpl)
+}
+
+func TestNew_WithFS(t *testing.T) {
+	templateFS := os.DirFS("testdata/fixtures")
+
+	tmpl := vuego.New(vuego.WithFS(templateFS))
+	require.NotNil(t, tmpl)
+
+	tmpl.Assign("message", "Hello")
+
+	buf := &bytes.Buffer{}
+	err := tmpl.Render(context.Background(), buf, "interpolation-basic.vuego")
+	require.NoError(t, err)
+	require.Greater(t, buf.Len(), 0)
+}
+
+func TestNew_RenderWithoutFilesystemFails(t *testing.T) {
+	tmpl := vuego.New()
+	tmpl.Assign("message", "Hello")
+
+	buf := &bytes.Buffer{}
+	err := tmpl.Render(context.Background(), buf, "interpolation-basic.vuego")
+	require.Equal(t, "error reading interpolation-basic.vuego: no filesystem configured", err.Error())
+}
+
+func TestNew_RenderStringWithoutFilesystem(t *testing.T) {
+	tmpl := vuego.New()
+	tmpl.Assign("message", "Hello from String")
+
+	buf := &bytes.Buffer{}
+	err := tmpl.RenderString(context.Background(), buf, "<p>{{ message }}</p>")
+	require.NoError(t, err)
+
+	output := buf.String()
+	require.Contains(t, output, "Hello from String")
+}

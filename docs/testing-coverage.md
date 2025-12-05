@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.20%   | 825       | 2901  |
+| ✅     | titpetric/vuego                      | 85.42%   | 827       | 2921  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 6         | 41    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.28%   | 171       | 508   |
@@ -35,10 +35,11 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | LessProcessor.replaceWithStyleTag | 90.90%   | 3         |
 | ✅     | titpetric/vuego                      | LessProcessorError.Error          | 0.00%    | 0         |
 | ✅     | titpetric/vuego                      | Load                              | 100.00%  | 1         |
-| ✅     | titpetric/vuego                      | Loader.Load                       | 90.00%   | 3         |
+| ✅     | titpetric/vuego                      | Loader.Load                       | 83.30%   | 4         |
 | ✅     | titpetric/vuego                      | Loader.LoadFragment               | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Loader.Stat                       | 100.00%  | 0         |
-| ✅     | titpetric/vuego                      | Loader.loadFragmentInternal       | 83.30%   | 9         |
+| ✅     | titpetric/vuego                      | Loader.loadFragmentInternal       | 85.00%   | 10        |
+| ✅     | titpetric/vuego                      | New                               | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | NewExprEvaluator                  | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | NewLessProcessor                  | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | NewLoader                         | 100.00%  | 0         |
@@ -102,6 +103,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | VueContext.PushTag                | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | VueContext.WithTemplate           | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | VueContext.nextSeenID             | 100.00%  | 0         |
+| ✅     | titpetric/vuego                      | WithFS                            | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | WithLessProcessor                 | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | WithProcessor                     | 0.00%    | 0         |
 | ✅     | titpetric/vuego                      | assignSeenAttrs                   | 100.00%  | 5         |
@@ -142,7 +144,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | template.Funcs                    | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | template.GetString                | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | template.GetVar                   | 100.00%  | 0         |
-| ❌     | titpetric/vuego                      | template.Render                   | 73.30%   | 13        |
+| ❌     | titpetric/vuego                      | template.Render                   | 76.70%   | 13        |
 | ✅     | titpetric/vuego                      | template.RenderByte               | 100.00%  | 0         |
 | ❌     | titpetric/vuego                      | template.RenderReader             | 64.00%   | 9         |
 | ✅     | titpetric/vuego                      | template.RenderString             | 100.00%  | 0         |
