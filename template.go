@@ -3,16 +3,19 @@ package vuego
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/fs"
 
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // LoadOption is a functional option for configuring Load()
 type LoadOption func(*Vue)
 
-// Template represents a loaded and prepared vuego template.
+// Template represents a prepared vuego template.
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {
 	// Fill sets all variables from the map at once.
@@ -34,25 +37,36 @@ type Template interface {
 	// RegisterProcessor registers a node processor. Returns the Template for chaining.
 	RegisterProcessor(processor NodeProcessor) Template
 
-	// Render processes the template and writes output to w.
+	// Render processes the template file and writes output to w.
 	// If an error occurs, w is unmodified (uses internal buffering).
 	// The context can be used to cancel the rendering operation.
-	Render(ctx context.Context, w io.Writer) error
+	Render(ctx context.Context, w io.Writer, filename string) error
+
+	// RenderString processes a template string and writes output to w.
+	// If an error occurs, w is unmodified (uses internal buffering).
+	// The context can be used to cancel the rendering operation.
+	RenderString(ctx context.Context, w io.Writer, templateStr string) error
+
+	// RenderByte processes template bytes and writes output to w.
+	// If an error occurs, w is unmodified (uses internal buffering).
+	// The context can be used to cancel the rendering operation.
+	RenderByte(ctx context.Context, w io.Writer, templateData []byte) error
+
+	// RenderReader processes template data from a reader and writes output to w.
+	// If an error occurs, w is unmodified (uses internal buffering).
+	// The context can be used to cancel the rendering operation.
+	RenderReader(ctx context.Context, w io.Writer, r io.Reader) error
 }
 
 // template is the internal implementation of Template.
 type template struct {
-	vue         *Vue
-	filename    string
-	dom         []*html.Node
-	vars        map[string]any
-	frontMatter map[string]any
+	vue  *Vue
+	vars map[string]any
 }
 
-// Load loads a template from the given filesystem and filename with optional configurations.
-// The template's initial variables are populated from front-matter data.
-// Supports functional options to register processors and configure template rendering.
-func Load(templateFS fs.FS, filename string, opts ...LoadOption) (Template, error) {
+// Load creates a new Template with access to the given filesystem and optional configurations.
+// The returned Template can be used to render files, strings, or bytes with variable assignment.
+func Load(templateFS fs.FS, opts ...LoadOption) Template {
 	vue := NewVue(templateFS)
 
 	// Apply functional options
@@ -60,27 +74,10 @@ func Load(templateFS fs.FS, filename string, opts ...LoadOption) (Template, erro
 		opt(vue)
 	}
 
-	// Load the template with front-matter
-	frontMatter, dom, err := vue.loader.loadFragmentInternal(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	// Initialize variables with front-matter data
-	vars := make(map[string]any)
-	if frontMatter != nil {
-		for k, v := range frontMatter {
-			vars[k] = v
-		}
-	}
-
 	return &template{
-		vue:         vue,
-		filename:    filename,
-		dom:         dom,
-		vars:        vars,
-		frontMatter: frontMatter,
-	}, nil
+		vue:  vue,
+		vars: make(map[string]any),
+	}
 }
 
 // WithLessProcessor returns a LoadOption that registers a LESS processor
@@ -145,22 +142,39 @@ func (t *template) RegisterProcessor(processor NodeProcessor) Template {
 	return t
 }
 
-// Render processes the template and writes the output to w.
+// Render processes the template file and writes the output to w.
 // Uses internal buffering so w is unmodified if an error occurs.
 // The context can be used to cancel the rendering operation.
-func (t *template) Render(ctx context.Context, w io.Writer) error {
+func (t *template) Render(ctx context.Context, w io.Writer, filename string) error {
 	// Check if context is already cancelled before starting
 	if err := ctx.Err(); err != nil {
 		return err
 	}
 
-	vueCtx := NewVueContext(t.filename, &VueContextOptions{
-		Data:         t.vars,
+	// Load the template with front-matter
+	frontMatter, dom, err := t.vue.loader.loadFragmentInternal(filename)
+	if err != nil {
+		return err
+	}
+
+	// Merge front-matter with existing variables
+	vars := make(map[string]any)
+	for k, v := range t.vars {
+		vars[k] = v
+	}
+	if frontMatter != nil {
+		for k, v := range frontMatter {
+			vars[k] = v
+		}
+	}
+
+	vueCtx := NewVueContext(filename, &VueContextOptions{
+		Data:         vars,
 		OriginalData: nil,
 		Processors:   t.vue.nodeProcessors,
 	})
 
-	if err := t.vue.preProcessNodes(vueCtx, t.dom); err != nil {
+	if err := t.vue.preProcessNodes(vueCtx, dom); err != nil {
 		return err
 	}
 
@@ -169,7 +183,82 @@ func (t *template) Render(ctx context.Context, w io.Writer) error {
 		return err
 	}
 
-	result, err := t.vue.evaluate(vueCtx, t.dom, 0)
+	result, err := t.vue.evaluate(vueCtx, dom, 0)
+	if err != nil {
+		return err
+	}
+
+	// Check context cancellation before post-processing
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	if err := t.vue.postProcessNodes(vueCtx, result); err != nil {
+		return err
+	}
+
+	// Check context cancellation before rendering
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	// Buffer the output to ensure w is unmodified on error
+	buf := &bytes.Buffer{}
+	if err := t.vue.render(buf, result); err != nil {
+		return err
+	}
+
+	// Only write to w if rendering succeeded
+	_, err = buf.WriteTo(w)
+	return err
+}
+
+// RenderString processes a template string and writes the output to w.
+// Uses internal buffering so w is unmodified if an error occurs.
+// The context can be used to cancel the rendering operation.
+func (t *template) RenderString(ctx context.Context, w io.Writer, templateStr string) error {
+	return t.RenderByte(ctx, w, []byte(templateStr))
+}
+
+// RenderByte processes template bytes and writes the output to w.
+// Uses internal buffering so w is unmodified if an error occurs.
+// The context can be used to cancel the rendering operation.
+func (t *template) RenderByte(ctx context.Context, w io.Writer, templateData []byte) error {
+	return t.RenderReader(ctx, w, bytes.NewReader(templateData))
+}
+
+// RenderReader processes template data from a reader and writes the output to w.
+// Uses internal buffering so w is unmodified if an error occurs.
+// The context can be used to cancel the rendering operation.
+func (t *template) RenderReader(ctx context.Context, w io.Writer, r io.Reader) error {
+	// Check if context is already cancelled before starting
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	// Parse the template from reader as a fragment
+	body := helpers.GetBodyNode()
+	dom, err := html.ParseFragment(r, body)
+	if err != nil {
+		return fmt.Errorf("error parsing template: %w", err)
+	}
+
+	vueCtx := NewVueContext("<inline>", &VueContextOptions{
+		Data:         t.vars,
+		OriginalData: nil,
+		Processors:   t.vue.nodeProcessors,
+	})
+
+	if err := t.vue.preProcessNodes(vueCtx, dom); err != nil {
+		return err
+	}
+
+	// Check context cancellation before evaluation
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	result, err := t.vue.evaluate(vueCtx, dom, 0)
 	if err != nil {
 		return err
 	}

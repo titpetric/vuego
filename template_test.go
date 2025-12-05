@@ -14,16 +14,14 @@ import (
 func TestLoad(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "frontmatter-basic.vuego")
-	require.NoError(t, err)
+	tmpl := vuego.Load(templateFS)
 	require.NotNil(t, tmpl)
 }
 
 func TestTemplate_Fill(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "interpolation-basic.vuego")
-	require.NoError(t, err)
+	tmpl := vuego.Load(templateFS)
 
 	// Fill should be chainable
 	result := tmpl.Fill(map[string]any{
@@ -39,8 +37,7 @@ func TestTemplate_Fill(t *testing.T) {
 func TestTemplate_Assign(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "interpolation-basic.vuego")
-	require.NoError(t, err)
+	tmpl := vuego.Load(templateFS)
 
 	// Assign should be chainable
 	result := tmpl.Assign("name", "Alice")
@@ -54,8 +51,7 @@ func TestTemplate_Assign(t *testing.T) {
 func TestTemplate_GetVar(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "interpolation-basic.vuego")
-	require.NoError(t, err)
+	tmpl := vuego.Load(templateFS)
 
 	// Set and get
 	tmpl.Assign("key", "value")
@@ -68,8 +64,7 @@ func TestTemplate_GetVar(t *testing.T) {
 func TestTemplate_GetString(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "interpolation-basic.vuego")
-	require.NoError(t, err)
+	tmpl := vuego.Load(templateFS)
 
 	// String value
 	tmpl.Assign("message", "Hello World")
@@ -86,13 +81,12 @@ func TestTemplate_GetString(t *testing.T) {
 func TestTemplate_Render(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "interpolation-basic.vuego")
-	require.NoError(t, err)
+	tmpl := vuego.Load(templateFS)
 
 	tmpl.Assign("message", "Hello")
 
 	buf := &bytes.Buffer{}
-	err = tmpl.Render(context.Background(), buf)
+	err := tmpl.Render(context.Background(), buf, "interpolation-basic.vuego")
 	require.NoError(t, err)
 
 	// Should have rendered something
@@ -102,8 +96,7 @@ func TestTemplate_Render(t *testing.T) {
 func TestTemplate_RenderCancelledContext(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "interpolation-basic.vuego")
-	require.NoError(t, err)
+	tmpl := vuego.Load(templateFS)
 
 	tmpl.Assign("message", "Hello")
 
@@ -112,29 +105,29 @@ func TestTemplate_RenderCancelledContext(t *testing.T) {
 	cancel()
 
 	buf := &bytes.Buffer{}
-	err = tmpl.Render(ctx, buf)
+	err := tmpl.Render(ctx, buf, "interpolation-basic.vuego")
 	require.Equal(t, context.Canceled, err)
 }
 
 func TestTemplate_FrontMatterVariables(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "frontmatter-basic.vuego")
+	tmpl := vuego.Load(templateFS)
+
+	// Render the template to load front-matter
+	buf := &bytes.Buffer{}
+	err := tmpl.Render(context.Background(), buf, "frontmatter-basic.vuego")
 	require.NoError(t, err)
 
-	// Variables from front-matter should be available
-	title := tmpl.GetVar("title")
-	require.Equal(t, "From Front-Matter", title)
-
-	count := tmpl.GetVar("count")
-	require.Equal(t, 42, count)
+	// Note: Front-matter variables are merged during rendering, not during Load
+	// This test demonstrates that rendering works with front-matter
+	require.Greater(t, buf.Len(), 0)
 }
 
 func TestTemplate_Chaining(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "interpolation-basic.vuego")
-	require.NoError(t, err)
+	tmpl := vuego.Load(templateFS)
 
 	// Test method chaining
 	tmpl.Assign("foo", "bar").Assign("baz", "qux").Fill(map[string]any{
@@ -149,8 +142,7 @@ func TestTemplate_Chaining(t *testing.T) {
 func TestTemplate_FillOverrides(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "interpolation-basic.vuego")
-	require.NoError(t, err)
+	tmpl := vuego.Load(templateFS)
 
 	// Set initial value
 	tmpl.Assign("name", "Alice")
@@ -166,18 +158,86 @@ func TestTemplate_FillOverrides(t *testing.T) {
 func TestTemplate_RenderWithFrontMatter(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl, err := vuego.Load(templateFS, "frontmatter-basic.vuego")
-	require.NoError(t, err)
-
-	// Front-matter variables should be in the template
-	require.Equal(t, "From Front-Matter", tmpl.GetVar("title"))
+	tmpl := vuego.Load(templateFS)
 
 	buf := &bytes.Buffer{}
-	err = tmpl.Render(context.Background(), buf)
+	err := tmpl.Render(context.Background(), buf, "frontmatter-basic.vuego")
 	require.NoError(t, err)
 
-	// Should have rendered HTML with the title
+	// Should have rendered HTML with the title from front-matter
 	require.Greater(t, buf.Len(), 0)
 	output := buf.String()
 	require.Contains(t, output, "From Front-Matter")
+}
+
+func TestTemplate_RenderString(t *testing.T) {
+	templateFS := os.DirFS("testdata/fixtures")
+
+	tmpl := vuego.Load(templateFS)
+	tmpl.Assign("message", "Hello from String")
+
+	buf := &bytes.Buffer{}
+	err := tmpl.RenderString(context.Background(), buf, "<p>{{ message }}</p>")
+	require.NoError(t, err)
+
+	output := buf.String()
+	require.Contains(t, output, "Hello from String")
+}
+
+func TestTemplate_RenderByte(t *testing.T) {
+	templateFS := os.DirFS("testdata/fixtures")
+
+	tmpl := vuego.Load(templateFS)
+	tmpl.Assign("message", "Hello from Bytes")
+
+	buf := &bytes.Buffer{}
+	templateBytes := []byte("<p>{{ message }}</p>")
+	err := tmpl.RenderByte(context.Background(), buf, templateBytes)
+	require.NoError(t, err)
+
+	output := buf.String()
+	require.Contains(t, output, "Hello from Bytes")
+}
+
+func TestTemplate_RenderReader(t *testing.T) {
+	templateFS := os.DirFS("testdata/fixtures")
+
+	tmpl := vuego.Load(templateFS)
+	tmpl.Assign("message", "Hello from Reader")
+
+	buf := &bytes.Buffer{}
+	reader := bytes.NewReader([]byte("<p>{{ message }}</p>"))
+	err := tmpl.RenderReader(context.Background(), buf, reader)
+	require.NoError(t, err)
+
+	output := buf.String()
+	require.Contains(t, output, "Hello from Reader")
+}
+
+func TestTemplate_RenderReaderFromFile(t *testing.T) {
+	templateFS := os.DirFS("testdata/fixtures")
+
+	tmpl := vuego.Load(templateFS)
+	tmpl.Assign("message", "Hello from File Reader")
+
+	// Create a temporary file
+	tmpFile, err := os.CreateTemp("", "template_*.html")
+	require.NoError(t, err)
+	defer os.Remove(tmpFile.Name())
+
+	_, err = tmpFile.WriteString("<p>{{ message }}</p>")
+	require.NoError(t, err)
+	tmpFile.Close()
+
+	// Reopen for reading
+	file, err := os.Open(tmpFile.Name())
+	require.NoError(t, err)
+	defer file.Close()
+
+	buf := &bytes.Buffer{}
+	err = tmpl.RenderReader(context.Background(), buf, file)
+	require.NoError(t, err)
+
+	output := buf.String()
+	require.Contains(t, output, "Hello from File Reader")
 }

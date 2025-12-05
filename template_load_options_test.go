@@ -10,10 +10,7 @@ import (
 func TestLoadWithLessProcessor(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl, err := Load(root, "pages/components/Button.vuego", WithLessProcessor())
-	if err != nil {
-		t.Fatalf("Load failed: %v", err)
-	}
+	tpl := Load(root, WithLessProcessor())
 
 	if tpl == nil {
 		t.Fatal("expected template to be loaded")
@@ -23,10 +20,7 @@ func TestLoadWithLessProcessor(t *testing.T) {
 func TestLoadWithMultipleProcessors(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl, err := Load(root, "pages/components/Button.vuego", WithLessProcessor(), WithLessProcessor())
-	if err != nil {
-		t.Fatalf("Load failed: %v", err)
-	}
+	tpl := Load(root, WithLessProcessor(), WithLessProcessor())
 
 	if tpl == nil {
 		t.Fatal("expected template to be loaded")
@@ -36,10 +30,7 @@ func TestLoadWithMultipleProcessors(t *testing.T) {
 func TestLoadWithoutProcessors(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl, err := Load(root, "pages/components/Button.vuego")
-	if err != nil {
-		t.Fatalf("Load failed: %v", err)
-	}
+	tpl := Load(root)
 
 	if tpl == nil {
 		t.Fatal("expected template to be loaded")
@@ -49,10 +40,7 @@ func TestLoadWithoutProcessors(t *testing.T) {
 func TestTemplateRegisterProcessor(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl, err := Load(root, "pages/components/Button.vuego")
-	if err != nil {
-		t.Fatalf("Load failed: %v", err)
-	}
+	tpl := Load(root)
 
 	result := tpl.RegisterProcessor(NewLessProcessor(root))
 
@@ -65,10 +53,7 @@ func TestTemplateRegisterProcessor(t *testing.T) {
 func TestTemplateFuncs(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl, err := Load(root, "pages/components/Button.vuego")
-	if err != nil {
-		t.Fatalf("Load failed: %v", err)
-	}
+	tpl := Load(root)
 
 	funcMap := FuncMap{
 		"customFunc": func(s string) string {
@@ -87,10 +72,7 @@ func TestTemplateFuncs(t *testing.T) {
 func TestTemplateChaining(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl, err := Load(root, "pages/components/Button.vuego", WithLessProcessor())
-	if err != nil {
-		t.Fatalf("Load failed: %v", err)
-	}
+	tpl := Load(root, WithLessProcessor())
 
 	// Verify chaining works
 	result := tpl.
@@ -110,10 +92,7 @@ func TestTemplateChaining(t *testing.T) {
 func TestLoadTemplateRender(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl, err := Load(root, "pages/components/Button.vuego", WithLessProcessor())
-	if err != nil {
-		t.Fatalf("Load failed: %v", err)
-	}
+	tpl := Load(root, WithLessProcessor())
 
 	// Assign required attributes - Button component requires name, variant, and title
 	tpl.Assign("name", "TestButton").
@@ -121,7 +100,7 @@ func TestLoadTemplateRender(t *testing.T) {
 		Assign("title", "Click me")
 
 	var buf bytes.Buffer
-	err = tpl.Render(context.Background(), &buf)
+	err := tpl.Render(context.Background(), &buf, "pages/components/Button.vuego")
 	if err != nil {
 		t.Fatalf("Render failed: %v", err)
 	}

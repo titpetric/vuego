@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -34,10 +35,18 @@ func start() error {
 		return fmt.Errorf("parsing JSON: %w", err)
 	}
 
-	templateFS := os.DirFS(filepath.Dir(tplFile))
-	vue := vuego.NewVue(templateFS)
+	// Open template file for efficient streaming
+	tplReader, err := os.Open(tplFile)
+	if err != nil {
+		return fmt.Errorf("opening template file: %w", err)
+	}
+	defer tplReader.Close()
 
-	if err := vue.Render(os.Stdout, filepath.Base(tplFile), data); err != nil {
+	// Load template with data and render directly from file reader
+	templateFS := os.DirFS(filepath.Dir(tplFile))
+	tmpl := vuego.Load(templateFS).Fill(data)
+
+	if err := tmpl.RenderReader(context.Background(), os.Stdout, tplReader); err != nil {
 		return fmt.Errorf("rendering template: %w", err)
 	}
 
