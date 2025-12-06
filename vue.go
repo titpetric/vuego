@@ -81,9 +81,8 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 	}
 
 	ctx := NewVueContext(filename, &VueContextOptions{
-		Data:         dataMap,
-		OriginalData: data,
-		Processors:   v.nodeProcessors,
+		Stack:      NewStackWithData(dataMap, data),
+		Processors: v.nodeProcessors,
 	})
 
 	if err := v.preProcessNodes(ctx, dom); err != nil {
@@ -184,9 +183,8 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 	}
 
 	ctx := NewVueContext(filename, &VueContextOptions{
-		Data:         dataMap,
-		OriginalData: data,
-		Processors:   v.nodeProcessors,
+		Stack:      NewStackWithData(dataMap, data),
+		Processors: v.nodeProcessors,
 	})
 
 	if err := v.preProcessNodes(ctx, dom); err != nil {

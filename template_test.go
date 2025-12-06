@@ -31,7 +31,7 @@ func TestTemplate_Fill(t *testing.T) {
 	require.Equal(t, tmpl, result)
 
 	// Verify the variables were set
-	require.Equal(t, "Hello World", tmpl.GetVar("message"))
+	require.Equal(t, "Hello World", tmpl.GetString("message"))
 }
 
 func TestTemplate_Assign(t *testing.T) {
@@ -45,20 +45,7 @@ func TestTemplate_Assign(t *testing.T) {
 	require.Equal(t, tmpl, result)
 
 	// Verify the variable was set
-	require.Equal(t, "Alice", tmpl.GetVar("name"))
-}
-
-func TestTemplate_GetVar(t *testing.T) {
-	templateFS := os.DirFS("testdata/fixtures")
-
-	tmpl := vuego.Load(templateFS)
-
-	// Set and get
-	tmpl.Assign("key", "value")
-	require.Equal(t, "value", tmpl.GetVar("key"))
-
-	// Get non-existent variable
-	require.Nil(t, tmpl.GetVar("nonexistent"))
+	require.Equal(t, "Alice", tmpl.GetString("name"))
 }
 
 func TestTemplate_GetString(t *testing.T) {
@@ -66,16 +53,26 @@ func TestTemplate_GetString(t *testing.T) {
 
 	tmpl := vuego.Load(templateFS)
 
+	// Set and get
+	tmpl.Assign("key", "value")
+	require.Equal(t, "value", tmpl.GetString("key"))
+
+	// Get non-existent variable
+	require.Nil(t, tmpl.GetVar("nonexistent"))
+	require.Equal(t, "", tmpl.GetString("nonexistent"))
+
 	// String value
 	tmpl.Assign("message", "Hello World")
 	require.Equal(t, "Hello World", tmpl.GetString("message"))
 
-	// Non-string value returns empty string
+	// Non-string value returns string (number, bool)
 	tmpl.Assign("count", 42)
-	require.Equal(t, "", tmpl.GetString("count"))
+	tmpl.Assign("isTrue", true)
+	tmpl.Assign("isFalse", false)
 
-	// Non-existent variable returns empty string
-	require.Equal(t, "", tmpl.GetString("nonexistent"))
+	require.Equal(t, "42", tmpl.GetString("count"))
+	require.Equal(t, "true", tmpl.GetString("isTrue"))
+	require.Equal(t, "false", tmpl.GetString("isFalse"))
 }
 
 func TestTemplate_Render(t *testing.T) {
@@ -127,16 +124,27 @@ func TestTemplate_FrontMatterVariables(t *testing.T) {
 func TestTemplate_Chaining(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
+	data := map[string]any{
+		"message": "Hello",
+	}
+
 	tmpl := vuego.Load(templateFS)
 
-	// Test method chaining
-	tmpl.Assign("foo", "bar").Assign("baz", "qux").Fill(map[string]any{
-		"message": "Hello",
-	})
+	// Test method chaining, Assign first
+	tmpl.Assign("foo", "bar").Assign("baz", "qux").Fill(data)
 
-	require.Equal(t, "bar", tmpl.GetVar("foo"))
-	require.Equal(t, "qux", tmpl.GetVar("baz"))
-	require.Equal(t, "Hello", tmpl.GetVar("message"))
+	// Fill resets state.
+	require.Equal(t, "", tmpl.GetString("foo"))
+	require.Equal(t, "", tmpl.GetString("baz"))
+	require.Equal(t, "Hello", tmpl.GetString("message"))
+
+	// Test method chaining, Fill first
+	tmpl.Fill(data).Assign("foo", "bar").Assign("baz", "qux")
+
+	// Fill resets state.
+	require.Equal(t, "bar", tmpl.GetString("foo"))
+	require.Equal(t, "qux", tmpl.GetString("baz"))
+	require.Equal(t, "Hello", tmpl.GetString("message"))
 }
 
 func TestTemplate_FillOverrides(t *testing.T) {
@@ -146,13 +154,13 @@ func TestTemplate_FillOverrides(t *testing.T) {
 
 	// Set initial value
 	tmpl.Assign("name", "Alice")
-	require.Equal(t, "Alice", tmpl.GetVar("name"))
+	require.Equal(t, "Alice", tmpl.GetString("name"))
 
 	// Fill with new values
 	tmpl.Fill(map[string]any{
 		"name": "Bob",
 	})
-	require.Equal(t, "Bob", tmpl.GetVar("name"))
+	require.Equal(t, "Bob", tmpl.GetString("name"))
 }
 
 func TestTemplate_RenderWithFrontMatter(t *testing.T) {

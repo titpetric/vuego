@@ -30,15 +30,14 @@ type VueContext struct {
 
 // VueContextOptions holds configurable options for a new VueContext.
 type VueContextOptions struct {
-	Data         map[string]any
-	OriginalData any
-	Processors   []NodeProcessor
+	Stack      *Stack
+	Processors []NodeProcessor
 }
 
 // NewVueContext returns a VueContext initialized for the given template filename with initial data.
 func NewVueContext(fromFilename string, options *VueContextOptions) VueContext {
 	result := VueContext{
-		stack:         NewStackWithData(options.Data, options.OriginalData),
+		stack:         options.Stack,
 		CurrentDir:    path.Dir(fromFilename),
 		FromFilename:  fromFilename,
 		TemplateStack: []string{fromFilename},

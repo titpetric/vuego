@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.42%   | 827       | 2921  |
+| ✅     | titpetric/vuego                      | 85.52%   | 826       | 2923  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 6         | 41    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.28%   | 171       | 508   |
@@ -48,6 +48,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | NewStackWithData                  | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | NewVue                            | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | NewVueContext                     | 100.00%  | 1         |
+| ✅     | titpetric/vuego                      | Stack.Copy                        | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Stack.EnvMap                      | 100.00%  | 4         |
 | ✅     | titpetric/vuego                      | Stack.ForEach                     | 100.00%  | 12        |
 | ✅     | titpetric/vuego                      | Stack.GetInt                      | 73.30%   | 5         |
@@ -140,11 +141,11 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | splitPathImpl                     | 85.40%   | 31        |
 | ✅     | titpetric/vuego                      | stringFunc                        | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | template.Assign                   | 100.00%  | 0         |
-| ✅     | titpetric/vuego                      | template.Fill                     | 100.00%  | 3         |
+| ✅     | titpetric/vuego                      | template.Fill                     | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | template.Funcs                    | 100.00%  | 1         |
-| ✅     | titpetric/vuego                      | template.GetString                | 100.00%  | 1         |
+| ✅     | titpetric/vuego                      | template.GetString                | 100.00%  | 4         |
 | ✅     | titpetric/vuego                      | template.GetVar                   | 100.00%  | 0         |
-| ❌     | titpetric/vuego                      | template.Render                   | 76.70%   | 13        |
+| ❌     | titpetric/vuego                      | template.Render                   | 75.00%   | 12        |
 | ✅     | titpetric/vuego                      | template.RenderByte               | 100.00%  | 0         |
 | ❌     | titpetric/vuego                      | template.RenderReader             | 64.00%   | 9         |
 | ✅     | titpetric/vuego                      | template.RenderString             | 100.00%  | 0         |

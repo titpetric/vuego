@@ -73,6 +73,12 @@ var mapPool = sync.Pool{
 	},
 }
 
+// Copy returns a copy of the stack that can be discarded.
+// The root data is retained as is, the envmap is a copy.
+func (s *Stack) Copy() *Stack {
+	return NewStackWithData(s.EnvMap(), s.rootData)
+}
+
 // Push a new map as a top-most Stack.
 // If m is nil, an empty map is obtained from the pool.
 func (s *Stack) Push(m map[string]any) {

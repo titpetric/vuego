@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 
 	"golang.org/x/net/html"
 
@@ -35,7 +36,7 @@ func WithFS(templateFS fs.FS) LoadOption {
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {
 	// Fill sets all variables from the map at once.
-	Fill(vars map[string]any) Template
+	Fill(vars any) Template
 
 	// Assign sets a single variable.
 	Assign(key string, value any) Template
@@ -73,8 +74,8 @@ type Template interface {
 
 // template is the internal implementation of Template.
 type template struct {
-	vue  *Vue
-	vars map[string]any
+	vue   *Vue
+	stack *Stack
 }
 
 // Load creates a new Template with access to the given filesystem and optional configurations.
@@ -88,8 +89,8 @@ func Load(templateFS fs.FS, opts ...LoadOption) Template {
 	}
 
 	return &template{
-		vue:  vue,
-		vars: make(map[string]any),
+		vue:   vue,
+		stack: NewStack(nil),
 	}
 }
 
@@ -108,34 +109,39 @@ func WithProcessor(processor NodeProcessor) LoadOption {
 }
 
 // Fill sets all variables from the map.
-func (t *template) Fill(vars map[string]any) Template {
-	if vars != nil {
-		for k, v := range vars {
-			t.vars[k] = v
-		}
-	}
+func (t *template) Fill(vars any) Template {
+	t.stack = NewStackWithData(toMapData(vars), vars)
 	return t
 }
 
 // Assign sets a single variable.
 func (t *template) Assign(key string, value any) Template {
-	t.vars[key] = value
+	t.stack.Set(key, value)
 	return t
 }
 
 // GetVar retrieves a variable value.
 func (t *template) GetVar(key string) any {
-	return t.vars[key]
+	val, _ := t.stack.Lookup(key)
+	return val
 }
 
 // GetString retrieves a variable value as a string.
 // Returns an empty string if the value is not a string.
 func (t *template) GetString(key string) string {
-	val := t.vars[key]
-	if s, ok := val.(string); ok {
-		return s
+	val, ok := t.stack.Lookup(key)
+	if !ok || val == nil {
+		return ""
 	}
-	return ""
+	if v, ok := val.(string); ok {
+		return v
+	}
+	if v, ok := val.(bool); ok {
+		return fmt.Sprint(v)
+	}
+	result := fmt.Sprint(val)
+	log.Printf("result: %s %T", result, val)
+	return result
 }
 
 // Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
@@ -164,21 +170,16 @@ func (t *template) Render(ctx context.Context, w io.Writer, filename string) err
 		return err
 	}
 
-	// Merge front-matter with existing variables
-	vars := make(map[string]any)
-	for k, v := range t.vars {
-		vars[k] = v
-	}
+	stack := t.stack.Copy()
 	if frontMatter != nil {
 		for k, v := range frontMatter {
-			vars[k] = v
+			stack.Set(k, v)
 		}
 	}
 
 	vueCtx := NewVueContext(filename, &VueContextOptions{
-		Data:         vars,
-		OriginalData: nil,
-		Processors:   t.vue.nodeProcessors,
+		Stack:      stack,
+		Processors: t.vue.nodeProcessors,
 	})
 
 	if err := t.vue.preProcessNodes(vueCtx, dom); err != nil {
@@ -251,9 +252,8 @@ func (t *template) RenderReader(ctx context.Context, w io.Writer, r io.Reader) e
 	}
 
 	vueCtx := NewVueContext("<inline>", &VueContextOptions{
-		Data:         t.vars,
-		OriginalData: nil,
-		Processors:   t.vue.nodeProcessors,
+		Stack:      t.stack.Copy(),
+		Processors: t.vue.nodeProcessors,
 	})
 
 	if err := t.vue.preProcessNodes(vueCtx, dom); err != nil {

@@ -103,7 +103,7 @@ type Stack struct {
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {
 	// Fill sets all variables from the map at once.
-	Fill(vars map[string]any) Template
+	Fill(vars any) Template
 
 	// Assign sets a single variable.
 	Assign(key string, value any) Template
@@ -185,9 +185,8 @@ type VueContext struct {
 ```go
 // VueContextOptions holds configurable options for a new VueContext.
 type VueContextOptions struct {
-	Data         map[string]any
-	OriginalData any
-	Processors   []NodeProcessor
+	Stack      *Stack
+	Processors []NodeProcessor
 }
 ```
 
@@ -215,6 +214,7 @@ type VueContextOptions struct {
 - `func (*Loader) Load (filename string) ([]*html.Node, error)`
 - `func (*Loader) LoadFragment (filename string) ([]*html.Node, error)`
 - `func (*Loader) Stat (filename string) error`
+- `func (*Stack) Copy () *Stack`
 - `func (*Stack) EnvMap () map[string]any`
 - `func (*Stack) ForEach (expr string, fn func(index int, value any) error) error`
 - `func (*Stack) GetInt (expr string) (int, bool)`
@@ -410,6 +410,14 @@ Stat checks that filename exists in the loader filesystem.
 
 ```go
 func (*Loader) Stat(filename string) error
+```
+
+### Copy
+
+Copy returns a copy of the stack that can be discarded. The root data is retained as is, the envmap is a copy.
+
+```go
+func (*Stack) Copy() *Stack
 ```
 
 ### EnvMap
