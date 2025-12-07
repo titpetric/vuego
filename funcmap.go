@@ -281,7 +281,7 @@ func (v *Vue) resolveArgument(ctx VueContext, arg string) any {
 	return arg
 }
 
-// callFunc calls a function from the FuncMap with the given arguments using reflection.
+// callFunc calls a function from the FuncMap with the given arguments.
 // This matches text/template's behavior and supports arbitrary function signatures.
 func (v *Vue) callFunc(fn any, args ...any) (any, error) {
 	fnVal := reflect.ValueOf(fn)

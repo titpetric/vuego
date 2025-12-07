@@ -73,16 +73,6 @@ func renderAttrs(attrs []html.Attribute) string {
 	return sb.String()
 }
 
-// hasVHtmlAttr checks if a node has the v-html attribute.
-func hasVHtmlAttr(node *html.Node) bool {
-	for _, attr := range node.Attr {
-		if attr.Key == "v-html" {
-			return true
-		}
-	}
-	return false
-}
-
 var indentCache = [256]string{}
 
 func init() {

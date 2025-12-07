@@ -13,7 +13,7 @@ import (
 	"github.com/titpetric/vuego/internal/helpers"
 )
 
-// LoadOption is a functional option for configuring Load()
+// LoadOption is a functional option for configuring Load().
 type LoadOption func(*Vue)
 
 // New creates a new Template for rendering strings, bytes, or readers without a filesystem.
@@ -171,10 +171,8 @@ func (t *template) Render(ctx context.Context, w io.Writer, filename string) err
 	}
 
 	stack := t.stack.Copy()
-	if frontMatter != nil {
-		for k, v := range frontMatter {
-			stack.Set(k, v)
-		}
+	for k, v := range frontMatter {
+		stack.Set(k, v)
 	}
 
 	vueCtx := NewVueContext(filename, &VueContextOptions{

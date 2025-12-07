@@ -213,3 +213,31 @@ func PopulateStructFields(m map[string]any, data any) {
 		m[tagName] = fieldValue
 	}
 }
+
+// IsSlice reports whether v is a slice or array.
+func IsSlice(v any) bool {
+	if v == nil {
+		return false
+	}
+	rv := reflect.ValueOf(v)
+	return rv.Kind() == reflect.Slice || rv.Kind() == reflect.Array
+}
+
+// SliceToAny converts any typed slice to []any.
+// Returns nil if the input is not a slice.
+func SliceToAny(s any) []any {
+	if s == nil {
+		return nil
+	}
+
+	rv := reflect.ValueOf(s)
+	if rv.Kind() != reflect.Slice && rv.Kind() != reflect.Array {
+		return nil
+	}
+
+	out := make([]any, rv.Len())
+	for i := range out {
+		out[i] = rv.Index(i).Interface()
+	}
+	return out
+}

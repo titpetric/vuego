@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/titpetric/vuego/internal/helpers"
 	ireflect "github.com/titpetric/vuego/internal/reflect"
 )
 
@@ -178,7 +177,7 @@ func (s *Stack) resolveStep(cur any, p string) any {
 		return c[p]
 	}
 
-	// Try numeric index for slices and arrays using reflection
+	// Try numeric index for slices and arrays
 	idx, err := strconv.Atoi(p)
 	if err == nil && idx >= 0 {
 		v := reflect.ValueOf(cur)
@@ -187,7 +186,7 @@ func (s *Stack) resolveStep(cur any, p string) any {
 		}
 	}
 
-	// Fall back to struct field resolution via reflection
+	// Fall back to struct field resolution
 	if v, ok := ireflect.ResolveValue(cur, p); ok {
 		return v
 	}
@@ -249,26 +248,16 @@ func (s *Stack) GetInt(expr string) (int, bool) {
 	return 0, false
 }
 
-// GetSlice returns a []any for supported slice kinds. Avoids reflection by only converting known types.
+// GetSlice returns a []any for slice types.
 func (s *Stack) GetSlice(expr string) ([]any, bool) {
 	v, ok := s.Resolve(expr)
 	if !ok || v == nil {
 		return nil, false
 	}
-	switch t := v.(type) {
-	case []any:
-		return t, true
-	case []map[string]any:
-		return helpers.SliceToAny(t), true
-	case []string:
-		return helpers.SliceToAny(t), true
-	case []int:
-		return helpers.SliceToAny(t), true
-	case []float64:
-		return helpers.SliceToAny(t), true
-	default:
-		return nil, false
+	if ireflect.IsSlice(v) {
+		return ireflect.SliceToAny(v), true
 	}
+	return nil, false
 }
 
 // GetMap returns map[string]any or converts map[string]string to map[string]any.

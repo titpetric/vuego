@@ -13,15 +13,19 @@ type VueContext struct {
 	// Variable scope and data resolution
 	stack *Stack
 
-	// Template inclusion chain context
-	BaseDir       string
-	CurrentDir    string
-	FromFilename  string
+	// BaseDir is the root directory for template inclusion chains.
+	BaseDir string
+	// CurrentDir is the current working directory during template processing.
+	CurrentDir string
+	// FromFilename is the name of the file currently being processed.
+	FromFilename string
+	// TemplateStack is the stack of included template files.
 	TemplateStack []string
 
-	// HTML rendering state
+	// TagStack is the stack of HTML tags being rendered.
 	TagStack []string
 
+	// Processors are the registered template processors.
 	Processors []NodeProcessor
 
 	// v-once element tracking for deep clones
@@ -30,7 +34,9 @@ type VueContext struct {
 
 // VueContextOptions holds configurable options for a new VueContext.
 type VueContextOptions struct {
-	Stack      *Stack
+	// Stack is the resolver stack for variable lookups.
+	Stack *Stack
+	// Processors are the registered template processors.
 	Processors []NodeProcessor
 }
 

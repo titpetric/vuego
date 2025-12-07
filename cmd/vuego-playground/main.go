@@ -187,7 +187,7 @@ func main() {
 	// API endpoint for server status
 	mux.HandleFunc("/api/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]bool{
+		_ = json.NewEncoder(w).Encode(map[string]bool{
 			"isEmbedFS": isEmbedded,
 		})
 	})
@@ -299,7 +299,7 @@ func handleExamples(w http.ResponseWriter, r *http.Request, examplesFS fs.FS) {
 
 	examples := loadExamplesMap(examplesFS)
 
-	json.NewEncoder(w).Encode(ExamplesResponse{
+	_ = json.NewEncoder(w).Encode(ExamplesResponse{
 		Examples: examples,
 	})
 }
@@ -314,7 +314,7 @@ func handleRender(w http.ResponseWriter, r *http.Request, examplesFS fs.FS) {
 
 	var req RenderRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		json.NewEncoder(w).Encode(RenderResponse{
+		_ = json.NewEncoder(w).Encode(RenderResponse{
 			Error: fmt.Sprintf("Invalid JSON: %v", err),
 		})
 		return
@@ -323,7 +323,7 @@ func handleRender(w http.ResponseWriter, r *http.Request, examplesFS fs.FS) {
 	// Parse the data JSON string into map[string]any
 	var data map[string]any
 	if err := json.Unmarshal([]byte(req.Data), &data); err != nil {
-		json.NewEncoder(w).Encode(RenderResponse{
+		_ = json.NewEncoder(w).Encode(RenderResponse{
 			Error: fmt.Sprintf("Invalid data JSON: %v", err),
 		})
 		return
@@ -348,13 +348,13 @@ func handleRender(w http.ResponseWriter, r *http.Request, examplesFS fs.FS) {
 	var buf bytes.Buffer
 	err := vue.RenderFragment(&buf, "template.html", data)
 	if err != nil {
-		json.NewEncoder(w).Encode(RenderResponse{
+		_ = json.NewEncoder(w).Encode(RenderResponse{
 			Error: err.Error(),
 		})
 		return
 	}
 
-	json.NewEncoder(w).Encode(RenderResponse{
+	_ = json.NewEncoder(w).Encode(RenderResponse{
 		HTML: buf.String(),
 	})
 }
@@ -388,13 +388,13 @@ func handleCheatsheet(w http.ResponseWriter, r *http.Request) {
 	vue := vuego.NewVue(staticFS)
 	err := vue.RenderFragment(&buf, "static/footer.vuego", map[string]any{})
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{
+		_ = json.NewEncoder(w).Encode(map[string]string{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{
+	_ = json.NewEncoder(w).Encode(map[string]string{
 		"content": buf.String(),
 	})
 }
@@ -417,14 +417,14 @@ func handleSave(w http.ResponseWriter, r *http.Request, examplesDir string, isEm
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != http.MethodPost {
-		json.NewEncoder(w).Encode(SaveResponse{
+		_ = json.NewEncoder(w).Encode(SaveResponse{
 			Error: "Method not allowed",
 		})
 		return
 	}
 
 	if isEmbedded {
-		json.NewEncoder(w).Encode(SaveResponse{
+		_ = json.NewEncoder(w).Encode(SaveResponse{
 			Error: "cannot save to embedded filesystem",
 		})
 		return
@@ -432,7 +432,7 @@ func handleSave(w http.ResponseWriter, r *http.Request, examplesDir string, isEm
 
 	var req SaveRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		json.NewEncoder(w).Encode(SaveResponse{
+		_ = json.NewEncoder(w).Encode(SaveResponse{
 			Error: fmt.Sprintf("Invalid JSON: %v", err),
 		})
 		return
@@ -451,7 +451,7 @@ func handleSave(w http.ResponseWriter, r *http.Request, examplesDir string, isEm
 	// Create directories if they don't exist (for nested paths)
 	if dir := filepath.Dir(templatePath); dir != examplesDir {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
-			json.NewEncoder(w).Encode(SaveResponse{
+			_ = json.NewEncoder(w).Encode(SaveResponse{
 				Error: fmt.Sprintf("Failed to create directory: %v", err),
 			})
 			return
@@ -460,7 +460,7 @@ func handleSave(w http.ResponseWriter, r *http.Request, examplesDir string, isEm
 
 	// Save template file
 	if err := os.WriteFile(templatePath, []byte(req.Template), 0o644); err != nil {
-		json.NewEncoder(w).Encode(SaveResponse{
+		_ = json.NewEncoder(w).Encode(SaveResponse{
 			Error: fmt.Sprintf("Failed to save template: %v", err),
 		})
 		return
@@ -468,13 +468,13 @@ func handleSave(w http.ResponseWriter, r *http.Request, examplesDir string, isEm
 
 	// Save data file
 	if err := os.WriteFile(dataPath, []byte(req.Data), 0o644); err != nil {
-		json.NewEncoder(w).Encode(SaveResponse{
+		_ = json.NewEncoder(w).Encode(SaveResponse{
 			Error: fmt.Sprintf("Failed to save data: %v", err),
 		})
 		return
 	}
 
-	json.NewEncoder(w).Encode(SaveResponse{
+	_ = json.NewEncoder(w).Encode(SaveResponse{
 		Path: fmt.Sprintf("%s.vuego and %s.json", exampleName, exampleName),
 	})
 }
@@ -496,14 +496,14 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != http.MethodPost {
-		json.NewEncoder(w).Encode(CreateResponse{
+		_ = json.NewEncoder(w).Encode(CreateResponse{
 			Error: "Method not allowed",
 		})
 		return
 	}
 
 	if isEmbedded {
-		json.NewEncoder(w).Encode(CreateResponse{
+		_ = json.NewEncoder(w).Encode(CreateResponse{
 			Error: "cannot create files in embedded filesystem",
 		})
 		return
@@ -511,7 +511,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 
 	var req CreateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		json.NewEncoder(w).Encode(CreateResponse{
+		_ = json.NewEncoder(w).Encode(CreateResponse{
 			Error: fmt.Sprintf("Invalid JSON: %v", err),
 		})
 		return
@@ -520,7 +520,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 	// Sanitize filename
 	filename := filepath.Base(req.Name)
 	if filename == "" || filename == "." || filename == ".." {
-		json.NewEncoder(w).Encode(CreateResponse{
+		_ = json.NewEncoder(w).Encode(CreateResponse{
 			Error: "invalid filename",
 		})
 		return
@@ -536,7 +536,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 		// Create components directory if it doesn't exist
 		compDir := filepath.Join(examplesDir, "components")
 		if err := os.MkdirAll(compDir, 0o755); err != nil {
-			json.NewEncoder(w).Encode(CreateResponse{
+			_ = json.NewEncoder(w).Encode(CreateResponse{
 				Error: fmt.Sprintf("Failed to create components directory: %v", err),
 			})
 			return
@@ -549,7 +549,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 
 	// Check if file already exists
 	if _, err := os.Stat(filePath); err == nil {
-		json.NewEncoder(w).Encode(CreateResponse{
+		_ = json.NewEncoder(w).Encode(CreateResponse{
 			Error: "file already exists",
 		})
 		return
@@ -561,7 +561,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 </div>
 `
 	if err := os.WriteFile(filePath, []byte(templateContent), 0o644); err != nil {
-		json.NewEncoder(w).Encode(CreateResponse{
+		_ = json.NewEncoder(w).Encode(CreateResponse{
 			Error: fmt.Sprintf("Failed to create file: %v", err),
 		})
 		return
@@ -570,7 +570,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 	// Also create a corresponding .json data file
 	jsonPath := filepath.Join(filepath.Dir(filePath), strings.TrimSuffix(filepath.Base(filePath), ".vuego")+".json")
 	if err := os.WriteFile(jsonPath, []byte("{}"), 0o644); err != nil {
-		json.NewEncoder(w).Encode(CreateResponse{
+		_ = json.NewEncoder(w).Encode(CreateResponse{
 			Error: fmt.Sprintf("Failed to create data file: %v", err),
 		})
 		return
@@ -585,7 +585,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request, examplesDir string, is
 		exampleName = strings.TrimSuffix(filename, ".vuego")
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{
+	_ = json.NewEncoder(w).Encode(map[string]string{
 		"path":  filePath,
 		"name":  exampleName,
 		"error": "",

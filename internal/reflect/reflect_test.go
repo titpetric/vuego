@@ -441,3 +441,117 @@ type Profile struct {
 	Bio      string `json:"bio"`
 	Location string `json:"location"`
 }
+
+// TestIsSlice checks if a value is a slice or array.
+func TestIsSlice(t *testing.T) {
+	tests := []struct {
+		name  string
+		value any
+		want  bool
+	}{
+		{
+			name:  "[]string",
+			value: []string{"a", "b"},
+			want:  true,
+		},
+		{
+			name:  "[]int",
+			value: []int{1, 2},
+			want:  true,
+		},
+		{
+			name:  "[]any",
+			value: []any{},
+			want:  true,
+		},
+		{
+			name:  "array",
+			value: [3]string{},
+			want:  true,
+		},
+		{
+			name:  "string",
+			value: "not a slice",
+			want:  false,
+		},
+		{
+			name:  "int",
+			value: 42,
+			want:  false,
+		},
+		{
+			name:  "map",
+			value: map[string]int{},
+			want:  false,
+		},
+		{
+			name:  "nil",
+			value: nil,
+			want:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := reflect.IsSlice(tt.value)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+// TestSliceToAny converts typed slices to []any.
+func TestSliceToAny(t *testing.T) {
+	tests := []struct {
+		name  string
+		input any
+		want  []any
+	}{
+		{
+			name:  "[]string",
+			input: []string{"a", "b", "c"},
+			want:  []any{"a", "b", "c"},
+		},
+		{
+			name:  "[]int",
+			input: []int{1, 2, 3},
+			want:  []any{1, 2, 3},
+		},
+		{
+			name:  "[]float64",
+			input: []float64{1.5, 2.5, 3.5},
+			want:  []any{1.5, 2.5, 3.5},
+		},
+		{
+			name:  "[]map[string]any",
+			input: []map[string]any{{"key": "value"}},
+			want:  []any{map[string]any{"key": "value"}},
+		},
+		{
+			name:  "empty slice",
+			input: []string{},
+			want:  []any{},
+		},
+		{
+			name:  "nil slice",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "non-slice",
+			input: "not a slice",
+			want:  nil,
+		},
+		{
+			name:  "array",
+			input: [3]string{"x", "y", "z"},
+			want:  []any{"x", "y", "z"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := reflect.SliceToAny(tt.input)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}

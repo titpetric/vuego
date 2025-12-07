@@ -1,5 +1,6 @@
 # Coverage files
 *.out
+*.json
 *.test
 *.txt
 *.prof

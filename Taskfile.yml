@@ -35,9 +35,16 @@ tasks:
     cmds:
       - task: fmt
       - task: lint:tools:golangci-lint
+      - task: lint:godoc
 
   lint:tools:golangci-lint:
-    cmd: go tool -modfile=go.tools.mod golangci-lint run ./...
+    cmd: go tool -modfile=go.tool.mod golangci-lint run ./...
+
+  lint:godoc:
+    desc: "Lint godoc comments"
+    cmds:
+      - schema-gen extract --pretty-json
+      - schema-gen lint --summary
 
   test:
     desc: "Run tests and collect coverage"

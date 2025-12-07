@@ -2,15 +2,6 @@ package helpers
 
 import "fmt"
 
-// SliceToAny converts a typed slice to []any.
-func SliceToAny[T any](s []T) []any {
-	out := make([]any, len(s))
-	for i := range s {
-		out[i] = s[i]
-	}
-	return out
-}
-
 // IsTruthy converts a value to boolean following Vue semantics.
 // For bound attributes, false values should not render the attribute.
 func IsTruthy(val any) bool {

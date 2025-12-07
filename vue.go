@@ -74,10 +74,8 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 	dataMap := toMapData(data)
 
 	// Merge front-matter data (authoritative - overrides passed data)
-	if frontMatter != nil {
-		for k, v := range frontMatter {
-			dataMap[k] = v
-		}
+	for k, v := range frontMatter {
+		dataMap[k] = v
 	}
 
 	ctx := NewVueContext(filename, &VueContextOptions{
@@ -129,27 +127,6 @@ func (v *Vue) loadCachedWithFrontMatter(filename string) (map[string]any, []*htm
 	return frontMatter, dom, nil
 }
 
-// loadCached returns a cached template or loads and caches it.
-func (v *Vue) loadCached(filename string) ([]*html.Node, error) {
-	v.templateMu.RLock()
-	if cached, ok := v.templateCache[filename]; ok {
-		v.templateMu.RUnlock()
-		return cached, nil
-	}
-	v.templateMu.RUnlock()
-
-	dom, err := v.loader.Load(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	v.templateMu.Lock()
-	v.templateCache[filename] = dom
-	v.templateMu.Unlock()
-
-	return dom, nil
-}
-
 // assignSeenAttrs recursively assigns unique IDs to all v-once elements in the tree
 func assignSeenAttrs(ctx *VueContext, node *html.Node) {
 	if node.Type == html.ElementNode {
@@ -176,10 +153,8 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 	dataMap := toMapData(data)
 
 	// Merge front-matter data (authoritative - overrides passed data)
-	if frontMatter != nil {
-		for k, v := range frontMatter {
-			dataMap[k] = v
-		}
+	for k, v := range frontMatter {
+		dataMap[k] = v
 	}
 
 	ctx := NewVueContext(filename, &VueContextOptions{

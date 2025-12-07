@@ -13,6 +13,7 @@ import (
 
 // Loader loads and parses .vuego files from an fs.FS.
 type Loader struct {
+	// FS is the file system used to load templates.
 	FS fs.FS
 }
 

@@ -12,7 +12,9 @@ import (
 
 // LessProcessorError wraps processing errors with context.
 type LessProcessorError struct {
-	Err    error
+	// Err is the underlying error from the LESS processor.
+	Err error
+	// Reason is a descriptive message about the LESS processing failure.
 	Reason string
 }
 

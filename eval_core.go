@@ -83,10 +83,8 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				}
 
 				// Merge front-matter data (authoritative - overrides passed data)
-				if frontMatter != nil {
-					for k, v := range frontMatter {
-						ctx.stack.Set(k, v)
-					}
+				for k, v := range frontMatter {
+					ctx.stack.Set(k, v)
 				}
 
 				// Validate and process template tag
