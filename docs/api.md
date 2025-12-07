@@ -43,19 +43,22 @@ type LessProcessor struct {
 ```go
 // LessProcessorError wraps processing errors with context.
 type LessProcessorError struct {
-	Err    error
+	// Err is the underlying error from the LESS processor.
+	Err error
+	// Reason is a descriptive message about the LESS processing failure.
 	Reason string
 }
 ```
 
 ```go
-// LoadOption is a functional option for configuring Load()
+// LoadOption is a functional option for configuring Load().
 type LoadOption func(*Vue)
 ```
 
 ```go
 // Loader loads and parses .vuego files from an fs.FS.
 type Loader struct {
+	// FS is the file system used to load templates.
 	FS fs.FS
 }
 ```
@@ -166,15 +169,19 @@ type VueContext struct {
 	// Variable scope and data resolution
 	stack *Stack
 
-	// Template inclusion chain context
-	BaseDir       string
-	CurrentDir    string
-	FromFilename  string
+	// BaseDir is the root directory for template inclusion chains.
+	BaseDir string
+	// CurrentDir is the current working directory during template processing.
+	CurrentDir string
+	// FromFilename is the name of the file currently being processed.
+	FromFilename string
+	// TemplateStack is the stack of included template files.
 	TemplateStack []string
 
-	// HTML rendering state
+	// TagStack is the stack of HTML tags being rendered.
 	TagStack []string
 
+	// Processors are the registered template processors.
 	Processors []NodeProcessor
 
 	// v-once element tracking for deep clones
@@ -185,7 +192,9 @@ type VueContext struct {
 ```go
 // VueContextOptions holds configurable options for a new VueContext.
 type VueContextOptions struct {
-	Stack      *Stack
+	// Stack is the resolver stack for variable lookups.
+	Stack *Stack
+	// Processors are the registered template processors.
 	Processors []NodeProcessor
 }
 ```
@@ -454,7 +463,7 @@ func (*Stack) GetMap(expr string) (map[string]any, bool)
 
 ### GetSlice
 
-GetSlice returns a []any for supported slice kinds. Avoids reflection by only converting known types.
+GetSlice returns a []any for slice types.
 
 ```go
 func (*Stack) GetSlice(expr string) ([]any, bool)
