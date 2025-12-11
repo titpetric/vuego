@@ -14,14 +14,14 @@ import (
 func TestLoad(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 	require.NotNil(t, tmpl)
 }
 
 func TestTemplate_Fill(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 
 	// Fill should be chainable
 	result := tmpl.Fill(map[string]any{
@@ -31,13 +31,13 @@ func TestTemplate_Fill(t *testing.T) {
 	require.Equal(t, tmpl, result)
 
 	// Verify the variables were set
-	require.Equal(t, "Hello World", tmpl.GetString("message"))
+	require.Equal(t, "Hello World", tmpl.Get("message"))
 }
 
 func TestTemplate_Assign(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 
 	// Assign should be chainable
 	result := tmpl.Assign("name", "Alice")
@@ -45,45 +45,44 @@ func TestTemplate_Assign(t *testing.T) {
 	require.Equal(t, tmpl, result)
 
 	// Verify the variable was set
-	require.Equal(t, "Alice", tmpl.GetString("name"))
+	require.Equal(t, "Alice", tmpl.Get("name"))
 }
 
-func TestTemplate_GetString(t *testing.T) {
+func TestTemplate_Get(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 
 	// Set and get
 	tmpl.Assign("key", "value")
-	require.Equal(t, "value", tmpl.GetString("key"))
+	require.Equal(t, "value", tmpl.Get("key"))
 
 	// Get non-existent variable
-	require.Nil(t, tmpl.GetVar("nonexistent"))
-	require.Equal(t, "", tmpl.GetString("nonexistent"))
+	require.Equal(t, "", tmpl.Get("nonexistent"))
 
 	// String value
 	tmpl.Assign("message", "Hello World")
-	require.Equal(t, "Hello World", tmpl.GetString("message"))
+	require.Equal(t, "Hello World", tmpl.Get("message"))
 
 	// Non-string value returns string (number, bool)
 	tmpl.Assign("count", 42)
 	tmpl.Assign("isTrue", true)
 	tmpl.Assign("isFalse", false)
 
-	require.Equal(t, "42", tmpl.GetString("count"))
-	require.Equal(t, "true", tmpl.GetString("isTrue"))
-	require.Equal(t, "false", tmpl.GetString("isFalse"))
+	require.Equal(t, "42", tmpl.Get("count"))
+	require.Equal(t, "true", tmpl.Get("isTrue"))
+	require.Equal(t, "false", tmpl.Get("isFalse"))
 }
 
 func TestTemplate_Render(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 
 	tmpl.Assign("message", "Hello")
 
 	buf := &bytes.Buffer{}
-	err := tmpl.Render(context.Background(), buf, "interpolation-basic.vuego")
+	err := tmpl.Load("interpolation-basic.vuego").Render(context.Background(), buf)
 	require.NoError(t, err)
 
 	// Should have rendered something
@@ -93,7 +92,7 @@ func TestTemplate_Render(t *testing.T) {
 func TestTemplate_RenderCancelledContext(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 
 	tmpl.Assign("message", "Hello")
 
@@ -102,18 +101,18 @@ func TestTemplate_RenderCancelledContext(t *testing.T) {
 	cancel()
 
 	buf := &bytes.Buffer{}
-	err := tmpl.Render(ctx, buf, "interpolation-basic.vuego")
+	err := tmpl.Load("interpolation-basic.vuego").Render(ctx, buf)
 	require.Equal(t, context.Canceled, err)
 }
 
 func TestTemplate_FrontMatterVariables(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 
 	// Render the template to load front-matter
 	buf := &bytes.Buffer{}
-	err := tmpl.Render(context.Background(), buf, "frontmatter-basic.vuego")
+	err := tmpl.Load("frontmatter-basic.vuego").Render(context.Background(), buf)
 	require.NoError(t, err)
 
 	// Note: Front-matter variables are merged during rendering, not during Load
@@ -128,48 +127,48 @@ func TestTemplate_Chaining(t *testing.T) {
 		"message": "Hello",
 	}
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 
 	// Test method chaining, Assign first
 	tmpl.Assign("foo", "bar").Assign("baz", "qux").Fill(data)
 
 	// Fill resets state.
-	require.Equal(t, "", tmpl.GetString("foo"))
-	require.Equal(t, "", tmpl.GetString("baz"))
-	require.Equal(t, "Hello", tmpl.GetString("message"))
+	require.Equal(t, "", tmpl.Get("foo"))
+	require.Equal(t, "", tmpl.Get("baz"))
+	require.Equal(t, "Hello", tmpl.Get("message"))
 
 	// Test method chaining, Fill first
 	tmpl.Fill(data).Assign("foo", "bar").Assign("baz", "qux")
 
 	// Fill resets state.
-	require.Equal(t, "bar", tmpl.GetString("foo"))
-	require.Equal(t, "qux", tmpl.GetString("baz"))
-	require.Equal(t, "Hello", tmpl.GetString("message"))
+	require.Equal(t, "bar", tmpl.Get("foo"))
+	require.Equal(t, "qux", tmpl.Get("baz"))
+	require.Equal(t, "Hello", tmpl.Get("message"))
 }
 
 func TestTemplate_FillOverrides(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 
 	// Set initial value
 	tmpl.Assign("name", "Alice")
-	require.Equal(t, "Alice", tmpl.GetString("name"))
+	require.Equal(t, "Alice", tmpl.Get("name"))
 
 	// Fill with new values
 	tmpl.Fill(map[string]any{
 		"name": "Bob",
 	})
-	require.Equal(t, "Bob", tmpl.GetString("name"))
+	require.Equal(t, "Bob", tmpl.Get("name"))
 }
 
 func TestTemplate_RenderWithFrontMatter(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 
 	buf := &bytes.Buffer{}
-	err := tmpl.Render(context.Background(), buf, "frontmatter-basic.vuego")
+	err := tmpl.Load("frontmatter-basic.vuego").Render(context.Background(), buf)
 	require.NoError(t, err)
 
 	// Should have rendered HTML with the title from front-matter
@@ -181,7 +180,7 @@ func TestTemplate_RenderWithFrontMatter(t *testing.T) {
 func TestTemplate_RenderString(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 	tmpl.Assign("message", "Hello from String")
 
 	buf := &bytes.Buffer{}
@@ -195,7 +194,7 @@ func TestTemplate_RenderString(t *testing.T) {
 func TestTemplate_RenderByte(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 	tmpl.Assign("message", "Hello from Bytes")
 
 	buf := &bytes.Buffer{}
@@ -210,7 +209,7 @@ func TestTemplate_RenderByte(t *testing.T) {
 func TestTemplate_RenderReader(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 	tmpl.Assign("message", "Hello from Reader")
 
 	buf := &bytes.Buffer{}
@@ -225,7 +224,7 @@ func TestTemplate_RenderReader(t *testing.T) {
 func TestTemplate_RenderReaderFromFile(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
-	tmpl := vuego.Load(templateFS)
+	tmpl := vuego.NewFS(templateFS)
 	tmpl.Assign("message", "Hello from File Reader")
 
 	// Create a temporary file
@@ -264,7 +263,7 @@ func TestNew_WithFS(t *testing.T) {
 	tmpl.Assign("message", "Hello")
 
 	buf := &bytes.Buffer{}
-	err := tmpl.Render(context.Background(), buf, "interpolation-basic.vuego")
+	err := tmpl.Load("interpolation-basic.vuego").Render(context.Background(), buf)
 	require.NoError(t, err)
 	require.Greater(t, buf.Len(), 0)
 }
@@ -274,7 +273,7 @@ func TestNew_RenderWithoutFilesystemFails(t *testing.T) {
 	tmpl.Assign("message", "Hello")
 
 	buf := &bytes.Buffer{}
-	err := tmpl.Render(context.Background(), buf, "interpolation-basic.vuego")
+	err := tmpl.Load("interpolation-basic.vuego").Render(context.Background(), buf)
 	require.Equal(t, "error reading interpolation-basic.vuego: no filesystem configured", err.Error())
 }
 

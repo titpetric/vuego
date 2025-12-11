@@ -10,7 +10,7 @@ import (
 func TestLoadWithLessProcessor(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := Load(root, WithLessProcessor())
+	tpl := NewFS(root, WithLessProcessor())
 
 	if tpl == nil {
 		t.Fatal("expected template to be loaded")
@@ -20,7 +20,7 @@ func TestLoadWithLessProcessor(t *testing.T) {
 func TestLoadWithMultipleProcessors(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := Load(root, WithLessProcessor(), WithLessProcessor())
+	tpl := NewFS(root, WithLessProcessor(), WithLessProcessor())
 
 	if tpl == nil {
 		t.Fatal("expected template to be loaded")
@@ -30,7 +30,7 @@ func TestLoadWithMultipleProcessors(t *testing.T) {
 func TestLoadWithoutProcessors(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := Load(root)
+	tpl := NewFS(root)
 
 	if tpl == nil {
 		t.Fatal("expected template to be loaded")
@@ -40,7 +40,7 @@ func TestLoadWithoutProcessors(t *testing.T) {
 func TestTemplateFuncs(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := Load(root)
+	tpl := NewFS(root)
 
 	funcMap := FuncMap{
 		"customFunc": func(s string) string {
@@ -59,7 +59,7 @@ func TestTemplateFuncs(t *testing.T) {
 func TestTemplateChaining(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := Load(root, WithLessProcessor())
+	tpl := NewFS(root, WithLessProcessor())
 
 	// Verify chaining works
 	result := tpl.
@@ -70,7 +70,7 @@ func TestTemplateChaining(t *testing.T) {
 		t.Error("method chaining failed")
 	}
 
-	if tpl.GetString("key") != "value" {
+	if tpl.Get("key") != "value" {
 		t.Error("assignment failed")
 	}
 }
@@ -78,7 +78,7 @@ func TestTemplateChaining(t *testing.T) {
 func TestLoadTemplateRender(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := Load(root, WithLessProcessor())
+	tpl := NewFS(root, WithLessProcessor())
 
 	// Assign required attributes - Button component requires name, variant, and title
 	tpl.Assign("name", "TestButton").
@@ -86,7 +86,7 @@ func TestLoadTemplateRender(t *testing.T) {
 		Assign("title", "Click me")
 
 	var buf bytes.Buffer
-	err := tpl.Render(context.Background(), &buf, "pages/components/Button.vuego")
+	err := tpl.Load("pages/components/Button.vuego").Render(context.Background(), &buf)
 	if err != nil {
 		t.Fatalf("Render failed: %v", err)
 	}

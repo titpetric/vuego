@@ -44,7 +44,7 @@ func start() error {
 
 	// Load template with data and render directly from file reader
 	templateFS := os.DirFS(filepath.Dir(tplFile))
-	tmpl := vuego.Load(templateFS).Fill(data)
+	tmpl := vuego.NewFS(templateFS).Fill(data)
 
 	if err := tmpl.RenderReader(context.Background(), os.Stdout, tplReader); err != nil {
 		return fmt.Errorf("rendering template: %w", err)

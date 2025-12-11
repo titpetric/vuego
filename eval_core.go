@@ -6,6 +6,7 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/titpetric/vuego/internal/helpers"
+	"github.com/titpetric/vuego/internal/parser"
 )
 
 // evaluateChildren evaluates the children of a node without allocating a temporary slice.
@@ -77,7 +78,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				ctx.stack.Push(vars)
 
 				name := helpers.GetAttr(node, "include")
-				frontMatter, compDom, err := v.loader.loadFragmentInternal(name)
+				frontMatter, templateBytes, err := v.loader.loadFragmentInternal(name)
 				if err != nil {
 					return nil, fmt.Errorf("error loading %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
 				}
@@ -85,6 +86,12 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				// Merge front-matter data (authoritative - overrides passed data)
 				for k, v := range frontMatter {
 					ctx.stack.Set(k, v)
+				}
+
+				// Parse template bytes into DOM
+				compDom, err := parser.ParseTemplateBytes(templateBytes)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
 				}
 
 				// Validate and process template tag

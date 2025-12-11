@@ -180,28 +180,28 @@ func TestTemplate_RenderOutput_Equivalence(t *testing.T) {
 	data := getTOCData()
 
 	// Render using Render (file-based)
-	tmpl1 := vuego.Load(fs).Fill(data)
+	tmpl1 := vuego.NewFS(fs).Fill(data)
 	buf1 := &bytes.Buffer{}
-	err := tmpl1.Render(context.Background(), buf1, "toc.html")
+	err := tmpl1.Load("toc.html").Render(context.Background(), buf1)
 	require.NoError(t, err)
 	output1 := buf1.String()
 
 	// Render using RenderString
-	tmpl2 := vuego.Load(fs).Fill(data)
+	tmpl2 := vuego.NewFS(fs).Fill(data)
 	buf2 := &bytes.Buffer{}
 	err = tmpl2.RenderString(context.Background(), buf2, string(getTOCTemplate()))
 	require.NoError(t, err)
 	output2 := buf2.String()
 
 	// Render using RenderByte
-	tmpl3 := vuego.Load(fs).Fill(data)
+	tmpl3 := vuego.NewFS(fs).Fill(data)
 	buf3 := &bytes.Buffer{}
 	err = tmpl3.RenderByte(context.Background(), buf3, getTOCTemplate())
 	require.NoError(t, err)
 	output3 := buf3.String()
 
 	// Render using RenderReader
-	tmpl4 := vuego.Load(fs).Fill(data)
+	tmpl4 := vuego.NewFS(fs).Fill(data)
 	buf4 := &bytes.Buffer{}
 	err = tmpl4.RenderReader(context.Background(), buf4, bytes.NewReader(getTOCTemplate()))
 	require.NoError(t, err)
@@ -228,12 +228,12 @@ func BenchmarkTemplate_Render(b *testing.B) {
 	}
 
 	data := getTOCData()
-	tmpl := vuego.Load(fs).Fill(data)
+	tmpl := vuego.NewFS(fs).Fill(data)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		buf := &strings.Builder{}
-		_ = tmpl.Render(context.Background(), buf, "toc.html")
+		_ = tmpl.Load("toc.html").Render(context.Background(), buf)
 	}
 }
 
@@ -243,7 +243,7 @@ func BenchmarkTemplate_RenderString(b *testing.B) {
 
 	data := getTOCData()
 	templateStr := string(getTOCTemplate())
-	tmpl := vuego.Load(fs).Fill(data)
+	tmpl := vuego.NewFS(fs).Fill(data)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -258,7 +258,7 @@ func BenchmarkTemplate_RenderByte(b *testing.B) {
 
 	data := getTOCData()
 	templateBytes := getTOCTemplate()
-	tmpl := vuego.Load(fs).Fill(data)
+	tmpl := vuego.NewFS(fs).Fill(data)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -273,7 +273,7 @@ func BenchmarkTemplate_RenderReader(b *testing.B) {
 
 	data := getTOCData()
 	templateBytes := getTOCTemplate()
-	tmpl := vuego.Load(fs).Fill(data)
+	tmpl := vuego.NewFS(fs).Fill(data)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -293,18 +293,18 @@ func BenchmarkTemplate_RenderAllocations(b *testing.B) {
 	data := getTOCData()
 
 	b.Run("Render", func(b *testing.B) {
-		tmpl := vuego.Load(fs).Fill(data)
+		tmpl := vuego.NewFS(fs).Fill(data)
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			buf := &strings.Builder{}
-			_ = tmpl.Render(context.Background(), buf, "toc.html")
+			_ = tmpl.Load("toc.html").Render(context.Background(), buf)
 		}
 	})
 
 	b.Run("RenderString", func(b *testing.B) {
 		templateStr := string(getTOCTemplate())
-		tmpl := vuego.Load(fs).Fill(data)
+		tmpl := vuego.NewFS(fs).Fill(data)
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -315,7 +315,7 @@ func BenchmarkTemplate_RenderAllocations(b *testing.B) {
 
 	b.Run("RenderByte", func(b *testing.B) {
 		templateBytes := getTOCTemplate()
-		tmpl := vuego.Load(fs).Fill(data)
+		tmpl := vuego.NewFS(fs).Fill(data)
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -326,7 +326,7 @@ func BenchmarkTemplate_RenderAllocations(b *testing.B) {
 
 	b.Run("RenderReader", func(b *testing.B) {
 		templateBytes := getTOCTemplate()
-		tmpl := vuego.Load(fs).Fill(data)
+		tmpl := vuego.NewFS(fs).Fill(data)
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {

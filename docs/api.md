@@ -105,18 +105,22 @@ type Stack struct {
 // Template represents a prepared vuego template.
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {
-	// Fill sets all variables from the map at once.
+	// Err will return an error if any occured during execution.
+	// The error is cleared with a new template load.
+	Err() error
+
+	// Load will load the template file and front matter.
+	Load(filename string) Template
+
+	// Fill sets all variables from the value, usually a map[string]any.
 	Fill(vars any) Template
 
 	// Assign sets a single variable.
 	Assign(key string, value any) Template
 
-	// GetVar retrieves a variable value.
-	GetVar(key string) any
-
-	// GetString retrieves a variable value as a string.
+	// Get retrieves a variable value as a string.
 	// Returns an empty string if the value is not a string.
-	GetString(key string) string
+	Get(key string) string
 
 	// Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
 	Funcs(funcMap FuncMap) Template
@@ -124,7 +128,12 @@ type Template interface {
 	// Render processes the template file and writes output to w.
 	// If an error occurs, w is unmodified (uses internal buffering).
 	// The context can be used to cancel the rendering operation.
-	Render(ctx context.Context, w io.Writer, filename string) error
+	Render(ctx context.Context, w io.Writer) error
+
+	// Render processes the template file and writes output to w.
+	// If an error occurs, w is unmodified (uses internal buffering).
+	// The context can be used to cancel the rendering operation.
+	RenderFile(ctx context.Context, w io.Writer, filename string) error
 
 	// RenderString processes a template string and writes output to w.
 	// If an error occurs, w is unmodified (uses internal buffering).
@@ -201,9 +210,9 @@ type VueContextOptions struct {
 
 ## Function symbols
 
-- `func Load (templateFS fs.FS, opts ...LoadOption) Template`
 - `func New (opts ...LoadOption) Template`
 - `func NewExprEvaluator () *ExprEvaluator`
+- `func NewFS (templateFS fs.FS, opts ...LoadOption) Template`
 - `func NewLessProcessor (fsys ...fs.FS) *LessProcessor`
 - `func NewLoader (fs fs.FS) *Loader`
 - `func NewRenderer () Renderer`
@@ -246,17 +255,9 @@ type VueContextOptions struct {
 - `func (VueContext) FormatTemplateChain () string`
 - `func (VueContext) WithTemplate (filename string) VueContext`
 
-### Load
-
-Load creates a new Template with access to the given filesystem and optional configurations. The returned Template can be used to render files, strings, or bytes with variable assignment.
-
-```go
-func Load(templateFS fs.FS, opts ...LoadOption) Template
-```
-
 ### New
 
-New creates a new Template for rendering strings, bytes, or readers without a filesystem. Use this when templates are provided as strings/bytes rather than loaded from files. To render from files, use Load(fs) or New(WithFS(fs)) instead. The returned Template can be used for variable assignment and rendering.
+New creates a new Template for rendering strings, bytes, or readers without a filesystem. Use this when templates are provided as strings/bytes rather than loaded from files. To render from files, use NewFS(fs) or New(WithFS(fs)) instead. The returned Template can be used for variable assignment and rendering.
 
 ```go
 func New(opts ...LoadOption) Template
@@ -268,6 +269,14 @@ NewExprEvaluator creates a new ExprEvaluator with an empty cache.
 
 ```go
 func NewExprEvaluator() *ExprEvaluator
+```
+
+### NewFS
+
+NewFS creates a new Template with access to the given filesystem and optional configurations. The returned Template can be used to render files, strings, or bytes with variable assignment.
+
+```go
+func NewFS(templateFS fs.FS, opts ...LoadOption) Template
 ```
 
 ### NewLessProcessor

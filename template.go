@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 
 	"golang.org/x/net/html"
 
 	"github.com/titpetric/vuego/internal/helpers"
+	"github.com/titpetric/vuego/internal/parser"
 )
 
 // LoadOption is a functional option for configuring Load().
@@ -18,10 +18,10 @@ type LoadOption func(*Vue)
 
 // New creates a new Template for rendering strings, bytes, or readers without a filesystem.
 // Use this when templates are provided as strings/bytes rather than loaded from files.
-// To render from files, use Load(fs) or New(WithFS(fs)) instead.
+// To render from files, use NewFS(fs) or New(WithFS(fs)) instead.
 // The returned Template can be used for variable assignment and rendering.
 func New(opts ...LoadOption) Template {
-	return Load(nil, opts...)
+	return NewFS(nil, opts...)
 }
 
 // WithFS returns a LoadOption that sets the filesystem for template loading.
@@ -35,18 +35,22 @@ func WithFS(templateFS fs.FS) LoadOption {
 // Template represents a prepared vuego template.
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {
-	// Fill sets all variables from the map at once.
+	// Err will return an error if any occured during execution.
+	// The error is cleared with a new template load.
+	Err() error
+
+	// Load will load the template file and front matter.
+	Load(filename string) Template
+
+	// Fill sets all variables from the value, usually a map[string]any.
 	Fill(vars any) Template
 
 	// Assign sets a single variable.
 	Assign(key string, value any) Template
 
-	// GetVar retrieves a variable value.
-	GetVar(key string) any
-
-	// GetString retrieves a variable value as a string.
+	// Get retrieves a variable value as a string.
 	// Returns an empty string if the value is not a string.
-	GetString(key string) string
+	Get(key string) string
 
 	// Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
 	Funcs(funcMap FuncMap) Template
@@ -54,7 +58,12 @@ type Template interface {
 	// Render processes the template file and writes output to w.
 	// If an error occurs, w is unmodified (uses internal buffering).
 	// The context can be used to cancel the rendering operation.
-	Render(ctx context.Context, w io.Writer, filename string) error
+	Render(ctx context.Context, w io.Writer) error
+
+	// Render processes the template file and writes output to w.
+	// If an error occurs, w is unmodified (uses internal buffering).
+	// The context can be used to cancel the rendering operation.
+	RenderFile(ctx context.Context, w io.Writer, filename string) error
 
 	// RenderString processes a template string and writes output to w.
 	// If an error occurs, w is unmodified (uses internal buffering).
@@ -76,11 +85,20 @@ type Template interface {
 type template struct {
 	vue   *Vue
 	stack *Stack
+
+	// filename and error for Template.Load
+	err            error
+	frontMatter    map[string]any
+	templateBytes  []byte
+	filename       string
+	filenameLoaded bool
 }
 
-// Load creates a new Template with access to the given filesystem and optional configurations.
+var _ Template = &template{}
+
+// NewFS creates a new Template with access to the given filesystem and optional configurations.
 // The returned Template can be used to render files, strings, or bytes with variable assignment.
-func Load(templateFS fs.FS, opts ...LoadOption) Template {
+func NewFS(templateFS fs.FS, opts ...LoadOption) Template {
 	vue := NewVue(templateFS)
 
 	// Apply functional options
@@ -120,15 +138,32 @@ func (t *template) Assign(key string, value any) Template {
 	return t
 }
 
-// GetVar retrieves a variable value.
-func (t *template) GetVar(key string) any {
-	val, _ := t.stack.Lookup(key)
-	return val
+// Err returns the internal error if any.
+func (t *template) Err() error {
+	return t.err
 }
 
-// GetString retrieves a variable value as a string.
-// Returns an empty string if the value is not a string.
-func (t *template) GetString(key string) string {
+// SetErr sets the internal error. Used from Load().
+func (t *template) SetErr(err error) {
+	t.err = err
+}
+
+// Load will load a template file and front matter, extending VueContext with the loaded DOM.
+// Front matter data is merged into the template's data and available via Get().
+func (t *template) Load(filename string) Template {
+	// Load the template with front-matter and raw template bytes
+	t.frontMatter, t.templateBytes, t.err = t.vue.loader.loadFragmentInternal(filename)
+	t.filename = filename
+	t.filenameLoaded = true
+	// Merge front-matter into stack so it's available via Get()
+	for k, v := range t.frontMatter {
+		t.stack.Set(k, v)
+	}
+	return t
+}
+
+// Get retrieves a variable value as a string.
+func (t *template) Get(key string) string {
 	val, ok := t.stack.Lookup(key)
 	if !ok || val == nil {
 		return ""
@@ -140,7 +175,6 @@ func (t *template) GetString(key string) string {
 		return fmt.Sprint(v)
 	}
 	result := fmt.Sprint(val)
-	log.Printf("result: %s %T", result, val)
 	return result
 }
 
@@ -155,30 +189,35 @@ func (t *template) Funcs(funcMap FuncMap) Template {
 	return t
 }
 
-// Render processes the template file and writes the output to w.
-// Uses internal buffering so w is unmodified if an error occurs.
-// The context can be used to cancel the rendering operation.
-func (t *template) Render(ctx context.Context, w io.Writer, filename string) error {
+// Render processes the loaded template and writes the output to w.
+// Requires that Load() has been called first.
+func (t *template) Render(ctx context.Context, w io.Writer) error {
 	// Check if context is already cancelled before starting
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-
-	// Load the template with front-matter
-	frontMatter, dom, err := t.vue.loader.loadFragmentInternal(filename)
-	if err != nil {
+	if err := t.Err(); err != nil {
 		return err
+	}
+	if !t.filenameLoaded {
+		return fmt.Errorf("no template loaded; call Load() first")
 	}
 
 	stack := t.stack.Copy()
-	for k, v := range frontMatter {
+	for k, v := range t.frontMatter {
 		stack.Set(k, v)
 	}
 
-	vueCtx := NewVueContext(filename, &VueContextOptions{
+	vueCtx := NewVueContext(t.filename, &VueContextOptions{
 		Stack:      stack,
 		Processors: t.vue.nodeProcessors,
 	})
+
+	// Parse the stored template bytes
+	dom, err := parser.ParseTemplateBytes(t.templateBytes)
+	if err != nil {
+		return err
+	}
 
 	if err := t.vue.preProcessNodes(vueCtx, dom); err != nil {
 		return err
@@ -217,6 +256,13 @@ func (t *template) Render(ctx context.Context, w io.Writer, filename string) err
 	// Only write to w if rendering succeeded
 	_, err = buf.WriteTo(w)
 	return err
+}
+
+// RenderFile processes the template file and writes the output to w.
+// Uses internal buffering so w is unmodified if an error occurs.
+// The context can be used to cancel the rendering operation.
+func (t *template) RenderFile(ctx context.Context, w io.Writer, filename string) error {
+	return t.Load(filename).Render(ctx, w)
 }
 
 // RenderString processes a template string and writes the output to w.

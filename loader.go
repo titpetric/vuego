@@ -8,7 +8,7 @@ import (
 	"golang.org/x/net/html"
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/titpetric/vuego/internal/helpers"
+	"github.com/titpetric/vuego/internal/parser"
 )
 
 // Loader loads and parses .vuego files from an fs.FS.
@@ -89,12 +89,15 @@ func extractFrontMatter(content []byte) (map[string]any, []byte, error) {
 // LoadFragment parses a template fragment; if the file is a full document, it falls back to Load.
 // Front-matter is extracted and discarded; use loadFragmentInternal to access it.
 func (l *Loader) LoadFragment(filename string) ([]*html.Node, error) {
-	_, nodes, err := l.loadFragmentInternal(filename)
-	return nodes, err
+	_, templateBytes, err := l.loadFragmentInternal(filename)
+	if err != nil {
+		return nil, err
+	}
+	return parser.ParseTemplateBytes(templateBytes)
 }
 
-// loadFragmentInternal parses a template fragment and returns both front-matter data and DOM nodes.
-func (l *Loader) loadFragmentInternal(filename string) (map[string]any, []*html.Node, error) {
+// loadFragmentInternal loads a template file and extracts front-matter, returning the raw template bytes.
+func (l *Loader) loadFragmentInternal(filename string) (map[string]any, []byte, error) {
 	if l.FS == nil {
 		return nil, nil, fmt.Errorf("error reading %s: no filesystem configured", filename)
 	}
@@ -104,29 +107,10 @@ func (l *Loader) loadFragmentInternal(filename string) (map[string]any, []*html.
 	}
 
 	// Extract front-matter
-	frontMatter, template, err := extractFrontMatter(template)
+	frontMatter, templateContent, err := extractFrontMatter(template)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// Input template contains html/body
-	var nodes []*html.Node
-	if bytes.Contains(template, []byte("</html>")) {
-		doc, err := html.Parse(bytes.NewReader(template))
-		if err != nil {
-			return nil, nil, err
-		}
-		for node := range doc.ChildNodes() {
-			nodes = append(nodes, node)
-		}
-	} else {
-		// Parse the fragment using cached body element
-		body := helpers.GetBodyNode()
-		nodes, err = html.ParseFragment(bytes.NewReader(template), body)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	return frontMatter, nodes, nil
+	return frontMatter, templateContent, nil
 }
