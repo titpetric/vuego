@@ -48,6 +48,37 @@ func (v *Vue) Funcs(funcMap FuncMap) *Vue {
 	return v
 }
 
+// RenderNodes evaluates and renders HTML nodes with the given data.
+// This is the core rendering function used by all public render methods.
+func (v *Vue) RenderNodes(w io.Writer, nodes []*html.Node, data any) error {
+	dataMap := toMapData(data)
+
+	ctx := NewVueContext("", &VueContextOptions{
+		Stack:      NewStackWithData(dataMap, data),
+		Processors: v.nodeProcessors,
+	})
+
+	return v.renderNodesWithContext(ctx, w, nodes)
+}
+
+// renderNodesWithContext is an internal method that evaluates and renders nodes with a pre-configured context.
+func (v *Vue) renderNodesWithContext(ctx VueContext, w io.Writer, nodes []*html.Node) error {
+	if err := v.preProcessNodes(ctx, nodes); err != nil {
+		return err
+	}
+
+	result, err := v.evaluate(ctx, nodes, 0)
+	if err != nil {
+		return err
+	}
+
+	if err := v.postProcessNodes(ctx, result); err != nil {
+		return err
+	}
+
+	return v.render(w, result)
+}
+
 // toMapData converts any value to map[string]any for use as template context.
 // If data is already a map[string]any, it's returned as-is.
 // Otherwise, returns an empty map (struct fields will be resolved via fallback in Stack.Lookup).
@@ -71,34 +102,25 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 		return err
 	}
 
-	// Convert data to map[string]any and create context with original data for struct fallback
+	// Merge front-matter data into the provided data (front-matter is authoritative)
 	dataMap := toMapData(data)
-
-	// Merge front-matter data (authoritative - overrides passed data)
 	for k, v := range frontMatter {
 		dataMap[k] = v
 	}
 
-	ctx := NewVueContext(filename, &VueContextOptions{
+	// Create context for v-once attribute tracking
+	vueCtx := NewVueContext(filename, &VueContextOptions{
 		Stack:      NewStackWithData(dataMap, data),
 		Processors: v.nodeProcessors,
 	})
 
-	if err := v.preProcessNodes(ctx, dom); err != nil {
-		return err
+	// Assign unique IDs to all v-once elements for tracking across deep clones
+	for _, node := range dom {
+		assignSeenAttrs(&vueCtx, node)
 	}
 
-	result, err := v.evaluate(ctx, dom, 0)
-	if err != nil {
-		return err
-	}
-
-	// Apply custom node processors for post-processing
-	if err := v.postProcessNodes(ctx, result); err != nil {
-		return err
-	}
-
-	return v.render(w, result)
+	// Use renderNodesWithContext with pre-configured context
+	return v.renderNodesWithContext(vueCtx, w, dom)
 }
 
 // loadCachedWithFrontMatter returns cached template nodes and front-matter data, or loads and caches them.
@@ -160,39 +182,25 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 		return err
 	}
 
-	// Convert data to map[string]any and create context with original data for struct fallback
+	// Merge front-matter data into the provided data (front-matter is authoritative)
 	dataMap := toMapData(data)
-
-	// Merge front-matter data (authoritative - overrides passed data)
 	for k, v := range frontMatter {
 		dataMap[k] = v
 	}
 
-	ctx := NewVueContext(filename, &VueContextOptions{
+	// Create context for v-once attribute tracking
+	vueCtx := NewVueContext(filename, &VueContextOptions{
 		Stack:      NewStackWithData(dataMap, data),
 		Processors: v.nodeProcessors,
 	})
 
-	if err := v.preProcessNodes(ctx, dom); err != nil {
-		return err
-	}
-
 	// Assign unique IDs to all v-once elements for tracking across deep clones
 	for _, node := range dom {
-		assignSeenAttrs(&ctx, node)
+		assignSeenAttrs(&vueCtx, node)
 	}
 
-	result, err := v.evaluate(ctx, dom, 0)
-	if err != nil {
-		return err
-	}
-
-	// Apply custom node processors for post-processing
-	if err := v.postProcessNodes(ctx, result); err != nil {
-		return err
-	}
-
-	return v.render(w, result)
+	// Use RenderNodes with pre-configured context
+	return v.renderNodesWithContext(vueCtx, w, dom)
 }
 
 func (v *Vue) render(w io.Writer, nodes []*html.Node) error {
