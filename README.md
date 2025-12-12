@@ -53,7 +53,10 @@ An example of a rendering invocation is:
 err = renderer.New().Fill(data).RenderString(r.Context(), w, `<li v-for="item in items">{{ item.title }}</li>`.
 ```
 
-There's more detail around authoring vuego templates, check documentation below.
+There's more detail around authoring vuego templates, check documentation:
+
+- [API Reference - docs/api.md](./docs/api.md)
+- [Go Reference - pkg.go.dev](https://pkg.go.dev/github.com/titpetric/vuego)
 
 ## Features
 
