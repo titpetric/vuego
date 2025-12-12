@@ -29,9 +29,7 @@ func WithFS(templateFS fs.FS) LoadOption {
 // WithFuncs returns a LoadOption that merges custom template functions into the existing funcmap.
 func WithFuncs(funcMap FuncMap) LoadOption {
 	return func(vue *Vue) {
-		for k, fn := range funcMap {
-			vue.funcMap[k] = fn
-		}
+		vue.Funcs(funcMap)
 	}
 }
 
