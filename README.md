@@ -4,6 +4,11 @@
 
 Vuego is a [Vue.js](https://vuejs.org/)-inspired template engine for Go. Render HTML templates with familiar Vue syntax - no JavaScript runtime required.
 
+## Status
+
+Project it in active development. Some changes in API surface are still
+expected based on feedback and observations.
+
 ## Quick start
 
 You can use vuego by importing it in your project:
@@ -21,12 +26,44 @@ renderer := vuego.New(
 ),
 ```
 
-Using the fileystem is optional and you can use `vuego.New()` to omit it.
+With this you have a `vuego.Template`. From here you can:
 
-Providing and rendering a template is done in one or two ways:
+1. Load a template file with `.Load(filename)`
+2. Create a new rendering context with `New` (instead of Load).
+3. Fill data to the template with `.Fill(data map[string]any)`
+4. Fill data to the template with `.Assign(k string, v any)`.
+5. Render templates with a variety of Render functions
 
-- `renderer.New().Fill(data).Render(context.Context, io.Writer) error
+So, to simply load templates from disk and render a single template:
 
+- `Render(ctx context.Context, w io.Writer) error`
+- `Layout(ctx context.Context, w io.Writer) error`
+
+An example of a rendering invocation would be:
+
+```go
+err = renderer.File(filename).Fill(data).Layout(r.Context(), w)
+```
+
+Layout will use front-matter `layout` hints to load layouts from
+`layouts/%s.vuego`. If no hint is provided, `layouts/base.vuego` is
+passed the contents from the previously rendered template. Use `Render`
+if you don't want layouts.
+
+For rendering fragments (from variables or otherwise):
+
+- `RenderFile(ctx context.Context, w io.Writer, filename string) error`
+- `RenderString(ctx context.Context, w io.Writer, templateStr string) error`
+- `RenderByte(ctx context.Context, w io.Writer, templateData []byte) error`
+- `RenderReader(ctx context.Context, w io.Writer, r io.Reader) error`
+
+An example of a rendering invocation is:
+
+```go
+err = renderer.New().Fill(data).RenderString(r.Context(), w, `<li v-for="item in items">{{ item.title }}</li>`.
+```
+
+There's more detail around authoring vuego templates, check documentation below.
 
 ## Features
 
@@ -62,18 +99,16 @@ You can run the playground locally, and if you pass a folder as the first parame
 ## Documentation
 
 The Template Syntax reference covers four main areas:
+
 - **[Values](docs/syntax.md#values)** - Variable interpolation, expressions, and filters
 - **[Directives](docs/syntax.md#directives)** - Complete reference of all `v-` directives
 - **[Components](docs/syntax.md#components)** - `<vuego>` and `<template>` tags
 - **[Advanced](docs/syntax.md#advanced)** - Template functions, custom filters, and full documents
 
 Additional resources:
+
 - **[FuncMap & Filters](docs/funcmap.md)** - Custom template functions and built-in filters
 - **[Components Guide](docs/components.md)** - Detailed component composition examples
 - **[Testing](docs/testing.md)** - Running tests and interpreting results
 - **[CLI Usage](docs/cli.md)** - Command-line tool reference
 - **[Concurrency](docs/concurrency.md)** - Thread-safety and concurrent rendering
-
-## License
-
-MIT

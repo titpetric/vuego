@@ -211,5 +211,3 @@ func (t *template) Get(key string) string {
 	result := fmt.Sprint(val)
 	return result
 }
-
-
