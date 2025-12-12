@@ -1,48 +1,45 @@
-package vuego
+package vuego_test
 
 import (
 	"bytes"
-	"context"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/titpetric/vuego"
 )
 
 func TestLoadWithLessProcessor(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := NewFS(root, WithLessProcessor())
+	tpl := vuego.NewFS(root, vuego.WithLessProcessor())
 
-	if tpl == nil {
-		t.Fatal("expected template to be loaded")
-	}
+	require.NotNil(t, tpl)
 }
 
 func TestLoadWithMultipleProcessors(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := NewFS(root, WithLessProcessor(), WithLessProcessor())
+	tpl := vuego.NewFS(root, vuego.WithLessProcessor(), vuego.WithLessProcessor())
 
-	if tpl == nil {
-		t.Fatal("expected template to be loaded")
-	}
+	require.NotNil(t, tpl)
 }
 
 func TestLoadWithoutProcessors(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := NewFS(root)
+	tpl := vuego.NewFS(root)
 
-	if tpl == nil {
-		t.Fatal("expected template to be loaded")
-	}
+	require.NotNil(t, tpl)
 }
 
 func TestTemplateFuncs(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := NewFS(root)
+	tpl := vuego.NewFS(root)
 
-	funcMap := FuncMap{
+	funcMap := vuego.FuncMap{
 		"customFunc": func(s string) string {
 			return "custom: " + s
 		},
@@ -51,34 +48,27 @@ func TestTemplateFuncs(t *testing.T) {
 	result := tpl.Funcs(funcMap)
 
 	// Verify chaining returns the template
-	if result != tpl {
-		t.Error("Funcs() should return the template for chaining")
-	}
+	require.Equal(t, tpl, result)
 }
 
 func TestTemplateChaining(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := NewFS(root, WithLessProcessor())
+	tpl := vuego.NewFS(root, vuego.WithLessProcessor())
 
 	// Verify chaining works
 	result := tpl.
 		Assign("key", "value").
-		Funcs(FuncMap{"test": func() string { return "test" }})
+		Funcs(vuego.FuncMap{"test": func() string { return "test" }})
 
-	if result != tpl {
-		t.Error("method chaining failed")
-	}
-
-	if tpl.Get("key") != "value" {
-		t.Error("assignment failed")
-	}
+	require.Equal(t, tpl, result)
+	require.Equal(t, "value", tpl.Get("key"))
 }
 
 func TestLoadTemplateRender(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := NewFS(root, WithLessProcessor())
+	tpl := vuego.NewFS(root, vuego.WithLessProcessor())
 
 	// Assign required attributes - Button component requires name, variant, and title
 	tpl.Assign("name", "TestButton").
@@ -86,12 +76,7 @@ func TestLoadTemplateRender(t *testing.T) {
 		Assign("title", "Click me")
 
 	var buf bytes.Buffer
-	err := tpl.Load("pages/components/Button.vuego").Render(context.Background(), &buf)
-	if err != nil {
-		t.Fatalf("Render failed: %v", err)
-	}
-
-	if buf.Len() == 0 {
-		t.Error("rendered output is empty")
-	}
+	err := tpl.Load("pages/components/Button.vuego").Render(t.Context(), &buf)
+	require.NoError(t, err)
+	require.Greater(t, buf.Len(), 0)
 }

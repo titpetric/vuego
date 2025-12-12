@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html :lang="meta.lang">
    <head><title>Layout: base</title></head>
-    <main id="main" class="breakout flow {{ classnames }}" v-html="content"></main>
+    <div id="main" class="breakout flow {{ classnames }}" v-html="content"></div>
   </body>
 </html>

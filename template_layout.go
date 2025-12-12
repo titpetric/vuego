@@ -19,10 +19,10 @@ func (t *template) Layout(ctx context.Context, w io.Writer) error {
 	data := t.stack.EnvMap()
 	filename := t.filename
 
-	tpl := t.Load(filename)
 	for {
 		var buf bytes.Buffer
-		if err := tpl.Fill(data).Render(ctx, &buf); err != nil {
+		tpl := t.Load(filename).Fill(data)
+		if err := tpl.Render(ctx, &buf); err != nil {
 			return err
 		}
 
@@ -37,12 +37,12 @@ func (t *template) Layout(ctx context.Context, w io.Writer) error {
 
 		delete(data, "layout")
 		filename = "layouts/" + layout + ".vuego"
-		tpl = t.Load(filename)
 		continue
 	}
 
 	var buf bytes.Buffer
-	if err := tpl.Fill(data).Render(ctx, &buf); err != nil {
+	tpl := t.Load(filename).Fill(data)
+	if err := tpl.Render(ctx, &buf); err != nil {
 		return err
 	}
 	_, err := io.Copy(w, &buf)

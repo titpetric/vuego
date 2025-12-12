@@ -150,9 +150,14 @@ func WithProcessor(processor NodeProcessor) LoadOption {
 	}
 }
 
-// Fill sets all variables from the map.
+// Fill sets all variables from the map, preserving any front-matter that was loaded.
 func (t *template) Fill(vars any) Template {
-	t.stack = NewStackWithData(toMapData(vars), vars)
+	dataMap := toMapData(vars)
+	// Merge loaded front-matter into data (front-matter takes precedence)
+	for k, v := range t.frontMatter {
+		dataMap[k] = v
+	}
+	t.stack = NewStackWithData(dataMap, vars)
 	return t
 }
 
@@ -185,7 +190,7 @@ func (t *template) Load(filename string) Template {
 	tpl.filename = filename
 	tpl.filenameLoaded = true
 
-	for k, v := range t.frontMatter {
+	for k, v := range tpl.frontMatter {
 		tpl.Assign(k, v)
 	}
 
