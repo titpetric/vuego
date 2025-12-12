@@ -27,16 +27,10 @@ renderer := vuego.New(
 
 With this you have a `vuego.Template`. From here you can:
 
-1. Load a template file with `.Load(filename)`
-2. Create a new rendering context with `New` (instead of Load).
-3. Fill data to the template with `.Fill(data map[string]any)`
-4. Fill data to the template with `.Assign(k string, v any)`.
-5. Render templates with a variety of Render functions
-
-So, to simply load templates from disk and render a single template:
-
-- `Render(ctx context.Context, w io.Writer) error`
-- `Layout(ctx context.Context, w io.Writer) error`
+1. Construct new template rendering contexts with renderer.New and renderer.Load
+2. Manage state with `Fill`, `Set` and `Get` functions
+3. Finalize the rendering context with `Render` and `Layout` functions
+4. Additional renderers are provided to render from non-FS sources
 
 An example of a rendering invocation would be:
 

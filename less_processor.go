@@ -22,7 +22,10 @@ func (e *LessProcessorError) Error() string {
 	return e.Reason + ": " + e.Err.Error()
 }
 
-// LessProcessor implements vuego.NodeProcessor to compile LESS to CSS in `<style type="text/css+less">` tags.
+// LessProcessor implements vuego.NodeProcessor.
+//
+// It implements the functionality to compile Less CSS to standard css.
+// It processes `script` tags with a `type="text/css+less"` attribute.
 type LessProcessor struct {
 	// fs is optional filesystem for loading @import statements in LESS files
 	fs fs.FS
@@ -49,7 +52,7 @@ func (lp *LessProcessor) PreProcess(nodes []*html.Node) error {
 	return nil
 }
 
-// PostProcess walks the DOM tree and compiles LESS in <style type="text/css+less"> tags to CSS.
+// PostProcess walks the DOM tree and performs compilation.
 func (lp *LessProcessor) PostProcess(nodes []*html.Node) error {
 	for _, node := range nodes {
 		if err := lp.processNode(node); err != nil {
