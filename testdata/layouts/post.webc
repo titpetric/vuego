@@ -1,0 +1,60 @@
+---
+layout: "base"
+classnames: "prose"
+---
+
+<page-timer></page-timer>
+<h1 class="title | skewer" @text="title">
+  <span @text="title" webc:nokeep></span>
+</h1>
+<section class="info | cluster skewer">
+  <div class="cluster pseudo-gradient">
+    <inline-svg src="./assets/icons/calendar.svg"></inline-svg>
+    <span>Posted on <strong @text="postDate(date)"></strong></span>
+  </div>
+  <div class="cluster pseudo-gradient">
+    <inline-svg src="./assets/icons/timer.svg"></inline-svg>
+    <span> Takes about <strong @text="readingTime(content)"></strong> to read </span>
+  </div>
+</section>
+<template @raw="content" webc:nokeep></template>
+<p class="cta arrow-start" style="--flow-space: var(--space-l)">
+  <a href="/blog/">Back to all blog posts</a>
+</p>
+
+<style>
+  :is(.post-timer, .title) {
+    --flow-space: 0;
+    grid-row: 2;
+  }
+
+  .title {
+    margin-block-end: 8vh;
+  }
+
+  .info {
+    order: -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-inline-start: 0.5rem;
+    margin-block: 0 1em;
+  }
+
+  .info > * {
+    align-items: center;
+    display: flex;
+    gap: 0.2rem;
+    line-height: 1.2;
+    font-size: 0.8em;
+    padding: 0.1rem var(--space-2xs) 0.1rem 0;
+  }
+
+  .info svg {
+    --_size: 1.75em;
+    flex-shrink: 0;
+    margin-inline-start: calc(var(--_size) / -2);
+    width: var(--_size);
+    height: var(--_size);
+  }
+</style>

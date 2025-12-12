@@ -32,24 +32,7 @@ func (l *Loader) Stat(filename string) error {
 
 // Load parses a full HTML document from the given filename.
 func (l *Loader) Load(filename string) ([]*html.Node, error) {
-	if l.FS == nil {
-		return nil, fmt.Errorf("error reading %s: no filesystem configured", filename)
-	}
-	template, err := fs.ReadFile(l.FS, filename)
-	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %w", filename, err)
-	}
-
-	doc, err := html.Parse(bytes.NewReader(template))
-	if err != nil {
-		return nil, err
-	}
-
-	var result []*html.Node
-	for node := range doc.ChildNodes() {
-		result = append(result, node)
-	}
-	return result, nil
+	return l.LoadFragment(filename)
 }
 
 // extractFrontMatter extracts YAML front-matter from a template if it starts with ---.
@@ -87,17 +70,17 @@ func extractFrontMatter(content []byte) (map[string]any, []byte, error) {
 }
 
 // LoadFragment parses a template fragment; if the file is a full document, it falls back to Load.
-// Front-matter is extracted and discarded; use loadFragmentInternal to access it.
+// Front-matter is extracted and discarded; use loadFragment to access it.
 func (l *Loader) LoadFragment(filename string) ([]*html.Node, error) {
-	_, templateBytes, err := l.loadFragmentInternal(filename)
+	_, templateBytes, err := l.loadFragment(filename)
 	if err != nil {
 		return nil, err
 	}
 	return parser.ParseTemplateBytes(templateBytes)
 }
 
-// loadFragmentInternal loads a template file and extracts front-matter, returning the raw template bytes.
-func (l *Loader) loadFragmentInternal(filename string) (map[string]any, []byte, error) {
+// loadFragment loads a template file and extracts front-matter, returning the raw template bytes.
+func (l *Loader) loadFragment(filename string) (map[string]any, []byte, error) {
 	if l.FS == nil {
 		return nil, nil, fmt.Errorf("error reading %s: no filesystem configured", filename)
 	}

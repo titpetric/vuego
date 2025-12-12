@@ -1,0 +1,9 @@
+---
+layout: base
+permalink: "blog/"
+title: "Blog posts by Tit Petric"
+---
+
+<h1 class="title | skewer">The Blog</h1>
+
+<h1>{{ content }}</h1>

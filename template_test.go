@@ -82,7 +82,7 @@ func TestTemplate_Render(t *testing.T) {
 	tmpl.Assign("message", "Hello")
 
 	buf := &bytes.Buffer{}
-	err := tmpl.Load("interpolation-basic.vuego").Render(context.Background(), buf)
+	err := tmpl.Load("interpolation-basic.vuego").Render(t.Context(), buf)
 	require.NoError(t, err)
 
 	// Should have rendered something
@@ -97,7 +97,7 @@ func TestTemplate_RenderCancelledContext(t *testing.T) {
 	tmpl.Assign("message", "Hello")
 
 	// Create a cancelled context
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 
 	buf := &bytes.Buffer{}
@@ -112,7 +112,7 @@ func TestTemplate_FrontMatterVariables(t *testing.T) {
 
 	// Render the template to load front-matter
 	buf := &bytes.Buffer{}
-	err := tmpl.Load("frontmatter-basic.vuego").Render(context.Background(), buf)
+	err := tmpl.Load("frontmatter-basic.vuego").Render(t.Context(), buf)
 	require.NoError(t, err)
 
 	// Note: Front-matter variables are merged during rendering, not during Load
@@ -168,7 +168,7 @@ func TestTemplate_RenderWithFrontMatter(t *testing.T) {
 	tmpl := vuego.NewFS(templateFS)
 
 	buf := &bytes.Buffer{}
-	err := tmpl.Load("frontmatter-basic.vuego").Render(context.Background(), buf)
+	err := tmpl.Load("frontmatter-basic.vuego").Render(t.Context(), buf)
 	require.NoError(t, err)
 
 	// Should have rendered HTML with the title from front-matter
@@ -184,7 +184,7 @@ func TestTemplate_RenderString(t *testing.T) {
 	tmpl.Assign("message", "Hello from String")
 
 	buf := &bytes.Buffer{}
-	err := tmpl.RenderString(context.Background(), buf, "<p>{{ message }}</p>")
+	err := tmpl.RenderString(t.Context(), buf, "<p>{{ message }}</p>")
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -199,7 +199,7 @@ func TestTemplate_RenderByte(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 	templateBytes := []byte("<p>{{ message }}</p>")
-	err := tmpl.RenderByte(context.Background(), buf, templateBytes)
+	err := tmpl.RenderByte(t.Context(), buf, templateBytes)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -214,7 +214,7 @@ func TestTemplate_RenderReader(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 	reader := bytes.NewReader([]byte("<p>{{ message }}</p>"))
-	err := tmpl.RenderReader(context.Background(), buf, reader)
+	err := tmpl.RenderReader(t.Context(), buf, reader)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -242,7 +242,7 @@ func TestTemplate_RenderReaderFromFile(t *testing.T) {
 	defer file.Close()
 
 	buf := &bytes.Buffer{}
-	err = tmpl.RenderReader(context.Background(), buf, file)
+	err = tmpl.RenderReader(t.Context(), buf, file)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -263,7 +263,7 @@ func TestNew_WithFS(t *testing.T) {
 	tmpl.Assign("message", "Hello")
 
 	buf := &bytes.Buffer{}
-	err := tmpl.Load("interpolation-basic.vuego").Render(context.Background(), buf)
+	err := tmpl.Load("interpolation-basic.vuego").Render(t.Context(), buf)
 	require.NoError(t, err)
 	require.Greater(t, buf.Len(), 0)
 }
@@ -273,7 +273,7 @@ func TestNew_RenderWithoutFilesystemFails(t *testing.T) {
 	tmpl.Assign("message", "Hello")
 
 	buf := &bytes.Buffer{}
-	err := tmpl.Load("interpolation-basic.vuego").Render(context.Background(), buf)
+	err := tmpl.Load("interpolation-basic.vuego").Render(t.Context(), buf)
 	require.Equal(t, "error reading interpolation-basic.vuego: no filesystem configured", err.Error())
 }
 
@@ -282,7 +282,7 @@ func TestNew_RenderStringWithoutFilesystem(t *testing.T) {
 	tmpl.Assign("message", "Hello from String")
 
 	buf := &bytes.Buffer{}
-	err := tmpl.RenderString(context.Background(), buf, "<p>{{ message }}</p>")
+	err := tmpl.RenderString(t.Context(), buf, "<p>{{ message }}</p>")
 	require.NoError(t, err)
 
 	output := buf.String()

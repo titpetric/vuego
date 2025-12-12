@@ -108,7 +108,7 @@ func (v *Vue) loadCachedWithFrontMatter(filename string) (map[string]any, []*htm
 	if cached, ok := v.templateCache[filename]; ok {
 		v.templateMu.RUnlock()
 		// Load again to extract front-matter from the file
-		frontMatter, _, err := v.loader.loadFragmentInternal(filename)
+		frontMatter, _, err := v.loader.loadFragment(filename)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -116,7 +116,7 @@ func (v *Vue) loadCachedWithFrontMatter(filename string) (map[string]any, []*htm
 	}
 	v.templateMu.RUnlock()
 
-	frontMatter, templateBytes, err := v.loader.loadFragmentInternal(filename)
+	frontMatter, templateBytes, err := v.loader.loadFragment(filename)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -150,7 +150,7 @@ func assignSeenAttrs(ctx *VueContext, node *html.Node) {
 // Front-matter data in the template is authoritative and overrides passed data.
 // RenderFragment is safe to call concurrently from multiple goroutines.
 func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
-	frontMatter, templateBytes, err := v.loader.loadFragmentInternal(filename)
+	frontMatter, templateBytes, err := v.loader.loadFragment(filename)
 	if err != nil {
 		return err
 	}

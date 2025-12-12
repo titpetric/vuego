@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html :lang="meta.lang">
+  <head>
+    <!-- what'sa meta with you? -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Eleventy" />
+    <title @text="metaTitle(title)"></title>
+    <meta name="description" :content="metaDescription(description)" />
+    <link rel="canonical" :href="meta.url + page.url" />
+    <meta webc:if="meta.robots" name="robots" :content="meta.robots" />
+    <meta name="author" :content="meta.author.name" />
+
+    <!-- favicon-trary to popular belief -->
+    <link rel="icon" href="/favicon/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- social club -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" :content="metaTitle(title)" />
+    <meta name="twitter:description" :content="metaDescription(description)" />
+    <meta name="twitter:image" :content="metaOGImage(ogImage)" />
+    <meta name="og:title" :content="metaTitle(title)" />
+    <meta name="og:description" :content="metaDescription(description)" />
+    <meta property="og:image" :content="metaOGImage(ogImage)" />
+    <meta name="fediverse:creator" content="@hexagoncircle@fosstodon.org" />
+
+    <!-- [deep breath] me, me, me, me, meeee -->
+    <link href="https://github.com/hexagoncircle" rel="me" />
+    <link href="https://twitter.com/hexagoncircle" rel="me" />
+    <link href="https://fosstodon.org/@hexagoncircle" rel="me" />
+    <link href="https://codepen.io/hexagoncircle" rel="me" />
+    <link rel="webmention" href="https://webmention.io/ryanmulligan.dev/webmention" />
+    <link rel="pingback" href="https://webmention.io/ryanmulligan.dev/xmlrpc" />
+    <link
+      rel="alternate"
+      type="application/atom+xml"
+      :href="`${meta.url}/feed.xml`"
+      title="Ryan Mulligan"
+    />
+
+    <script webc:if="page.url === '/'" webc:keep type="application/ld+json">
+      {
+        "@context": "http://schema.org",
+        "@type": "Person",
+        "name": "Ryan Mulligan",
+        "url": "https://ryanmulligan.dev/",
+        "image": "https://ryanmulligan.dev/images/headshot.jpg"
+      }
+    </script>
+
+    <!-- assets the situation -->
+    <link rel="stylesheet" href="/css/themes.css" webc:keep />
+    <link rel="stylesheet" href="/css/styles.css" webc:keep />
+    <style @raw="getCss(page.url)" webc:keep></style>
+  </head>
+  <body>
+    <script @raw="getBundle('js', 'critical')" webc:keep></script>
+    <site-header></site-header>
+    <main
+      id="main"
+      :class="`breakout flow${classnames ? ` ${classnames}` : ''}`"
+      @raw="content"
+    ></main>
+    <site-footer></site-footer>
+    <script @raw="getJs(page.url)" webc:keep></script>
+    <script async defer src="https://scripts.withcabin.com/hello.js" webc:keep></script>
+  </body>
+</html>

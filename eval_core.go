@@ -78,7 +78,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				ctx.stack.Push(vars)
 
 				name := helpers.GetAttr(node, "include")
-				frontMatter, templateBytes, err := v.loader.loadFragmentInternal(name)
+				frontMatter, templateBytes, err := v.loader.loadFragment(name)
 				if err != nil {
 					return nil, fmt.Errorf("error loading %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
 				}
