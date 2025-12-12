@@ -6,8 +6,7 @@ Vuego is a [Vue.js](https://vuejs.org/)-inspired template engine for Go. Render 
 
 ## Status
 
-Project it in active development. Some changes in API surface are still
-expected based on feedback and observations.
+Project it in active development. Some changes in API surface are still expected based on feedback and observations.
 
 ## Quick start
 
@@ -45,10 +44,7 @@ An example of a rendering invocation would be:
 err = renderer.File(filename).Fill(data).Layout(r.Context(), w)
 ```
 
-Layout will use front-matter `layout` hints to load layouts from
-`layouts/%s.vuego`. If no hint is provided, `layouts/base.vuego` is
-passed the contents from the previously rendered template. Use `Render`
-if you don't want layouts.
+Layout will use front-matter `layout` hints to load layouts from `layouts/%s.vuego`. If no hint is provided, `layouts/base.vuego` is passed the contents from the previously rendered template. Use `Render` if you don't want layouts.
 
 For rendering fragments (from variables or otherwise):
 

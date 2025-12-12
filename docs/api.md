@@ -33,7 +33,7 @@ type FuncMap map[string]any
 ```
 
 ```go
-// LessProcessor implements vuego.NodeProcessor to compile LESS to CSS in <style type="text/css+less"> tags.
+// LessProcessor implements vuego.NodeProcessor to compile LESS to CSS in `<style type="text/css+less">` tags.
 type LessProcessor struct {
 	// fs is optional filesystem for loading @import statements in LESS files
 	fs fs.FS
@@ -105,50 +105,46 @@ type Stack struct {
 // Template represents a prepared vuego template.
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {
-	// Err will return an error if any occured during execution.
-	// The error is cleared with a new template load.
-	Err() error
+	TemplateConstructors
+	TemplateState
+	TemplateRendering
+	TemplateRenderingDetail
+}
+```
 
-	// Load will load the template file and front matter.
+```go
+// TemplateConstructors creates new template rendering contexts.
+// The results provide request scoped data allocations and should be discarded after use.
+type TemplateConstructors interface {
+	New() Template
 	Load(filename string) Template
+}
+```
 
-	// Fill sets all variables from the value, usually a map[string]any.
-	Fill(vars any) Template
-
-	// Assign sets a single variable.
-	Assign(key string, value any) Template
-
-	// Get retrieves a variable value as a string.
-	// Returns an empty string if the value is not a string.
-	Get(key string) string
-
-	// Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
-	Funcs(funcMap FuncMap) Template
-
-	// Render processes the template file and writes output to w.
-	// If an error occurs, w is unmodified (uses internal buffering).
-	// The context can be used to cancel the rendering operation.
+```go
+// TemplateRendering bundles the interface for the render functions.
+type TemplateRendering interface {
 	Render(ctx context.Context, w io.Writer) error
+	Layout(ctx context.Context, w io.Writer) error
+}
+```
 
-	// Render processes the template file and writes output to w.
-	// If an error occurs, w is unmodified (uses internal buffering).
-	// The context can be used to cancel the rendering operation.
+```go
+// TemplateRenderingDetail the interface for stateless render functions.
+type TemplateRenderingDetail interface {
 	RenderFile(ctx context.Context, w io.Writer, filename string) error
-
-	// RenderString processes a template string and writes output to w.
-	// If an error occurs, w is unmodified (uses internal buffering).
-	// The context can be used to cancel the rendering operation.
 	RenderString(ctx context.Context, w io.Writer, templateStr string) error
-
-	// RenderByte processes template bytes and writes output to w.
-	// If an error occurs, w is unmodified (uses internal buffering).
-	// The context can be used to cancel the rendering operation.
 	RenderByte(ctx context.Context, w io.Writer, templateData []byte) error
-
-	// RenderReader processes template data from a reader and writes output to w.
-	// If an error occurs, w is unmodified (uses internal buffering).
-	// The context can be used to cancel the rendering operation.
 	RenderReader(ctx context.Context, w io.Writer, r io.Reader) error
+}
+```
+
+```go
+// TemplateState bundles the interface for template state management.
+type TemplateState interface {
+	Fill(vars any) Template
+	Assign(key string, value any) Template
+	Get(key string) string
 }
 ```
 
@@ -221,6 +217,7 @@ type VueContextOptions struct {
 - `func NewVue (templateFS fs.FS) *Vue`
 - `func NewVueContext (fromFilename string, options *VueContextOptions) VueContext`
 - `func WithFS (templateFS fs.FS) LoadOption`
+- `func WithFuncs (funcMap FuncMap) LoadOption`
 - `func WithLessProcessor () LoadOption`
 - `func WithProcessor (processor NodeProcessor) LoadOption`
 - `func (*ExprEvaluator) ClearCache ()`
@@ -249,6 +246,7 @@ type VueContextOptions struct {
 - `func (*Vue) RegisterNodeProcessor (processor NodeProcessor) *Vue`
 - `func (*Vue) Render (w io.Writer, filename string, data any) error`
 - `func (*Vue) RenderFragment (w io.Writer, filename string, data any) error`
+- `func (*Vue) RenderNodes (w io.Writer, nodes []*html.Node, data any) error`
 - `func (*VueContext) PopTag ()`
 - `func (*VueContext) PushTag (tag string)`
 - `func (VueContext) CurrentTag () string`
@@ -343,6 +341,14 @@ WithFS returns a LoadOption that sets the filesystem for template loading.
 func WithFS(templateFS fs.FS) LoadOption
 ```
 
+### WithFuncs
+
+WithFuncs returns a LoadOption that merges custom template functions into the existing funcmap.
+
+```go
+func WithFuncs(funcMap FuncMap) LoadOption
+```
+
 ### WithLessProcessor
 
 WithLessProcessor returns a LoadOption that registers a LESS processor
@@ -416,7 +422,7 @@ func (*Loader) Load(filename string) ([]*html.Node, error)
 
 ### LoadFragment
 
-LoadFragment parses a template fragment; if the file is a full document, it falls back to Load. Front-matter is extracted and discarded; use loadFragmentInternal to access it.
+LoadFragment parses a template fragment; if the file is a full document, it falls back to Load. Front-matter is extracted and discarded; use loadFragment to access it.
 
 ```go
 func (*Loader) LoadFragment(filename string) ([]*html.Node, error)
@@ -542,7 +548,7 @@ func (*Vue) DefaultFuncMap() FuncMap
 
 ### Funcs
 
-Funcs sets custom template functions. Returns the Vue instance for chaining.
+Funcs merges custom template functions into the existing funcmap, overwriting any existing keys. Returns the Vue instance for chaining.
 
 ```go
 func (*Vue) Funcs(funcMap FuncMap) *Vue
@@ -570,6 +576,14 @@ RenderFragment processes a template fragment file and writes the output to w. Fr
 
 ```go
 func (*Vue) RenderFragment(w io.Writer, filename string, data any) error
+```
+
+### RenderNodes
+
+RenderNodes evaluates and renders HTML nodes with the given data. This is the core rendering function used by all public render methods.
+
+```go
+func (*Vue) RenderNodes(w io.Writer, nodes []*html.Node, data any) error
 ```
 
 ### PopTag

@@ -36,57 +36,37 @@ func WithFuncs(funcMap FuncMap) LoadOption {
 // Template represents a prepared vuego template.
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {
-	// New will set up a new stack for rendering.
+	TemplateConstructors
+	TemplateState
+	TemplateRendering
+	TemplateRenderingDetail
+}
+
+// TemplateConstructors creates new template rendering contexts.
+// The results provide request scoped data allocations and should be discarded after use.
+type TemplateConstructors interface {
 	New() Template
-
-	// Load will load the template file and front matter.
 	Load(filename string) Template
+}
 
-	// Err will return an error if any occured during execution.
-	// The error is cleared with a new template load.
-	Err() error
-
-	// Fill sets all variables from the value, usually a map[string]any.
+// TemplateState bundles the interface for template state management.
+type TemplateState interface {
 	Fill(vars any) Template
-
-	// Assign sets a single variable.
 	Assign(key string, value any) Template
-
-	// Get retrieves a variable value as a string.
-	// Returns an empty string if the value is not a string.
 	Get(key string) string
+}
 
-	// Render processes the template file and writes output to w.
-	// If an error occurs, w is unmodified (uses internal buffering).
-	// The context can be used to cancel the rendering operation.
+// TemplateRendering bundles the interface for the render functions.
+type TemplateRendering interface {
 	Render(ctx context.Context, w io.Writer) error
-
-	// Layout is a frontmatter driven layout system. It will wrap
-	// the rendered template with the layout defined from the template.
-	// If the template omits a layout, data["layout"] is used.
-	// If no layout is provided in the data, base layout is rendered.
-	// This continues until the final layout is rendered. The final
-	// layout doesn't contain a layout key.
 	Layout(ctx context.Context, w io.Writer) error
+}
 
-	// Render processes the template file and writes output to w.
-	// If an error occurs, w is unmodified (uses internal buffering).
-	// The context can be used to cancel the rendering operation.
+// TemplateRenderingDetail the interface for stateless render functions.
+type TemplateRenderingDetail interface {
 	RenderFile(ctx context.Context, w io.Writer, filename string) error
-
-	// RenderString processes a template string and writes output to w.
-	// If an error occurs, w is unmodified (uses internal buffering).
-	// The context can be used to cancel the rendering operation.
 	RenderString(ctx context.Context, w io.Writer, templateStr string) error
-
-	// RenderByte processes template bytes and writes output to w.
-	// If an error occurs, w is unmodified (uses internal buffering).
-	// The context can be used to cancel the rendering operation.
 	RenderByte(ctx context.Context, w io.Writer, templateData []byte) error
-
-	// RenderReader processes template data from a reader and writes output to w.
-	// If an error occurs, w is unmodified (uses internal buffering).
-	// The context can be used to cancel the rendering operation.
 	RenderReader(ctx context.Context, w io.Writer, r io.Reader) error
 }
 
