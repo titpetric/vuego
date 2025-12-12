@@ -4,7 +4,29 @@
 
 Vuego is a [Vue.js](https://vuejs.org/)-inspired template engine for Go. Render HTML templates with familiar Vue syntax - no JavaScript runtime required.
 
-The engine uses [golang.org/x/net/html](https://pkg.go.dev/golang.org/x/net/html) for HTML parsing and rendering.
+## Quick start
+
+You can use vuego by importing it in your project:
+
+```
+import "github.com/titpetric/vuego"
+```
+
+In your service you create a new vuego renderer.
+
+```go
+renderer := vuego.New(
+	vuego.WithFS(os.DirFS("templates")),
+	vuego.WithFuncs(funcMap),
+),
+```
+
+Using the fileystem is optional and you can use `vuego.New()` to omit it.
+
+Providing and rendering a template is done in one or two ways:
+
+- `renderer.New().Fill(data).Render(context.Context, io.Writer) error
+
 
 ## Features
 

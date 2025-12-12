@@ -37,29 +37,25 @@ func TestLoadWithoutProcessors(t *testing.T) {
 func TestTemplateFuncs(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := vuego.NewFS(root)
-
 	funcMap := vuego.FuncMap{
 		"customFunc": func(s string) string {
 			return "custom: " + s
 		},
 	}
 
-	result := tpl.Funcs(funcMap)
+	tpl := vuego.NewFS(root, vuego.WithFuncs(funcMap))
 
-	// Verify chaining returns the template
-	require.Equal(t, tpl, result)
+	// Verify template is created
+	require.NotNil(t, tpl)
 }
 
 func TestTemplateChaining(t *testing.T) {
 	root := os.DirFS("testdata")
 
-	tpl := vuego.NewFS(root, vuego.WithLessProcessor())
+	tpl := vuego.NewFS(root, vuego.WithLessProcessor(), vuego.WithFuncs(vuego.FuncMap{"test": func() string { return "test" }}))
 
 	// Verify chaining works
-	result := tpl.
-		Assign("key", "value").
-		Funcs(vuego.FuncMap{"test": func() string { return "test" }})
+	result := tpl.Assign("key", "value")
 
 	require.Equal(t, tpl, result)
 	require.Equal(t, "value", tpl.Get("key"))

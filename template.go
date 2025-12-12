@@ -26,6 +26,13 @@ func WithFS(templateFS fs.FS) LoadOption {
 	}
 }
 
+// WithFuncs returns a LoadOption that sets custom template functions.
+func WithFuncs(funcMap FuncMap) LoadOption {
+	return func(vue *Vue) {
+		vue.funcMap = funcMap
+	}
+}
+
 // Template represents a prepared vuego template.
 // It allows variable assignment and rendering with internal buffering.
 type Template interface {
@@ -48,9 +55,6 @@ type Template interface {
 	// Get retrieves a variable value as a string.
 	// Returns an empty string if the value is not a string.
 	Get(key string) string
-
-	// Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
-	Funcs(funcMap FuncMap) Template
 
 	// Render processes the template file and writes output to w.
 	// If an error occurs, w is unmodified (uses internal buffering).
@@ -208,14 +212,4 @@ func (t *template) Get(key string) string {
 	return result
 }
 
-// Funcs sets custom template functions, overwriting default keys. Returns the Template for chaining.
-// It is safe for concurrent use after New() or Load().
-func (t *template) Funcs(funcMap FuncMap) Template {
-	// Merge funcMap into the default funcMap, overwriting keys
-	defaultFuncs := t.vue.funcMap
-	for k, v := range funcMap {
-		defaultFuncs[k] = v
-	}
-	t.vue.funcMap = defaultFuncs
-	return t
-}
+
