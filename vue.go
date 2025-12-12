@@ -42,9 +42,12 @@ func NewVue(templateFS fs.FS) *Vue {
 	return v
 }
 
-// Funcs sets custom template functions. Returns the Vue instance for chaining.
+// Funcs merges custom template functions into the existing funcmap, overwriting any existing keys.
+// Returns the Vue instance for chaining.
 func (v *Vue) Funcs(funcMap FuncMap) *Vue {
-	v.funcMap = funcMap
+	for k, fn := range funcMap {
+		v.funcMap[k] = fn
+	}
 	return v
 }
 
