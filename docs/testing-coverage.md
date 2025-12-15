@@ -12,10 +12,10 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.88%   | 801       | 2879  |
+| ✅     | titpetric/vuego                      | 84.86%   | 800       | 2880  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 6         | 41    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
-| ✅     | titpetric/vuego/internal/helpers     | 95.12%   | 170       | 500   |
+| ✅     | titpetric/vuego/internal/helpers     | 95.12%   | 164       | 516   |
 | ✅     | titpetric/vuego/internal/parser      | 84.60%   | 6         | 25    |
 | ✅     | titpetric/vuego/internal/reflect     | 94.12%   | 61        | 224   |
 | ✅     | titpetric/vuego/internal/ulid        | 50.00%   | 0         | 20    |
@@ -78,7 +78,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.evalElseIfChain               | 91.70%   | 34        |
 | ✅     | titpetric/vuego                      | Vue.evalFilter                    | 100.00%  | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalFor                       | 81.80%   | 6         |
-| ❌     | titpetric/vuego                      | Vue.evalObjectBinding             | 57.10%   | 7         |
+| ❌     | titpetric/vuego                      | Vue.evalObjectBinding             | 53.80%   | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalPipe                      | 81.80%   | 16        |
 | ✅     | titpetric/vuego                      | Vue.evalSegment                   | 70.00%   | 5         |
 | ✅     | titpetric/vuego                      | Vue.evalTemplate                  | 84.00%   | 25        |
@@ -184,8 +184,8 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego/internal/helpers     | HasAttr                           | 100.00%  | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | IsComplexExpr                     | 100.00%  | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | IsFunctionCall                    | 100.00%  | 5         |
-| ✅     | titpetric/vuego/internal/helpers     | IsIdentifier                      | 100.00%  | 14        |
-| ✅     | titpetric/vuego/internal/helpers     | IsIdentifierChar                  | 100.00%  | 4         |
+| ✅     | titpetric/vuego/internal/helpers     | IsIdentifier                      | 100.00%  | 4         |
+| ✅     | titpetric/vuego/internal/helpers     | IsIdentifierChar                  | 100.00%  | 8         |
 | ✅     | titpetric/vuego/internal/helpers     | IsTruthy                          | 100.00%  | 4         |
 | ✅     | titpetric/vuego/internal/helpers     | NeedsHTMLEscape                   | 100.00%  | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | NewNode                           | 100.00%  | 0         |

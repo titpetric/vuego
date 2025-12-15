@@ -10,7 +10,7 @@ func IsFunctionCall(expr string) bool {
 		if ch == '(' {
 			return i > 0
 		}
-		if !IsIdentifierChar(ch) {
+		if !IsIdentifierChar(ch, i == 0) {
 			return false
 		}
 	}

@@ -1,0 +1,8 @@
+---
+version: "3"
+
+tasks:
+  default:
+    desc: Run gofsck analysis on all packages
+    cmds:
+      - gofsck ./...

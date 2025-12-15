@@ -46,7 +46,7 @@ func (v *Vue) evalConditionExpr(ctx VueContext, expr string) (bool, error) {
 // The skipCount includes all nodes consumed by the chain (up to and including the matched node or the end of the chain).
 func (v *Vue) evalElseIfChain(ctx VueContext, node *html.Node, nodes []*html.Node, depth int) ([]*html.Node, int, error) {
 	var result []*html.Node
-	var lastChainNodeIdx int = 0 // Track the last node in the chain for skipCount
+	lastChainNodeIdx := 0 // Track the last node in the chain for skipCount
 
 	// Check for v-if
 	if vIf := helpers.GetAttr(node, "v-if"); vIf != "" {

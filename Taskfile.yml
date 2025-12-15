@@ -3,6 +3,7 @@ version: "3"
 
 includes:
   mdox: ./Taskfile.mdox.yml
+  gofsck: ./Taskfile.gofsck.yml
   docker:
     taskfile: ./docker/playground/Taskfile.yml
 
@@ -38,7 +39,7 @@ tasks:
       - task: lint:godoc
 
   lint:tools:golangci-lint:
-    cmd: go tool -modfile=go.tool.mod golangci-lint run ./...
+    cmd: golangci-lint run --fix ./...
 
   lint:godoc:
     desc: "Lint godoc comments"

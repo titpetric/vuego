@@ -129,9 +129,10 @@ func (v *Vue) evalObjectBinding(ctx VueContext, attrName, expr string) string {
 	content := expr[1 : len(expr)-1] // Remove { }
 	pairs := v.parseObjectPairs(ctx, content)
 
-	if attrName == "class" {
+	switch attrName {
+	case "class":
 		return v.buildClassString(pairs)
-	} else if attrName == "style" {
+	case "style":
 		return v.buildStyleString(pairs)
 	}
 

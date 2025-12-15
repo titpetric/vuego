@@ -95,33 +95,33 @@ func TestIsIdentifier(t *testing.T) {
 
 func TestIsIdentifierChar(t *testing.T) {
 	t.Run("lowercase letter is valid", func(t *testing.T) {
-		require.True(t, helpers.IsIdentifierChar('a'))
+		require.True(t, helpers.IsIdentifierChar('a', false))
 	})
 
 	t.Run("uppercase letter is valid", func(t *testing.T) {
-		require.True(t, helpers.IsIdentifierChar('A'))
+		require.True(t, helpers.IsIdentifierChar('A', false))
 	})
 
 	t.Run("digit is valid", func(t *testing.T) {
-		require.True(t, helpers.IsIdentifierChar('0'))
+		require.True(t, helpers.IsIdentifierChar('0', false))
 	})
 
 	t.Run("underscore is valid", func(t *testing.T) {
-		require.True(t, helpers.IsIdentifierChar('_'))
+		require.True(t, helpers.IsIdentifierChar('_', false))
 	})
 
 	t.Run("space is invalid", func(t *testing.T) {
-		require.False(t, helpers.IsIdentifierChar(' '))
+		require.False(t, helpers.IsIdentifierChar(' ', false))
 	})
 
 	t.Run("dash is invalid", func(t *testing.T) {
-		require.False(t, helpers.IsIdentifierChar('-'))
+		require.False(t, helpers.IsIdentifierChar('-', false))
 	})
 
 	t.Run("special chars are invalid", func(t *testing.T) {
-		require.False(t, helpers.IsIdentifierChar('$'))
-		require.False(t, helpers.IsIdentifierChar('@'))
-		require.False(t, helpers.IsIdentifierChar('!'))
+		require.False(t, helpers.IsIdentifierChar('$', false))
+		require.False(t, helpers.IsIdentifierChar('@', false))
+		require.False(t, helpers.IsIdentifierChar('!', false))
 	})
 }
 

@@ -1,0 +1,60 @@
+version: "2"
+run:
+  concurrency: 4
+linters:
+  disable:
+    - cyclop
+    - dupl
+    - forbidigo
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - godot
+    - godox
+    - goprintffuncname
+    - lll
+    - mnd
+    - nestif
+    - nilerr
+    - nlreturn
+    - noctx
+    - testpackage
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    - wsl
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - path: main.go
+        text: singleCaseSwitch
+      - path: main.go
+        text: "ST1005: error strings should not be capitalized"
+      - linters:
+          - gocyclo
+        path: _test\.go
+      - linters:
+          - err113
+        text: do not define dynamic errors
+      - path: (.+)\.go$
+        text: G306
+      - path: (.+)\.go$
+        text: G404
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
