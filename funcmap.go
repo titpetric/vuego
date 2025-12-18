@@ -426,18 +426,18 @@ func (v *Vue) DefaultFuncMap() FuncMap {
 		"string":     stringFunc,
 		"json":       jsonFunc,
 		"type":       typeFunc,
-		"file":       fileFunc(v.templateFS),
+		"file":       fileFunc(v),
 	}
 }
 
 // Built-in filter functions
 
-func fileFunc(templateFS fs.FS) func(string) (any, error) {
+func fileFunc(v *Vue) func(string) (any, error) {
 	return func(filename string) (any, error) {
-		if templateFS == nil {
+		if v.templateFS == nil {
 			return "", fmt.Errorf("error loading file from nil fs: %s", filename)
 		}
-		d, err := fs.ReadFile(templateFS, filename)
+		d, err := fs.ReadFile(v.templateFS, filename)
 		if err != nil {
 			return "", err
 		}

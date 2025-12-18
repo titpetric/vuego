@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.77%   | 838       | 2969  |
+| ✅     | titpetric/vuego                      | 84.70%   | 840       | 2972  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 6         | 41    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.12%   | 164       | 516   |
@@ -119,7 +119,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | defaultFunc                       | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | escapeFunc                        | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | extractFrontMatter                | 85.70%   | 5         |
-| ✅     | titpetric/vuego                      | fileFunc                          | 80.00%   | 2         |
+| ✅     | titpetric/vuego                      | fileFunc                          | 71.40%   | 4         |
 | ❌     | titpetric/vuego                      | formatDateFunc                    | 0.00%    | 1         |
 | ✅     | titpetric/vuego                      | formatTimeFunc                    | 62.50%   | 4         |
 | ✅     | titpetric/vuego                      | getCachedPath                     | 100.00%  | 2         |
