@@ -29,7 +29,8 @@ tasks:
   default:
     desc: "Run the playground server"
     cmds:
-      - go run ./cmd/vuego-playground
+      - go install ./cmd/vuego-playground
+      - vuego-playground
 
   lint:
     desc: "Lint codebase"

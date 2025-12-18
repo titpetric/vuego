@@ -25,27 +25,53 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) (map[string]any, erro
 		key := a.Key
 		val := strings.TrimSpace(a.Val)
 
-		switch {
-		case strings.HasPrefix(key, ":") || strings.HasPrefix(key, "v-bind:"):
-			boundName := key
-			boundName = strings.TrimPrefix(boundName, "v-bind:")
-			boundName = strings.TrimPrefix(boundName, ":")
+		boundName := key
+		// literal bindings
+		if strings.HasPrefix(key, "\\:") {
+			boundName = boundName[1:]
+			newAttrs = append(newAttrs, html.Attribute{
+				Key: boundName,
+				Val: val,
+			})
+			continue
+		}
+		if strings.HasPrefix(key, "[") && strings.HasSuffix(key, "]") {
+			boundName = boundName[1 : len(boundName)-1]
+			newAttrs = append(newAttrs, html.Attribute{
+				Key: boundName,
+				Val: val,
+			})
+			continue
+		}
+		if strings.HasPrefix(key, ":") {
+			boundName = boundName[1:]
+		}
+		if strings.HasPrefix(key, "v-bind:") {
+			boundName = boundName[7:]
+		}
 
-			boundValue := v.evalBoundAttribute(ctx, boundName, val)
+		switch {
+		case boundName != key:
+			boundValue, err := v.evalBoundAttribute(ctx, boundName, val)
+			if err != nil {
+				return nil, fmt.Errorf("error evaluating attr %s: %w", boundName, err)
+			}
 			if !helpers.IsTruthy(boundValue) {
 				continue
 			}
-
 			results[boundName] = boundValue
 		default:
-			// run interpolation on normal attributes
-			interpolated, err := v.interpolate(ctx, val)
-			if err != nil {
-				return nil, fmt.Errorf("eval attribute: %s=%s: %w", key, val, err)
+			var err error
+			boundValue := val
+			if containsInterpolation(val) {
+				boundValue, err = v.interpolate(ctx, val)
+				if err != nil {
+					return nil, fmt.Errorf("error evaluating attr %s: %w", boundName, err)
+				}
 			}
 			newAttrs = append(newAttrs, html.Attribute{
-				Key: key,
-				Val: interpolated,
+				Key: boundName,
+				Val: boundValue,
 			})
 		}
 	}
@@ -103,18 +129,29 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) (map[string]any, erro
 }
 
 // evalBoundAttribute evaluates a bound attribute, handling objects for class/style.
-func (v *Vue) evalBoundAttribute(ctx VueContext, attrName, expr string) any {
+func (v *Vue) evalBoundAttribute(ctx VueContext, attrName, expr string) (any, error) {
+	expr = strings.TrimSpace(expr)
+
+	// Evaluate interpolation
+	if containsInterpolation(expr) {
+		interpolated, err := v.interpolate(ctx, expr)
+		if err != nil {
+			return "", err
+		}
+		return interpolated, nil
+	}
+
 	// Check if the expression is an object literal
-	if strings.HasPrefix(strings.TrimSpace(expr), "{") && strings.HasSuffix(strings.TrimSpace(expr), "}") {
-		return v.evalObjectBinding(ctx, attrName, expr)
+	if strings.HasPrefix(expr, "{") && strings.HasSuffix(expr, "}") {
+		return v.evalObjectBinding(ctx, attrName, expr), nil
 	}
 
 	// Regular variable binding
 	valResolved, ok := ctx.stack.Resolve(expr)
 	if ok {
-		return valResolved
+		return valResolved, nil
 	}
-	return ""
+	return "", nil
 }
 
 // evalObjectBinding evaluates object literals like {display: "none"} or {active: true, error: false}

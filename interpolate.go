@@ -15,6 +15,13 @@ var bufferPool = sync.Pool{
 	New: func() any { return &strings.Builder{} },
 }
 
+func containsInterpolation(input string) bool {
+	open := strings.Count(input, "{{")
+	close := strings.Count(input, "}}")
+
+	return open == close && open > 0
+}
+
 // interpolateToWriter writes interpolated values to w, escaping for HTML safety.
 // This is the core implementation that does not allocate a string result.
 // For script and style tags, values are not HTML-escaped.

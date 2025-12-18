@@ -2,6 +2,7 @@ package vuego_test
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 	"testing/fstest"
 
@@ -23,6 +24,12 @@ func TestVue_EvalAttributes_BoundAndInterpolated(t *testing.T) {
 			template: `<div :id="id"></div>`,
 			data:     map[string]any{"id": "test-div"},
 			expected: `<div id="test-div"></div>`,
+		},
+		{
+			name:     "colon prefix binding escape",
+			template: `<div [:id]="id"></div>`,
+			data:     map[string]any{"id": "test-div"},
+			expected: `<div :id="id"></div>`,
 		},
 		{
 			name:     "v-bind prefix binding",
@@ -80,8 +87,8 @@ func TestVue_EvalAttributes_BoundAndInterpolated(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for idx, tc := range tests {
+		t.Run(fmt.Sprintf("%d: %s", idx, tc.name), func(t *testing.T) {
 			template := []byte(tc.template)
 			fs := fstest.MapFS{
 				"test.vuego": &fstest.MapFile{Data: template},

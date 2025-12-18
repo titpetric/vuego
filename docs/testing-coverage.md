@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.86%   | 800       | 2880  |
+| ✅     | titpetric/vuego                      | 84.77%   | 838       | 2969  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 6         | 41    |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.12%   | 164       | 516   |
@@ -71,8 +71,8 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.buildClassString              | 85.70%   | 7         |
 | ✅     | titpetric/vuego                      | Vue.buildStyleString              | 87.50%   | 10        |
 | ✅     | titpetric/vuego                      | Vue.callFunc                      | 92.30%   | 24        |
-| ✅     | titpetric/vuego                      | Vue.evalAttributes                | 95.30%   | 31        |
-| ✅     | titpetric/vuego                      | Vue.evalBoundAttribute            | 100.00%  | 3         |
+| ✅     | titpetric/vuego                      | Vue.evalAttributes                | 89.70%   | 46        |
+| ❌     | titpetric/vuego                      | Vue.evalBoundAttribute            | 66.70%   | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalCondition                 | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Vue.evalConditionExpr             | 88.90%   | 2         |
 | ✅     | titpetric/vuego                      | Vue.evalElseIfChain               | 91.70%   | 34        |
@@ -85,7 +85,8 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.evalVFor                      | 84.00%   | 29        |
 | ✅     | titpetric/vuego                      | Vue.evalVHtml                     | 94.70%   | 9         |
 | ✅     | titpetric/vuego                      | Vue.evalVShow                     | 100.00%  | 5         |
-| ✅     | titpetric/vuego                      | Vue.evaluate                      | 88.10%   | 108       |
+| ❌     | titpetric/vuego                      | Vue.evalVText                     | 75.00%   | 9         |
+| ✅     | titpetric/vuego                      | Vue.evaluate                      | 87.50%   | 113       |
 | ✅     | titpetric/vuego                      | Vue.evaluateChildren              | 100.00%  | 1         |
 | ❌     | titpetric/vuego                      | Vue.evaluateNodeAsElement         | 61.80%   | 24        |
 | ✅     | titpetric/vuego                      | Vue.interpolate                   | 100.00%  | 2         |
@@ -113,6 +114,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | assignSeenAttrs                   | 100.00%  | 5         |
 | ✅     | titpetric/vuego                      | camelToKebab                      | 100.00%  | 5         |
 | ❌     | titpetric/vuego                      | classifySegment                   | 80.00%   | 7         |
+| ✅     | titpetric/vuego                      | containsInterpolation             | 100.00%  | 1         |
 | ❌     | titpetric/vuego                      | convertValue                      | 65.00%   | 24        |
 | ✅     | titpetric/vuego                      | defaultFunc                       | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | escapeFunc                        | 100.00%  | 1         |
@@ -137,9 +139,9 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego                      | parseValue                        | 66.70%   | 10        |
 | ✅     | titpetric/vuego                      | renderAttrs                       | 100.00%  | 4         |
 | ✅     | titpetric/vuego                      | renderNode                        | 100.00%  | 0         |
-| ✅     | titpetric/vuego                      | renderNodeWithContext             | 86.50%   | 48        |
+| ✅     | titpetric/vuego                      | renderNodeWithContext             | 88.10%   | 55        |
 | ✅     | titpetric/vuego                      | shouldEscapeTextNode              | 100.00%  | 2         |
-| ✅     | titpetric/vuego                      | shouldIgnoreAttr                  | 80.00%   | 3         |
+| ✅     | titpetric/vuego                      | shouldIgnoreAttr                  | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | splitPathImpl                     | 85.40%   | 31        |
 | ✅     | titpetric/vuego                      | stringFunc                        | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | template.Assign                   | 100.00%  | 0         |

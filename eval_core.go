@@ -147,11 +147,12 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				continue
 			}
 
-			// Check for v-html early to decide cloning strategy
+			// Check for v-html and v-text early to decide cloning strategy
 			hasVHtml := helpers.GetAttr(node, "v-html") != ""
+			hasVText := helpers.GetAttr(node, "v-text") != ""
 			var newNode *html.Node
-			if hasVHtml {
-				// Deep clone to preserve original children structure for v-html
+			if hasVHtml || hasVText {
+				// Deep clone to preserve original children structure for v-html/v-text
 				newNode = helpers.DeepCloneNode(node)
 			} else {
 				// Shallow clone with attributes - children will be re-evaluated and replaced
@@ -161,6 +162,9 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 			if err := v.evalVHtml(ctx, newNode); err != nil {
 				return nil, err
 			}
+			if err := v.evalVText(ctx, newNode); err != nil {
+				return nil, err
+			}
 			if err := v.evalVShow(ctx, newNode); err != nil {
 				return nil, err
 			}
@@ -168,7 +172,7 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				return nil, err
 			}
 
-			if !hasVHtml {
+			if !hasVHtml && !hasVText {
 				ctx.PushTag(node.Data)
 				newChildren, err := v.evaluateChildren(ctx, node, depth+1)
 				ctx.PopTag()

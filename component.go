@@ -43,11 +43,7 @@ func NewRenderer() Renderer {
 func shouldIgnoreAttr(key string) bool {
 	// Vue directives that should not appear in final HTML
 	switch key {
-	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-show", "v-once", "v-once-id", "data-v-html-content":
-		return true
-	}
-	// v-bind: and : prefixed attributes are processed and shouldn't appear in output
-	if strings.HasPrefix(key, "v-bind:") || strings.HasPrefix(key, ":") {
+	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-text", "v-show", "v-once", "v-once-id", "data-v-html-content", "data-v-text-content":
 		return true
 	}
 	return false
@@ -134,23 +130,32 @@ func renderNodeWithContext(ctx VueContext, w io.Writer, node *html.Node, indent 
 		spaces := getIndent(indent)
 		tagName := node.Data
 
-		// Check if this element has evaluated v-html content (stored in internal attribute)
+		// Check if this element has evaluated v-html or v-text content (stored in internal attributes)
 		var vhtmlContent string
+		var vtextContent string
 		for _, attr := range node.Attr {
 			if attr.Key == "data-v-html-content" {
 				vhtmlContent = attr.Val
 				break
 			}
+			if attr.Key == "data-v-text-content" {
+				vtextContent = attr.Val
+				break
+			}
 		}
 
-		// If this element has v-html content, output it directly without indentation
-		if vhtmlContent != "" {
+		// If this element has v-html or v-text content, output it directly without indentation
+		if vhtmlContent != "" || vtextContent != "" {
+			content := vhtmlContent
+			if vtextContent != "" {
+				content = vtextContent
+			}
 			// Special case for <template>: output content only, not the template tags
 			if tagName == "template" {
-				_, _ = w.Write([]byte(vhtmlContent))
+				_, _ = w.Write([]byte(content))
 			} else {
 				_, _ = w.Write([]byte(spaces + "<" + tagName + renderAttrs(node.Attr) + ">"))
-				_, _ = w.Write([]byte(vhtmlContent))
+				_, _ = w.Write([]byte(content))
 				_, _ = w.Write([]byte("</" + tagName + ">\n"))
 			}
 			return nil
