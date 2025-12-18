@@ -434,6 +434,9 @@ func (v *Vue) DefaultFuncMap() FuncMap {
 
 func fileFunc(templateFS fs.FS) func(string) (any, error) {
 	return func(filename string) (any, error) {
+		if templateFS == nil {
+			return "", fmt.Errorf("error loading file from nil fs: %s", filename)
+		}
 		d, err := fs.ReadFile(templateFS, filename)
 		if err != nil {
 			return "", err
