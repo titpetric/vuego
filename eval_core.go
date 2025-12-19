@@ -130,6 +130,11 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 					ctx.stack.Set(k, v)
 				}
 
+				// keep vuego tag if v-keep is set.
+				if helpers.HasAttr(node, "v-keep") {
+					result = append(result, helpers.CloneNode(node))
+				}
+
 				continue
 			}
 

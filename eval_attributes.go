@@ -34,7 +34,6 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) (map[string]any, erro
 			boundName = boundName[7:]
 		}
 		if strings.HasPrefix(key, "[") && strings.HasSuffix(key, "]") {
-			boundName = boundName[1 : len(boundName)-1]
 			key = boundName
 		}
 

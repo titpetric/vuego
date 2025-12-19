@@ -38,12 +38,22 @@ func NewRenderer() Renderer {
 	return &htmlRenderer{}
 }
 
+func isLiteralAttr(key string) bool {
+	if strings.HasPrefix(key, "[") && strings.HasSuffix(key, "]") {
+		return true
+	}
+	return false
+}
+
 // shouldIgnoreAttr returns true if an attribute should be skipped in HTML output.
 // This includes Vue directives and binding attributes that are only used during evaluation.
 func shouldIgnoreAttr(key string) bool {
-	// Vue directives that should not appear in final HTML
+	if isLiteralAttr(key) {
+		return false
+	}
+
 	switch key {
-	case "v-if", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-text", "v-show", "v-once", "v-once-id", "data-v-html-content", "data-v-text-content":
+	case "v-if", "v-keep", "v-else-if", "v-else", "v-for", "v-pre", "v-html", "v-text", "v-show", "v-once", "v-once-id", "data-v-html-content", "data-v-text-content":
 		return true
 	}
 	return false
@@ -55,12 +65,16 @@ func renderAttrs(attrs []html.Attribute) string {
 	}
 	var sb strings.Builder
 	for _, a := range attrs {
-		// Skip Vue directives and internal binding attributes
-		if shouldIgnoreAttr(a.Key) {
+		key := a.Key
+		if shouldIgnoreAttr(key) {
 			continue
 		}
+		if isLiteralAttr(key) {
+			key = key[1 : len(key)-1]
+		}
+
 		sb.WriteByte(' ')
-		sb.WriteString(a.Key)
+		sb.WriteString(key)
 		sb.WriteByte('=')
 		sb.WriteByte('"')
 		sb.WriteString(a.Val)
