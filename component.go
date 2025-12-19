@@ -204,19 +204,19 @@ func renderNodeWithContext(ctx VueContext, w io.Writer, node *html.Node, indent 
 			}
 			return nil
 		}
-		
+
 		// If template has v-keep, render it with v-keep removed from attributes
 		if tagName == "template" && helpers.HasAttr(node, "v-keep") {
 			// Render template tag without v-keep attribute
 			attrsWithoutKeep := helpers.FilterAttrs(node.Attr, "v-keep")
-			
+
 			_, _ = w.Write([]byte(spaces + "<" + tagName))
 			// Create a temporary node with filtered attributes for renderAttrs
 			tempNode := *node
 			tempNode.Attr = attrsWithoutKeep
 			_, _ = w.Write([]byte(renderAttrs(tempNode.Attr)))
 			_, _ = w.Write([]byte(">\n"))
-			
+
 			// Render children with increased indent
 			ctx.PushTag(tagName)
 			childIndent := indent + 2
@@ -226,7 +226,7 @@ func renderNodeWithContext(ctx VueContext, w io.Writer, node *html.Node, indent 
 				}
 			}
 			ctx.PopTag()
-			
+
 			_, _ = w.Write([]byte(spaces + "</" + tagName + ">\n"))
 			return nil
 		}
