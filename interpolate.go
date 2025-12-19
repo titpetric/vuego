@@ -31,11 +31,6 @@ func (v *Vue) interpolateToWriter(ctx VueContext, w io.Writer, input string) err
 		return err
 	}
 
-	// Sanity check: {{ should match }}
-	if strings.Count(input, "{{") != strings.Count(input, "}}") {
-		return fmt.Errorf("mismatched interpolation braces: %d {{ vs %d }}", strings.Count(input, "{{"), strings.Count(input, "}}"))
-	}
-
 	last := 0
 
 	for {
