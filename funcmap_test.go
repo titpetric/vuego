@@ -9,7 +9,7 @@ import (
 	"testing/fstest"
 	"time"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/titpetric/vuego"
 )
@@ -28,8 +28,8 @@ func TestVue_Funcs_PipeChaining(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "JOHN DOE")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "JOHN DOE")
 }
 
 func TestVue_Funcs_MultiplePipes(t *testing.T) {
@@ -46,8 +46,8 @@ func TestVue_Funcs_MultiplePipes(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "John Doe")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "John Doe")
 }
 
 func TestVue_Funcs_PipeWithArgs(t *testing.T) {
@@ -64,8 +64,8 @@ func TestVue_Funcs_PipeWithArgs(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "fallback")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "fallback")
 }
 
 func TestVue_Funcs_CustomFunc(t *testing.T) {
@@ -87,8 +87,8 @@ func TestVue_Funcs_CustomFunc(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "Hello, Alice")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "Hello, Alice")
 }
 
 func TestVue_Funcs_FormatTime(t *testing.T) {
@@ -106,8 +106,8 @@ func TestVue_Funcs_FormatTime(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), now.Format("2006-01-02"))
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), now.Format("2006-01-02"))
 }
 
 func TestVue_Funcs_LenFilter(t *testing.T) {
@@ -124,8 +124,8 @@ func TestVue_Funcs_LenFilter(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "3")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "3")
 }
 
 func TestVue_Funcs_TrimFilter(t *testing.T) {
@@ -142,9 +142,9 @@ func TestVue_Funcs_TrimFilter(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "hello world")
-	require.NotContains(t, buf.String(), "  hello world  ")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "hello world")
+	assert.NotContains(t, buf.String(), "  hello world  ")
 }
 
 func TestVue_Funcs_IntFilter(t *testing.T) {
@@ -161,8 +161,8 @@ func TestVue_Funcs_IntFilter(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "42")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "42")
 }
 
 func TestVue_Funcs_ComplexChain(t *testing.T) {
@@ -179,8 +179,8 @@ func TestVue_Funcs_ComplexChain(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "Hello World")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "Hello World")
 }
 
 func TestVue_Funcs_VIfWithFunction(t *testing.T) {
@@ -197,8 +197,8 @@ func TestVue_Funcs_VIfWithFunction(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "Has items")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "Has items")
 }
 
 func TestVue_Funcs_VIfWithFunctionFalse(t *testing.T) {
@@ -215,8 +215,8 @@ func TestVue_Funcs_VIfWithFunctionFalse(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.NotContains(t, buf.String(), "Has items")
+	assert.NoError(t, err)
+	assert.NotContains(t, buf.String(), "Has items")
 }
 
 func TestVue_Funcs_NestedData(t *testing.T) {
@@ -235,8 +235,8 @@ func TestVue_Funcs_NestedData(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "ALICE")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "ALICE")
 }
 
 func TestVue_Funcs_DefaultWithValue(t *testing.T) {
@@ -253,9 +253,9 @@ func TestVue_Funcs_DefaultWithValue(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "Bob")
-	require.NotContains(t, buf.String(), "Anonymous")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "Bob")
+	assert.NotContains(t, buf.String(), "Anonymous")
 }
 
 func TestVue_Funcs_ChainWithDefault(t *testing.T) {
@@ -272,8 +272,8 @@ func TestVue_Funcs_ChainWithDefault(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "GUEST")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "GUEST")
 }
 
 func TestVue_Funcs_CustomFuncWithArgs(t *testing.T) {
@@ -295,8 +295,8 @@ func TestVue_Funcs_CustomFuncWithArgs(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "15")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "15")
 }
 
 func TestVue_Funcs_StringFilter(t *testing.T) {
@@ -313,8 +313,8 @@ func TestVue_Funcs_StringFilter(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "42")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "42")
 }
 
 func TestVue_Funcs_MissingFilter(t *testing.T) {
@@ -331,8 +331,8 @@ func TestVue_Funcs_MissingFilter(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.Error(t, err)
-	require.Equal(t, "in test.vuego: in expression '{{ name | nonexistent }}': function 'nonexistent' not found", err.Error())
+	assert.Error(t, err)
+	assert.Equal(t, "in test.vuego: in expression '{{ name | nonexistent }}': function 'nonexistent' not found", err.Error())
 }
 
 func TestVue_Funcs_VForWithFilters(t *testing.T) {
@@ -356,9 +356,9 @@ func TestVue_Funcs_VForWithFilters(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "APPLE")
-	require.Contains(t, buf.String(), "BANANA")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "APPLE")
+	assert.Contains(t, buf.String(), "BANANA")
 }
 
 func TestVue_Funcs_TypedArguments(t *testing.T) {
@@ -384,8 +384,8 @@ func TestVue_Funcs_TypedArguments(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), now.Format("2006-01-02"))
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), now.Format("2006-01-02"))
 }
 
 func TestVue_Funcs_TypedMultipleArgs(t *testing.T) {
@@ -405,8 +405,8 @@ func TestVue_Funcs_TypedMultipleArgs(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "8")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "8")
 }
 
 func TestVue_Funcs_StringToIntConversion(t *testing.T) {
@@ -426,8 +426,8 @@ func TestVue_Funcs_StringToIntConversion(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "50")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "50")
 }
 
 func TestVue_Funcs_VariadicFunction(t *testing.T) {
@@ -447,8 +447,8 @@ func TestVue_Funcs_VariadicFunction(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "a,b,c")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "a,b,c")
 }
 
 func TestVue_Funcs_ErrorReturn(t *testing.T) {
@@ -471,8 +471,8 @@ func TestVue_Funcs_ErrorReturn(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.Error(t, err)
-	require.Equal(t, "in test.vuego: in expression '{{ divide(10, 0) }}': divide(): division by zero", err.Error())
+	assert.Error(t, err)
+	assert.Equal(t, "in test.vuego: in expression '{{ divide(10, 0) }}': divide(): division by zero", err.Error())
 }
 
 func TestVue_Funcs_NoReturnValue(t *testing.T) {
@@ -495,8 +495,8 @@ func TestVue_Funcs_NoReturnValue(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.True(t, called)
+	assert.NoError(t, err)
+	assert.True(t, called)
 }
 
 func TestVue_Funcs_TypeConversionError(t *testing.T) {
@@ -518,8 +518,8 @@ func TestVue_Funcs_TypeConversionError(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.Render(&buf, "test.vuego", data)
-	require.Error(t, err)
-	require.Equal(t, "in test.vuego: in expression '{{ items | double }}': double(): cannot convert argument 0 from []string to int", err.Error())
+	assert.Error(t, err)
+	assert.Equal(t, "in test.vuego: in expression '{{ items | double }}': double(): cannot convert argument 0 from []string to int", err.Error())
 }
 
 func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
@@ -540,8 +540,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "42")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "42")
 	})
 
 	t.Run("string to int16", func(t *testing.T) {
@@ -561,8 +561,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "1000")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "1000")
 	})
 
 	t.Run("string to int32", func(t *testing.T) {
@@ -582,8 +582,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "100000")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "100000")
 	})
 
 	t.Run("string to int64", func(t *testing.T) {
@@ -603,8 +603,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "9223372036854775806")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "9223372036854775806")
 	})
 
 	t.Run("string to uint", func(t *testing.T) {
@@ -624,8 +624,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "42")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "42")
 	})
 
 	t.Run("string to uint8", func(t *testing.T) {
@@ -645,8 +645,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "200")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "200")
 	})
 
 	t.Run("string to uint16", func(t *testing.T) {
@@ -666,8 +666,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "50000")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "50000")
 	})
 
 	t.Run("string to uint32", func(t *testing.T) {
@@ -687,8 +687,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "4000000000")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "4000000000")
 	})
 
 	t.Run("string to uint64", func(t *testing.T) {
@@ -708,8 +708,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "9223372036854775806")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "9223372036854775806")
 	})
 
 	t.Run("string to float32", func(t *testing.T) {
@@ -729,8 +729,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "3.14")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "3.14")
 	})
 
 	t.Run("string to float64", func(t *testing.T) {
@@ -750,8 +750,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "2.71828")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "2.71828")
 	})
 
 	t.Run("string to bool", func(t *testing.T) {
@@ -771,8 +771,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "true")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "true")
 	})
 
 	t.Run("int to string via function", func(t *testing.T) {
@@ -792,8 +792,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "42")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "42")
 	})
 
 	t.Run("float to string via function", func(t *testing.T) {
@@ -813,8 +813,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "3.14159")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "3.14159")
 	})
 
 	t.Run("bool to string via function", func(t *testing.T) {
@@ -834,8 +834,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "true")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "true")
 	})
 
 	t.Run("invalid string to int", func(t *testing.T) {
@@ -855,8 +855,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.Error(t, err)
-		require.Equal(t, "in test.vuego: in expression '{{ convert(\"not-a-number\") }}': convert(): cannot convert argument 0 from string to int", err.Error())
+		assert.Error(t, err)
+		assert.Equal(t, "in test.vuego: in expression '{{ convert(\"not-a-number\") }}': convert(): cannot convert argument 0 from string to int", err.Error())
 	})
 
 	t.Run("invalid string to float", func(t *testing.T) {
@@ -876,8 +876,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.Error(t, err)
-		require.Equal(t, "in test.vuego: in expression '{{ convert(\"not-a-float\") }}': convert(): cannot convert argument 0 from string to float64", err.Error())
+		assert.Error(t, err)
+		assert.Equal(t, "in test.vuego: in expression '{{ convert(\"not-a-float\") }}': convert(): cannot convert argument 0 from string to float64", err.Error())
 	})
 
 	t.Run("invalid string to bool", func(t *testing.T) {
@@ -897,8 +897,8 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.Error(t, err)
-		require.Equal(t, "in test.vuego: in expression '{{ convert(\"maybe\") }}': convert(): cannot convert argument 0 from string to bool", err.Error())
+		assert.Error(t, err)
+		assert.Equal(t, "in test.vuego: in expression '{{ convert(\"maybe\") }}': convert(): cannot convert argument 0 from string to bool", err.Error())
 	})
 }
 
@@ -906,7 +906,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 	t.Run("simple object in script tag", func(t *testing.T) {
 		fs := fstest.MapFS{
 			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const data = {{ user | json }};</script>`),
+				Data: []byte(`<script>const data = {{ user | jsonPretty }};</script>`),
 			},
 		}
 
@@ -920,12 +920,12 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// JSON is not HTML-escaped inside script tags
-		require.Contains(t, output, `"age": 30`)
-		require.Contains(t, output, `"name": "Alice"`)
-		require.NotContains(t, output, `&#34;`)
+		assert.Contains(t, output, `"age": 30`)
+		assert.Contains(t, output, `"name": "Alice"`)
+		assert.NotContains(t, output, `&#34;`)
 	})
 
 	t.Run("array in script tag", func(t *testing.T) {
@@ -942,12 +942,12 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
-		require.Contains(t, output, `"apple"`)
-		require.Contains(t, output, `"banana"`)
-		require.Contains(t, output, `"cherry"`)
-		require.NotContains(t, output, `&#34;`)
+		assert.Contains(t, output, `"apple"`)
+		assert.Contains(t, output, `"banana"`)
+		assert.Contains(t, output, `"cherry"`)
+		assert.NotContains(t, output, `&#34;`)
 	})
 
 	t.Run("string value in script tag", func(t *testing.T) {
@@ -964,10 +964,10 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
-		require.Contains(t, output, `"Bob"`)
-		require.NotContains(t, output, `&#34;`)
+		assert.Contains(t, output, `"Bob"`)
+		assert.NotContains(t, output, `&#34;`)
 	})
 
 	t.Run("number value in script tag", func(t *testing.T) {
@@ -984,15 +984,15 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		// Numbers don't need escaping
-		require.Contains(t, buf.String(), `42`)
+		assert.Contains(t, buf.String(), `42`)
 	})
 
 	t.Run("nested structure in script tag", func(t *testing.T) {
 		fs := fstest.MapFS{
 			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const payload = {{ payload | json }};</script>`),
+				Data: []byte(`<script>const payload = {{ payload | jsonPretty }};</script>`),
 			},
 		}
 
@@ -1009,12 +1009,12 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// Check unescaped JSON
-		require.Contains(t, output, `"name": "Charlie"`)
-		require.Contains(t, output, `"status": "active"`)
-		require.NotContains(t, output, `&#34;`)
+		assert.Contains(t, output, `"name": "Charlie"`)
+		assert.Contains(t, output, `"status": "active"`)
+		assert.NotContains(t, output, `&#34;`)
 	})
 
 	t.Run("fragment still escapes JSON outside script tag", func(t *testing.T) {
@@ -1031,11 +1031,11 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.RenderFragment(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// JSON is HTML-escaped in fragments (not in script tags)
-		require.Contains(t, output, `&#34;key&#34;`)
-		require.Contains(t, output, `&#34;value&#34;`)
+		assert.Contains(t, output, `&#34;key&#34;`)
+		assert.Contains(t, output, `&#34;value&#34;`)
 	})
 
 	t.Run("JSON escaped in code tag", func(t *testing.T) {
@@ -1052,12 +1052,12 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// JSON should be HTML-escaped inside code tags
-		require.Contains(t, output, `&#34;key&#34;`)
-		require.Contains(t, output, `&#34;value&#34;`)
-		require.NotContains(t, output, `"key": "value"`)
+		assert.Contains(t, output, `&#34;key&#34;`)
+		assert.Contains(t, output, `&#34;value&#34;`)
+		assert.NotContains(t, output, `"key": "value"`)
 	})
 
 	t.Run("JSON escaped in pre tag", func(t *testing.T) {
@@ -1077,13 +1077,13 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// JSON should be HTML-escaped inside pre tags
-		require.Contains(t, output, `&#34;name&#34;`)
-		require.Contains(t, output, `&#34;Alice&#34;`)
-		require.Contains(t, output, `&#34;age&#34;`)
-		require.NotContains(t, output, `"name": "Alice"`)
+		assert.Contains(t, output, `&#34;name&#34;`)
+		assert.Contains(t, output, `&#34;Alice&#34;`)
+		assert.Contains(t, output, `&#34;age&#34;`)
+		assert.NotContains(t, output, `"name": "Alice"`)
 	})
 
 	t.Run("JSON escaped in pre+code tags", func(t *testing.T) {
@@ -1103,19 +1103,19 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// JSON should be HTML-escaped inside pre+code tags
-		require.Contains(t, output, `&#34;status&#34;`)
-		require.Contains(t, output, `&#34;active&#34;`)
-		require.Contains(t, output, `&#34;count&#34;`)
-		require.NotContains(t, output, `"status": "active"`)
+		assert.Contains(t, output, `&#34;status&#34;`)
+		assert.Contains(t, output, `&#34;active&#34;`)
+		assert.Contains(t, output, `&#34;count&#34;`)
+		assert.NotContains(t, output, `"status": "active"`)
 	})
 
 	t.Run("JSON unescaped in script tag (comparison)", func(t *testing.T) {
 		fs := fstest.MapFS{
 			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const data = {{ data | json }};</script>`),
+				Data: []byte(`<script>const data = {{ data | jsonPretty }};</script>`),
 			},
 		}
 
@@ -1129,12 +1129,12 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// JSON should NOT be escaped inside script tags
-		require.Contains(t, output, `"status": "active"`)
-		require.Contains(t, output, `"count": 42`)
-		require.NotContains(t, output, `&#34;`)
+		assert.Contains(t, output, `"status": "active"`)
+		assert.Contains(t, output, `"count": 42`)
+		assert.NotContains(t, output, `&#34;`)
 	})
 }
 
@@ -1155,8 +1155,8 @@ func TestVue_Funcs_LoadSVG(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
-		require.Contains(t, buf.String(), "svg content")
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "svg content")
 	})
 
 	t.Run("loadSVG breaks rendering on missing file", func(t *testing.T) {
@@ -1175,8 +1175,8 @@ func TestVue_Funcs_LoadSVG(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.Error(t, err)
-		require.Equal(t, "in test.vuego: in expression '{{ loadSVG(\"missing.svg\") }}': loadSVG(): failed to load SVG file 'missing.svg'", err.Error())
+		assert.Error(t, err)
+		assert.Equal(t, "in test.vuego: in expression '{{ loadSVG(\"missing.svg\") }}': loadSVG(): failed to load SVG file 'missing.svg'", err.Error())
 	})
 
 	t.Run("loadSVG error propagates through pipe", func(t *testing.T) {
@@ -1197,8 +1197,8 @@ func TestVue_Funcs_LoadSVG(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.Error(t, err)
-		require.Equal(t, "in test.vuego: in expression '{{ path | loadSVG }}': loadSVG(): failed to load SVG file 'icons/check.svg'", err.Error())
+		assert.Error(t, err)
+		assert.Equal(t, "in test.vuego: in expression '{{ path | loadSVG }}': loadSVG(): failed to load SVG file 'icons/check.svg'", err.Error())
 	})
 
 	t.Run("loadSVG error context includes template name", func(t *testing.T) {
@@ -1217,8 +1217,8 @@ func TestVue_Funcs_LoadSVG(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.Error(t, err)
-		require.Equal(t, "in test.vuego: in expression '{{ loadSVG(\"icons/nonexistent.svg\") }}': loadSVG(): failed to load SVG file 'icons/nonexistent.svg'", err.Error())
+		assert.Error(t, err)
+		assert.Equal(t, "in test.vuego: in expression '{{ loadSVG(\"icons/nonexistent.svg\") }}': loadSVG(): failed to load SVG file 'icons/nonexistent.svg'", err.Error())
 	})
 }
 
@@ -1237,10 +1237,10 @@ func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// Interpolated values inside script tags should be unescaped
-		require.Contains(t, output, `const msg = "hello world";`)
+		assert.Contains(t, output, `const msg = "hello world";`)
 	})
 
 	t.Run("string with HTML entities in script tag", func(t *testing.T) {
@@ -1257,13 +1257,13 @@ func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// Should NOT be HTML-escaped inside script tags
-		require.Contains(t, output, `<div class="test">content</div>`)
-		require.NotContains(t, output, `&lt;`)
-		require.NotContains(t, output, `&gt;`)
-		require.NotContains(t, output, `&#34;`)
+		assert.Contains(t, output, `<div class="test">content</div>`)
+		assert.NotContains(t, output, `&lt;`)
+		assert.NotContains(t, output, `&gt;`)
+		assert.NotContains(t, output, `&#34;`)
 	})
 
 	t.Run("string with special chars in script tag", func(t *testing.T) {
@@ -1280,13 +1280,13 @@ func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.Render(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// Should NOT be HTML-escaped inside script tags
-		require.Contains(t, output, `test & check < > " '`)
-		require.NotContains(t, output, `&amp;`)
-		require.NotContains(t, output, `&lt;`)
-		require.NotContains(t, output, `&gt;`)
+		assert.Contains(t, output, `test & check < > " '`)
+		assert.NotContains(t, output, `&amp;`)
+		assert.NotContains(t, output, `&lt;`)
+		assert.NotContains(t, output, `&gt;`)
 	})
 
 	t.Run("escaping still applies outside script tags", func(t *testing.T) {
@@ -1303,10 +1303,10 @@ func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
 
 		var buf bytes.Buffer
 		err := vue.RenderFragment(&buf, "test.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		output := buf.String()
 		// Should still be HTML-escaped outside script tags
-		require.Contains(t, output, `&lt;script&gt;`)
-		require.NotContains(t, output, `<script>`)
+		assert.Contains(t, output, `&lt;script&gt;`)
+		assert.NotContains(t, output, `<script>`)
 	})
 }

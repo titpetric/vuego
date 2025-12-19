@@ -32,6 +32,14 @@ func TestVue_EvalAttributes_BoundAndInterpolated(t *testing.T) {
 			expected: `<div :id="id"></div>`,
 		},
 		{
+			name:     "colon prefix binding escape with interpolation",
+			template: `<div [:field]="{{ field | json }}"></div>`,
+			data: map[string]any{
+				"field": map[string]any{"id": "test-div"},
+			},
+			expected: `<div :field="{&#34;id&#34;:&#34;test-div&#34;}"></div>`,
+		},
+		{
 			name:     "v-bind prefix binding",
 			template: `<div v-bind:class="class"></div>`,
 			data:     map[string]any{"class": "active"},

@@ -425,6 +425,7 @@ func (v *Vue) DefaultFuncMap() FuncMap {
 		"int":        intFunc,
 		"string":     stringFunc,
 		"json":       jsonFunc,
+		"jsonPretty": jsonPrettyFunc,
 		"type":       typeFunc,
 		"file":       fileFunc(v),
 	}
@@ -556,6 +557,14 @@ func stringFunc(v any) any {
 }
 
 func jsonFunc(v any) (string, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal to JSON: %w", err)
+	}
+	return string(b), nil
+}
+
+func jsonPrettyFunc(v any) (string, error) {
 	b, err := json.MarshalIndent(v, "  ", "")
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal to JSON: %w", err)

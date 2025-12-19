@@ -140,7 +140,7 @@ func (v *Vue) interpolate(ctx VueContext, input string) (string, error) {
 	}()
 
 	// Early return for no-interpolation case
-	if !strings.Contains(input, "{{") {
+	if !containsInterpolation(input) {
 		return input, nil
 	}
 

@@ -2,7 +2,6 @@ package vuego
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -25,29 +24,18 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) (map[string]any, erro
 		key := a.Key
 		val := strings.TrimSpace(a.Val)
 
+		boundValue := val
 		boundName := key
 		// literal bindings
-		if strings.HasPrefix(key, "\\:") {
-			boundName = boundName[1:]
-			newAttrs = append(newAttrs, html.Attribute{
-				Key: boundName,
-				Val: val,
-			})
-			continue
-		}
-		if strings.HasPrefix(key, "[") && strings.HasSuffix(key, "]") {
-			boundName = boundName[1 : len(boundName)-1]
-			newAttrs = append(newAttrs, html.Attribute{
-				Key: boundName,
-				Val: val,
-			})
-			continue
-		}
 		if strings.HasPrefix(key, ":") {
 			boundName = boundName[1:]
 		}
 		if strings.HasPrefix(key, "v-bind:") {
 			boundName = boundName[7:]
+		}
+		if strings.HasPrefix(key, "[") && strings.HasSuffix(key, "]") {
+			boundName = boundName[1 : len(boundName)-1]
+			key = boundName
 		}
 
 		switch {
@@ -62,7 +50,6 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) (map[string]any, erro
 			results[boundName] = boundValue
 		default:
 			var err error
-			boundValue := val
 			if containsInterpolation(val) {
 				boundValue, err = v.interpolate(ctx, val)
 				if err != nil {
@@ -361,23 +348,14 @@ func parseValue(s string) interface{} {
 	}
 
 	// Handle numbers - convert to int for proper truthiness checking
-	if isNumeric(s) {
-		if i, err := strconv.ParseInt(s, 10, 64); err == nil {
-			return int(i)
-		}
-		if f, err := strconv.ParseFloat(s, 64); err == nil {
-			return f
-		}
+	if i, err := strconv.ParseInt(s, 10, 64); err == nil {
+		return int(i)
+	}
+	if f, err := strconv.ParseFloat(s, 64); err == nil {
+		return f
 	}
 
 	return s
-}
-
-// isNumeric checks if a string is a numeric value.
-func isNumeric(s string) bool {
-	s = strings.TrimSpace(s)
-	matched, _ := regexp.MatchString(`^-?\d+(\.\d+)?$`, s)
-	return matched
 }
 
 // mergeStyles merges static and bound CSS styles, with bound values taking precedence.
