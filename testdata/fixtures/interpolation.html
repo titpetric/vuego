@@ -2,3 +2,8 @@
 <p>Please wait, there are 95 people in front.</p>
 <p>Your ticket ID is 123.</p>
 <p v-if="true">Set values with vuego component</p>
+<vuego data="{&#34;id&#34;:333}"></vuego>
+<p v-if="data.id" v-text="data.id"></p>
+<template :data="{&#34;id&#34;:666}">
+  <p v-text="data.id"></p>
+</template>

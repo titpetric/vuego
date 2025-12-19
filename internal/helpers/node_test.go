@@ -72,6 +72,46 @@ func TestRemoveAttr(t *testing.T) {
 	})
 }
 
+func TestFilterAttrs(t *testing.T) {
+	t.Run("returns new slice excluding key", func(t *testing.T) {
+		attrs := []html.Attribute{
+			{Key: "class", Val: "container"},
+			{Key: "id", Val: "main"},
+			{Key: "data-test", Val: "value"},
+		}
+		filtered := helpers.FilterAttrs(attrs, "id")
+		require.Len(t, filtered, 2)
+		require.Equal(t, "class", filtered[0].Key)
+		require.Equal(t, "data-test", filtered[1].Key)
+	})
+
+	t.Run("does not modify original slice", func(t *testing.T) {
+		attrs := []html.Attribute{
+			{Key: "class", Val: "container"},
+			{Key: "id", Val: "main"},
+		}
+		filtered := helpers.FilterAttrs(attrs, "class")
+		require.Len(t, attrs, 2)
+		require.Len(t, filtered, 1)
+		require.Equal(t, "class", attrs[0].Key)
+		require.Equal(t, "id", filtered[0].Key)
+	})
+
+	t.Run("handles missing key", func(t *testing.T) {
+		attrs := []html.Attribute{
+			{Key: "class", Val: "container"},
+		}
+		filtered := helpers.FilterAttrs(attrs, "id")
+		require.Len(t, filtered, 1)
+		require.Equal(t, "class", filtered[0].Key)
+	})
+
+	t.Run("handles empty attributes", func(t *testing.T) {
+		filtered := helpers.FilterAttrs(nil, "class")
+		require.Len(t, filtered, 0)
+	})
+}
+
 func TestCloneNode(t *testing.T) {
 	t.Run("creates shallow copy", func(t *testing.T) {
 		n := &html.Node{

@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // Component is a renderable .vuego template component.
@@ -45,6 +47,24 @@ func isLiteralAttr(key string) bool {
 	return false
 }
 
+// escapeAttrValue escapes HTML special characters in attribute values.
+// It avoids double-escaping already-escaped HTML entities.
+func escapeAttrValue(val string) string {
+	// Quick check: if the string contains &, check if it's an HTML entity reference
+	// If it is, it's likely already escaped and we shouldn't escape it again
+	if strings.Contains(val, "&") {
+		// Check for common HTML entity patterns like &amp; &quot; &#34; etc
+		// If we find them, assume it's already properly escaped
+		if strings.Contains(val, "&amp;") || strings.Contains(val, "&quot;") ||
+			strings.Contains(val, "&apos;") || strings.Contains(val, "&lt;") ||
+			strings.Contains(val, "&gt;") || strings.Contains(val, "&#") {
+			return val
+		}
+	}
+	// Otherwise, escape unescaped special characters
+	return html.EscapeString(val)
+}
+
 // shouldIgnoreAttr returns true if an attribute should be skipped in HTML output.
 // This includes Vue directives and binding attributes that are only used during evaluation.
 func shouldIgnoreAttr(key string) bool {
@@ -77,7 +97,7 @@ func renderAttrs(attrs []html.Attribute) string {
 		sb.WriteString(key)
 		sb.WriteByte('=')
 		sb.WriteByte('"')
-		sb.WriteString(a.Val)
+		sb.WriteString(escapeAttrValue(a.Val))
 		sb.WriteByte('"')
 	}
 	return sb.String()
@@ -175,13 +195,39 @@ func renderNodeWithContext(ctx VueContext, w io.Writer, node *html.Node, indent 
 			return nil
 		}
 
-		// Special handling for <template> elements without v-html: output children without template tag
-		if tagName == "template" {
+		// Special handling for <template> elements without v-html: output children without template tag (unless v-keep is set)
+		if tagName == "template" && !helpers.HasAttr(node, "v-keep") {
 			for c := firstChild; c != nil; c = c.NextSibling {
 				if err := renderNodeWithContext(ctx, w, c, indent); err != nil {
 					return err
 				}
 			}
+			return nil
+		}
+		
+		// If template has v-keep, render it with v-keep removed from attributes
+		if tagName == "template" && helpers.HasAttr(node, "v-keep") {
+			// Render template tag without v-keep attribute
+			attrsWithoutKeep := helpers.FilterAttrs(node.Attr, "v-keep")
+			
+			_, _ = w.Write([]byte(spaces + "<" + tagName))
+			// Create a temporary node with filtered attributes for renderAttrs
+			tempNode := *node
+			tempNode.Attr = attrsWithoutKeep
+			_, _ = w.Write([]byte(renderAttrs(tempNode.Attr)))
+			_, _ = w.Write([]byte(">\n"))
+			
+			// Render children with increased indent
+			ctx.PushTag(tagName)
+			childIndent := indent + 2
+			for c := firstChild; c != nil; c = c.NextSibling {
+				if err := renderNodeWithContext(ctx, w, c, childIndent); err != nil {
+					return err
+				}
+			}
+			ctx.PopTag()
+			
+			_, _ = w.Write([]byte(spaces + "</" + tagName + ">\n"))
 			return nil
 		}
 

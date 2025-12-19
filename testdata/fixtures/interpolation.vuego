@@ -11,3 +11,10 @@ name: "Set values with vuego component"
 <p>Your ticket ID is {{ data.id }}.</p>
 
 <p [v-if]="true">{{ name }}</p>
+
+<vuego data="{&#34;id&#34;:333}" v-keep></vuego>
+<p [v-if]="data.id" [v-text]="data.id"></p>
+
+<template [:data]="{&#34;id&#34;:666}" v-keep>
+	<p [v-text]="data.id"></p>
+</template>

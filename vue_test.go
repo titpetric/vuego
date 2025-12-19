@@ -47,7 +47,12 @@ func TestFixtures(t *testing.T) {
 		t.Run(template, func(t *testing.T) {
 			var got bytes.Buffer
 			require.NoError(t, vue.RenderFragment(&got, template, data))
-			require.True(t, helpers.CompareHTML(t, want, got.Bytes(), templateBytes, dataBytes))
+			if !helpers.CompareHTML(t, want, got.Bytes(), templateBytes, dataBytes) {
+				t.Logf("HTML mismatch in %s", template)
+				t.Logf("Expected:\n%s", string(want))
+				t.Logf("Got:\n%s", got.String())
+				t.FailNow()
+			}
 		})
 	}
 }

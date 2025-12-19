@@ -86,6 +86,18 @@ func RemoveAttr(n *html.Node, key string) {
 	n.Attr = attrs
 }
 
+// FilterAttrs returns a new attribute slice excluding the specified key.
+// This is useful for creating a copy of attributes without a specific key.
+func FilterAttrs(attrs []html.Attribute, excludeKey string) []html.Attribute {
+	result := make([]html.Attribute, 0, len(attrs))
+	for _, a := range attrs {
+		if a.Key != excludeKey {
+			result = append(result, a)
+		}
+	}
+	return result
+}
+
 // CloneNode creates a shallow copy of a node without sharing children or siblings.
 // Attributes are shared (not copied) to avoid unnecessary allocations.
 func CloneNode(n *html.Node) *html.Node {

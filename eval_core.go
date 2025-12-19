@@ -153,7 +153,27 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				if err != nil {
 					return nil, err
 				}
-				result = append(result, evaluated...)
+
+				// keep template tag if v-keep is set.
+				if helpers.HasAttr(node, "v-keep") {
+					// Clone the template node and attach evaluated children
+					templateNode := helpers.ShallowCloneWithAttrs(node)
+					
+					// Attach evaluated children to the cloned template node
+					if len(evaluated) > 0 {
+						templateNode.FirstChild = evaluated[0]
+						templateNode.LastChild = evaluated[len(evaluated)-1]
+						// Link siblings
+						for i := 0; i < len(evaluated)-1; i++ {
+							evaluated[i].NextSibling = evaluated[i+1]
+							evaluated[i+1].PrevSibling = evaluated[i]
+						}
+					}
+					result = append(result, templateNode)
+				} else {
+					result = append(result, evaluated...)
+				}
+
 				continue
 			}
 

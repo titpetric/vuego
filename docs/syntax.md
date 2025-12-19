@@ -200,6 +200,29 @@ Render elements only when conditions are met. Use `v-else-if` and `v-else` to pr
 <p v-if="isAdmin && hasPermission">Admin access</p>
 ```
 
+#### Bracket Syntax (`[v-if]`)
+
+Directives can be wrapped in brackets to output them as literal attributes without interpolation. This is useful when you want the directive to remain in the rendered HTML rather than be processed by Vuego:
+
+```html
+<!-- Processed by Vuego (removed after evaluation) -->
+<div v-if="show">Content</div>
+
+<!-- Output as literal attribute (not processed, passed to client) -->
+<div [v-if]="show">Content</div>
+<!-- Renders as: <div v-if="show">Content</div> -->
+```
+
+**Note:** Attributes with bracket syntax are **not interpolated**. The value is treated as a literal string:
+
+```html
+<!-- Without brackets: {{ count }} is evaluated and replaced -->
+<p [v-if]="{{count}}">Text</p>  <!-- Output: [v-if]="123" -->
+
+<!-- This is the correct syntax for bracket notation -->
+<p [v-if]="count">Text</p>  <!-- Output: [v-if]="count" (no interpolation) -->
+```
+
 #### Chained Conditions with `v-else-if` and `v-else`
 
 Use `v-else-if` to test multiple conditions and `v-else` as the default fallback:
@@ -386,6 +409,7 @@ Both styles are valid and work identically.
 - ✅ Nested property access with dot notation
 - ✅ Expressions (comparisons, logical operators, ternary)
 - ✅ Attribute binding with `:attr` and `v-bind:attr`
+- ✅ Bracket syntax for literal attributes: `[directive]="value"` (no interpolation)
 - ✅ Conditional rendering with `v-if`, `v-else-if`, and `v-else`
 - ✅ Visibility control with `v-show`
 - ✅ List iteration with `v-for` (with optional index)
