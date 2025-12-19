@@ -476,8 +476,15 @@ func (v *Vue) DefaultFuncMap() FuncMap {
 
 // Built-in filter functions
 
-func fileFunc(v *Vue) func(string) (any, error) {
-	return func(filename string) (any, error) {
+func fileFunc(v *Vue) func(*VueContext, string) (any, error) {
+	return func(ctx *VueContext, filename string) (any, error) {
+		// Resolve filename through the context's stack if it's a variable reference
+		if ctx != nil {
+			if val, ok := ctx.Stack().Resolve(filename); ok {
+				filename = fmt.Sprint(val)
+			}
+		}
+
 		if v.templateFS == nil {
 			return "", fmt.Errorf("error loading file from nil fs: %s", filename)
 		}

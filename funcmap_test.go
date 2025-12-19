@@ -1138,6 +1138,94 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 	})
 }
 
+func TestVue_Funcs_FileWithVueContext(t *testing.T) {
+	t.Run("file function resolves variable expressions", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<script>const config = {{ file(configPath) }};</script>`),
+			},
+			"config.json": &fstest.MapFile{
+				Data: []byte(`{"name": "test"}`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"configPath": "config.json",
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), `"name": "test"`)
+	})
+
+	t.Run("file function with expression.field notation", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ file(config.path) }}</div>`),
+			},
+			"data.txt": &fstest.MapFile{
+				Data: []byte(`file content`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"config": map[string]any{
+				"path": "data.txt",
+			},
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "file content")
+	})
+
+	t.Run("file function in v-html with variable", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div v-html="file(htmlPath)"></div>`),
+			},
+			"snippet.html": &fstest.MapFile{
+				Data: []byte(`<span>html snippet</span>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"htmlPath": "snippet.html",
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "<span>html snippet</span>")
+	})
+
+	t.Run("file function in attribute binding with variable", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div :data-content="file(dataPath)"></div>`),
+			},
+			"data.txt": &fstest.MapFile{
+				Data: []byte(`attribute value`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"dataPath": "data.txt",
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), `data-content="attribute value"`)
+	})
+}
+
 func TestVue_Funcs_LoadSVG(t *testing.T) {
 	t.Run("loadSVG returns file content as string", func(t *testing.T) {
 		fs := fstest.MapFS{
