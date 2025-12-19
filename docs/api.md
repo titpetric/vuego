@@ -29,6 +29,10 @@ type ExprEvaluator struct {
 // FuncMap is a map of function names to functions, similar to text/template's FuncMap.
 // Functions can have any number of parameters and must return 1 or 2 values.
 // If 2 values are returned, the second must be an error.
+// Functions can optionally take *VueContext as the first parameter to access the execution context:
+//
+//	func myFunc(ctx *VueContext, arg1 string) (string, error) { ... }
+//	func myFunc(arg1 string) string { ... }  // without context
 type FuncMap map[string]any
 ```
 
@@ -253,6 +257,7 @@ type VueContextOptions struct {
 - `func (*VueContext) PushTag (tag string)`
 - `func (VueContext) CurrentTag () string`
 - `func (VueContext) FormatTemplateChain () string`
+- `func (VueContext) Stack () *Stack`
 - `func (VueContext) WithTemplate (filename string) VueContext`
 
 ### New
@@ -616,6 +621,14 @@ FormatTemplateChain returns the template inclusion chain formatted for error mes
 
 ```go
 func (VueContext) FormatTemplateChain() string
+```
+
+### Stack
+
+Stack returns the variable resolution stack for this context. This allows functions with *VueContext parameters to resolve variables from the execution scope.
+
+```go
+func (VueContext) Stack() *Stack
 ```
 
 ### WithTemplate

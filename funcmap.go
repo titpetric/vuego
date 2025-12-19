@@ -17,6 +17,10 @@ import (
 // FuncMap is a map of function names to functions, similar to text/template's FuncMap.
 // Functions can have any number of parameters and must return 1 or 2 values.
 // If 2 values are returned, the second must be an error.
+// Functions can optionally take *VueContext as the first parameter to access the execution context:
+//
+//	func myFunc(ctx *VueContext, arg1 string) (string, error) { ... }
+//	func myFunc(arg1 string) string { ... }  // without context
 type FuncMap map[string]any
 
 // pipeExpr represents a parsed pipe expression like "value | fn1 | . > 5 | fn2(arg)"
@@ -57,8 +61,8 @@ func parsePipeExpr(expr string) pipeExpr {
 				}},
 			}
 		}
-		// Check if it's a function call
-		if matches := filterRe.FindStringSubmatch(trimmed); matches != nil && matches[2] != "" {
+		// Check if it's a function call (including no-arg functions like "fn()")
+		if matches := filterRe.FindStringSubmatch(trimmed); matches != nil && matches[1] != "" {
 			return pipeExpr{
 				initial: "",
 				segments: []pipeSegment{{
@@ -74,8 +78,10 @@ func parsePipeExpr(expr string) pipeExpr {
 	}
 
 	parts := strings.Split(expr, "|")
+	firstPart := strings.TrimSpace(parts[0])
+
 	result := pipeExpr{
-		initial:  strings.TrimSpace(parts[0]),
+		initial:  firstPart,
 		segments: make([]pipeSegment, 0, len(parts)-1),
 	}
 
@@ -238,7 +244,7 @@ func (v *Vue) evalFilter(ctx VueContext, seg pipeSegment, input any, isFirst, fr
 		args = append(args, argVal)
 	}
 
-	result, err := v.callFunc(fn, args...)
+	result, err := v.callFuncWithContext(fn, &ctx, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%s(): %w", seg.name, err)
 	}
@@ -284,6 +290,13 @@ func (v *Vue) resolveArgument(ctx VueContext, arg string) any {
 // callFunc calls a function from the FuncMap with the given arguments.
 // This matches text/template's behavior and supports arbitrary function signatures.
 func (v *Vue) callFunc(fn any, args ...any) (any, error) {
+	return v.callFuncWithContext(fn, nil, args...)
+}
+
+// callFuncWithContext calls a function from the FuncMap with optional VueContext as first argument.
+// If the function's first parameter is *VueContext, the context is passed automatically.
+// Otherwise, all provided arguments are passed directly.
+func (v *Vue) callFuncWithContext(fn any, ctx *VueContext, args ...any) (any, error) {
 	fnVal := reflect.ValueOf(fn)
 	fnType := fnVal.Type()
 
@@ -291,21 +304,51 @@ func (v *Vue) callFunc(fn any, args ...any) (any, error) {
 		return nil, fmt.Errorf("not a function")
 	}
 
-	// Check argument count
+	// Check if first parameter is *VueContext
+	hasContextParam := false
 	numIn := fnType.NumIn()
+	if numIn > 0 {
+		firstParamType := fnType.In(0)
+		if firstParamType == reflect.TypeOf((*VueContext)(nil)) {
+			hasContextParam = true
+		}
+	}
+
+	// Adjust expected argument count based on context parameter
+	expectedArgs := numIn
+	if hasContextParam {
+		expectedArgs = numIn - 1 // Don't count the context parameter
+	}
+
+	// For variadic functions, adjust to required args (excluding the variadic ...T part)
+	requiredArgs := expectedArgs
 	if fnType.IsVariadic() {
-		if len(args) < numIn-1 {
-			return nil, fmt.Errorf("function expects at least %d arguments, got %d", numIn-1, len(args))
+		requiredArgs = expectedArgs - 1
+	}
+
+	// Build final argument list
+	var finalArgs []any
+	if hasContextParam {
+		finalArgs = append(finalArgs, ctx)
+		finalArgs = append(finalArgs, args...)
+	} else {
+		finalArgs = args
+	}
+
+	// Check argument count
+	if fnType.IsVariadic() {
+		if len(args) < requiredArgs {
+			return nil, fmt.Errorf("function expects at least %d arguments, got %d", requiredArgs, len(args))
 		}
 	} else {
-		if len(args) != numIn {
-			return nil, fmt.Errorf("function expects %d arguments, got %d", numIn, len(args))
+		if len(args) != expectedArgs {
+			return nil, fmt.Errorf("function expects %d arguments, got %d", expectedArgs, len(args))
 		}
 	}
 
 	// Prepare arguments with type conversion
-	in := make([]reflect.Value, len(args))
-	for i, arg := range args {
+	in := make([]reflect.Value, len(finalArgs))
+	for i, arg := range finalArgs {
 		var argType reflect.Type
 		if fnType.IsVariadic() && i >= numIn-1 {
 			// Variadic argument - use element type

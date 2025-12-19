@@ -115,7 +115,7 @@ func (v *Vue) evalAttributes(ctx VueContext, n *html.Node) (map[string]any, erro
 	return results, nil
 }
 
-// evalBoundAttribute evaluates a bound attribute, handling objects for class/style.
+// evalBoundAttribute evaluates a bound attribute, handling objects for class/style and function calls.
 func (v *Vue) evalBoundAttribute(ctx VueContext, attrName, expr string) (any, error) {
 	expr = strings.TrimSpace(expr)
 
@@ -131,6 +131,16 @@ func (v *Vue) evalBoundAttribute(ctx VueContext, attrName, expr string) (any, er
 	// Check if the expression is an object literal
 	if strings.HasPrefix(expr, "{") && strings.HasSuffix(expr, "}") {
 		return v.evalObjectBinding(ctx, attrName, expr), nil
+	}
+
+	// Check if it's a function call or pipe expression
+	if strings.Contains(expr, "|") || helpers.IsFunctionCall(expr) || helpers.IsComplexExpr(expr) {
+		pipe := parsePipeExpr(expr)
+		val, err := v.evalPipe(ctx, pipe)
+		if err != nil {
+			return "", err
+		}
+		return val, nil
 	}
 
 	// Regular variable binding

@@ -1222,6 +1222,104 @@ func TestVue_Funcs_LoadSVG(t *testing.T) {
 	})
 }
 
+func TestVue_Funcs_WithContextParameter(t *testing.T) {
+	t.Run("function with VueContext parameter", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<p>{{ getContext() }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"getContext": func(ctx *vuego.VueContext) string {
+				if ctx != nil {
+					return "has-context"
+				}
+				return "no-context"
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "has-context")
+	})
+
+	t.Run("function with context and additional parameters", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<p>{{ greetWithContext("Alice") }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"greetWithContext": func(ctx *vuego.VueContext, name string) string {
+				if ctx == nil {
+					return "no context"
+				}
+				return "Hello, " + name
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "Hello, Alice")
+	})
+
+	t.Run("context function can access template info", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<p>{{ getTemplateName() }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"getTemplateName": func(ctx *vuego.VueContext) string {
+				if ctx == nil {
+					return "no context"
+				}
+				return ctx.FromFilename
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "test.vuego")
+	})
+
+	t.Run("context function with error return", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<p>{{ requireContext() }}</p>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
+			"requireContext": func(ctx *vuego.VueContext) (string, error) {
+				if ctx == nil {
+					return "", fmt.Errorf("context is required")
+				}
+				return "success", nil
+			},
+		})
+
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "success")
+	})
+}
+
 func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
 	t.Run("plain string with quotes in script tag", func(t *testing.T) {
 		fs := fstest.MapFS{

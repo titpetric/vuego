@@ -101,6 +101,12 @@ func (ctx VueContext) CurrentTag() string {
 	return ctx.TagStack[len(ctx.TagStack)-1]
 }
 
+// Stack returns the variable resolution stack for this context.
+// This allows functions with *VueContext parameters to resolve variables from the execution scope.
+func (ctx VueContext) Stack() *Stack {
+	return ctx.stack
+}
+
 // nextSeenID returns a unique ID for tracking v-once elements across deep clones.
 func (ctx *VueContext) nextSeenID() string {
 	return ulid.String()
