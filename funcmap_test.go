@@ -1186,7 +1186,7 @@ func TestVue_Funcs_FileWithVueContext(t *testing.T) {
 	t.Run("file function in v-html with variable", func(t *testing.T) {
 		fs := fstest.MapFS{
 			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div v-html="file(htmlPath)"></div>`),
+				Data: []byte(`<div v-html="file(html.path)"></div>`),
 			},
 			"snippet.html": &fstest.MapFile{
 				Data: []byte(`<span>html snippet</span>`),
@@ -1195,7 +1195,9 @@ func TestVue_Funcs_FileWithVueContext(t *testing.T) {
 
 		vue := vuego.NewVue(fs)
 		data := map[string]any{
-			"htmlPath": "snippet.html",
+			"html": map[string]any{
+				"path": "snippet.html",
+			},
 		}
 
 		var buf bytes.Buffer
