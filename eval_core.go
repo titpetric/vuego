@@ -1,7 +1,9 @@
 package vuego
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"golang.org/x/net/html"
 
@@ -75,38 +77,59 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				}
 
 				delete(vars, "include")
-				ctx.stack.Push(vars)
 
-				name := helpers.GetAttr(node, "include")
-				frontMatter, templateBytes, err := v.loader.loadFragment(name)
-				if err != nil {
-					return nil, fmt.Errorf("error loading %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
+				// auto decode params as json, e.g. `data="{...}"` or `[...]`
+				for k, v := range vars {
+					if vs, ok := v.(string); ok {
+						if strings.HasPrefix(vs, "{") || strings.HasPrefix(vs, "[") {
+							var out any
+							if err := json.Unmarshal([]byte(vs), &out); err == nil {
+								vars[k] = out
+							}
+						}
+					}
 				}
 
-				// Merge front-matter data (authoritative - overrides passed data)
-				for k, v := range frontMatter {
+				if helpers.HasAttr(node, "include") {
+					ctx.stack.Push(vars)
+					name := helpers.GetAttr(node, "include")
+					frontMatter, templateBytes, err := v.loader.loadFragment(name)
+					if err != nil {
+						return nil, fmt.Errorf("error loading %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
+					}
+
+					// Merge front-matter data (authoritative - overrides passed data)
+					for k, v := range frontMatter {
+						ctx.stack.Set(k, v)
+					}
+
+					// Parse template bytes into DOM
+					compDom, err := parser.ParseTemplateBytes(templateBytes)
+					if err != nil {
+						return nil, fmt.Errorf("error parsing %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
+					}
+
+					// Validate and process template tag
+					processedDom, err := v.evalTemplate(ctx, compDom, ctx.stack.EnvMap(), depth+1)
+					if err != nil {
+						return nil, fmt.Errorf("error in %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
+					}
+
+					childCtx := ctx.WithTemplate(name)
+					evaluated, err := v.evaluate(childCtx, processedDom, depth+1)
+					if err != nil {
+						return nil, err
+					}
+					result = append(result, evaluated...)
+					ctx.stack.Pop()
+					continue
+				}
+
+				// set bindings to current stack scope
+				for k, v := range vars {
 					ctx.stack.Set(k, v)
 				}
 
-				// Parse template bytes into DOM
-				compDom, err := parser.ParseTemplateBytes(templateBytes)
-				if err != nil {
-					return nil, fmt.Errorf("error parsing %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
-				}
-
-				// Validate and process template tag
-				processedDom, err := v.evalTemplate(ctx, compDom, ctx.stack.EnvMap(), depth+1)
-				if err != nil {
-					return nil, fmt.Errorf("error in %s (included from %s): %w", name, ctx.FormatTemplateChain(), err)
-				}
-
-				childCtx := ctx.WithTemplate(name)
-				evaluated, err := v.evaluate(childCtx, processedDom, depth+1)
-				ctx.stack.Pop()
-				if err != nil {
-					return nil, err
-				}
-				result = append(result, evaluated...)
 				continue
 			}
 

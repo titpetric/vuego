@@ -1,0 +1,11 @@
+---
+name: "Set values with vuego component"
+---
+<vuego count="123"></vuego>
+<p>Please wait, there are {{count}} people in front.</p>
+
+<vuego count="95"></vuego>
+<p>Please wait, there are {{count}} people in front.</p>
+
+<vuego data="{&#34;id&#34;:123}"></vuego>
+<p>Your ticket ID is {{ data.id }}.</p>
