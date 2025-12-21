@@ -19,13 +19,13 @@ go build ./cmd/vuego
 ## Usage
 
 ```bash
-vuego render <template-file> <data-file>
+vuego render <template.vuego> <data.json/yml>
 ```
 
 ### Arguments
 
-- `<template-file>` - Path to the `.vuego` template file
-- `<data-file>` - Path to the JSON or YAML file containing template data
+- `<template.vuego>` - Path to the `.vuego` template file
+- `<data.json/yml>` - Path to the JSON or YAML file containing template data
 
 ### Output
 
@@ -50,6 +50,7 @@ vuego render template.vuego data.yaml > output.html
 ### Data File: `hello.json` (or `hello.yaml`)
 
 JSON format:
+
 ```json
 {
   "name": "World",
@@ -58,6 +59,7 @@ JSON format:
 ```
 
 YAML format:
+
 ```yaml
 name: World
 app: Vuego
@@ -291,7 +293,7 @@ vuego render products.vuego products.json
 ```bash
 $ vuego render
 Error: render: requires exactly 2 arguments
-Usage: vuego render <file.tpl> <data>
+Usage: vuego render <file.vuego> <data.json/yml>
 ```
 
 ### Template Not Found
