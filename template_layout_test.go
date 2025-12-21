@@ -43,4 +43,15 @@ func TestRenderLayout(t *testing.T) {
 		assert.Contains(t, output, ">Layout: post<")
 		assert.Contains(t, output, ">Test Content<")
 	})
+
+	t.Run("no_layout_defaults_to_base", func(t *testing.T) {
+		var buf bytes.Buffer
+		// fixtures/frontmatter-basic.vuego has no layout param
+		err := renderer.Load("fixtures/frontmatter-basic.vuego").Fill(data).Layout(t.Context(), &buf)
+		assert.NoError(t, err)
+
+		output := buf.String()
+		// When no layout param exists, should still wrap in layouts/base.vuego
+		assert.Contains(t, output, ">Layout: base<")
+	})
 }

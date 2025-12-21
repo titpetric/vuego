@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.07%   | 912       | 3117  |
+| ✅     | titpetric/vuego                      | 85.09%   | 915       | 3128  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 45        | 246   |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ❌     | titpetric/vuego/diff                 | 0.00%    | 60        | 193   |
@@ -154,7 +154,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | template.Err                      | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | template.Fill                     | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | template.Get                      | 100.00%  | 4         |
-| ✅     | titpetric/vuego                      | template.Layout                   | 88.90%   | 6         |
+| ✅     | titpetric/vuego                      | template.Layout                   | 91.30%   | 9         |
 | ✅     | titpetric/vuego                      | template.Load                     | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | template.New                      | 0.00%    | 0         |
 | ✅     | titpetric/vuego                      | template.Render                   | 85.70%   | 3         |

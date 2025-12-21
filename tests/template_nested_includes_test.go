@@ -37,6 +37,9 @@ func TestTemplate_NestedIncludesStateIsolation(t *testing.T) {
   <li v-for="article in articles">{{ article.Title }}</li>
 </ul>`),
 		},
+		"layouts/base.vuego": &fstest.MapFile{
+			Data: []byte(`<html><body v-html="content"></body></html>`),
+		},
 	}
 
 	tpl := vuego.NewFS(fs)
@@ -89,6 +92,9 @@ func TestTemplate_ConcurrentNestedIncludesRender(t *testing.T) {
 			Data: []byte(`<ul>
   <li v-for="article in articles">{{ article.Title }}</li>
 </ul>`),
+		},
+		"layouts/base.vuego": &fstest.MapFile{
+			Data: []byte(`<html><body v-html="content"></body></html>`),
 		},
 	}
 
