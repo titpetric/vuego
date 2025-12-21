@@ -5,36 +5,43 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 )
 
 // CompareHTML parses two HTML strings and returns true if their DOMs match.
 // It ignores pure-whitespace text nodes and compares attributes order-insensitively.
-func CompareHTML(tb testing.TB, want, got, template, data []byte) bool {
+func CompareHTML(want, got []byte) bool {
 	an, err := html.Parse(bytes.NewReader(want))
-	require.NoError(tb, err)
+	if err != nil {
+		return false
+	}
 
 	bn, err := html.Parse(bytes.NewReader(got))
-	require.NoError(tb, err)
+	if err != nil {
+		return false
+	}
 
 	// build significant children lists for each root
 	ac := SignificantChildren(an)
 	bc := SignificantChildren(bn)
 
-	isEqual := func() bool {
-		if len(ac) != len(bc) {
+	if len(ac) != len(bc) {
+		return false
+	}
+
+	for i := range ac {
+		if !compareNodeRecursive(ac[i], bc[i]) {
 			return false
 		}
+	}
+	return true
+}
 
-		for i := range ac {
-			if !compareNodeRecursive(ac[i], bc[i]) {
-				return false
-			}
-		}
-		return true
-	}()
-
+// EqualHTML parses two HTML strings and returns true if their DOMs match.
+// It ignores pure-whitespace text nodes and compares attributes order-insensitively.
+// If DOMs don't match, it logs template and data context for debugging.
+func EqualHTML(tb testing.TB, want, got, template, data []byte) bool {
+	isEqual := CompareHTML(want, got)
 	if !isEqual {
 		tb.Logf("\n--- template:\n%s\n--- json:\n%s\n--- expected:\n%s\n--- actual:\n%s\n", string(template), string(data), string(want), string(got))
 	}

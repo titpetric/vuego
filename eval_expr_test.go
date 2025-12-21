@@ -159,7 +159,7 @@ func TestVue_VIfWithExprComparison(t *testing.T) {
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
-			require.True(t, helpers.CompareHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil))
+			require.True(t, helpers.EqualHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil))
 		})
 	}
 }
@@ -203,7 +203,7 @@ func TestVue_VIfWithLogicalOperators(t *testing.T) {
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
-			require.True(t, helpers.CompareHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil))
+			require.True(t, helpers.EqualHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil))
 		})
 	}
 }
@@ -239,7 +239,7 @@ func TestVue_VIfWithNestedProperties(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := "<div>User is Active</div>\n<div>In Stock</div>\n"
-	require.True(t, helpers.CompareHTML(t, []byte(expected), buf.Bytes(), nil, nil))
+	require.True(t, helpers.EqualHTML(t, []byte(expected), buf.Bytes(), nil, nil))
 }
 
 func TestVue_InterpolationWithComparison(t *testing.T) {
@@ -269,7 +269,7 @@ func TestVue_InterpolationWithComparison(t *testing.T) {
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
 			require.NoError(t, err)
-			require.True(t, helpers.CompareHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil))
+			require.True(t, helpers.EqualHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil))
 		})
 	}
 }
@@ -309,7 +309,7 @@ func TestVue_BackwardCompatibility(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := "<div>Visible</div>\n<div>Not Hidden</div>\n<p>Hello</p>\n<p>Alice</p>\n"
-	require.True(t, helpers.CompareHTML(t, []byte(expected), buf.Bytes(), nil, nil))
+	require.True(t, helpers.EqualHTML(t, []byte(expected), buf.Bytes(), nil, nil))
 }
 
 // Test the exact examples from the original request

@@ -52,7 +52,7 @@ func TestVOnce_SkipsSubsequentRenders(t *testing.T) {
 	vue := vuego.NewVue(templateFS)
 	var got bytes.Buffer
 	require.NoError(t, vue.RenderFragment(&got, template, data))
-	require.True(t, helpers.CompareHTML(t, want, got.Bytes(), nil, nil))
+	require.True(t, helpers.EqualHTML(t, want, got.Bytes(), nil, nil))
 
 	t.Logf("-- v-once result: %s", got.String())
 }
@@ -94,7 +94,7 @@ func TestVOnce_MultipleVOnceElements(t *testing.T) {
 	vue := vuego.NewVue(templateFS)
 	var got bytes.Buffer
 	require.NoError(t, vue.RenderFragment(&got, template, data))
-	require.True(t, helpers.CompareHTML(t, want, got.Bytes(), nil, nil))
+	require.True(t, helpers.EqualHTML(t, want, got.Bytes(), nil, nil))
 
 	t.Logf("-- v-once multiple result: %s", got.String())
 }

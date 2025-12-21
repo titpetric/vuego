@@ -47,7 +47,7 @@ func TestFixtures(t *testing.T) {
 		t.Run(template, func(t *testing.T) {
 			var got bytes.Buffer
 			require.NoError(t, vue.RenderFragment(&got, template, data))
-			if !helpers.CompareHTML(t, want, got.Bytes(), templateBytes, dataBytes) {
+			if !helpers.EqualHTML(t, want, got.Bytes(), templateBytes, dataBytes) {
 				t.Logf("HTML mismatch in %s", template)
 				t.Logf("Expected:\n%s", string(want))
 				t.Logf("Got:\n%s", got.String())
@@ -74,7 +74,7 @@ func TestVue_Escaping(t *testing.T) {
 	t.Run(template, func(t *testing.T) {
 		var got bytes.Buffer
 		require.NoError(t, vue.RenderFragment(&got, template, data))
-		require.True(t, helpers.CompareHTML(t, want, got.Bytes(), nil, nil))
+		require.True(t, helpers.EqualHTML(t, want, got.Bytes(), nil, nil))
 
 		t.Logf("-- Escape result: %s", got.String())
 	})

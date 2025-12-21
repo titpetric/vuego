@@ -21,7 +21,7 @@ func TestVue_EvaluateTextNode(t *testing.T) {
 	var buf bytes.Buffer
 	err := vue.RenderFragment(&buf, "test.vuego", map[string]any{"message": "hello"})
 	require.NoError(t, err)
-	require.True(t, helpers.CompareHTML(t, []byte("<p>hello</p>"), buf.Bytes(), nil, nil))
+	require.True(t, helpers.EqualHTML(t, []byte("<p>hello</p>"), buf.Bytes(), nil, nil))
 }
 
 func TestVue_EvaluateElementNode(t *testing.T) {

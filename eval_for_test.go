@@ -99,7 +99,7 @@ func TestVue_EvalFor(t *testing.T) {
 			var buf bytes.Buffer
 			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
 			require.NoError(t, err)
-			require.True(t, helpers.CompareHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
 		})
 	}
 }
@@ -116,5 +116,5 @@ func TestParseFor(t *testing.T) {
 	var buf bytes.Buffer
 	err := vue.RenderFragment(&buf, "test.vuego", map[string]any{"items": []string{"a"}})
 	require.NoError(t, err)
-	require.True(t, helpers.CompareHTML(t, []byte("<div>a</div>"), buf.Bytes(), nil, nil))
+	require.True(t, helpers.EqualHTML(t, []byte("<div>a</div>"), buf.Bytes(), nil, nil))
 }

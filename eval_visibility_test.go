@@ -79,7 +79,7 @@ func TestVue_EvalVShow(t *testing.T) {
 			var buf bytes.Buffer
 			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
 			require.NoError(t, err)
-			require.True(t, helpers.CompareHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
 		})
 	}
 }

@@ -40,6 +40,7 @@ func NewFormatterWithOptions(opts FormatterOptions) *Formatter {
 }
 
 // Format formats a vuego template string and returns the formatted result.
+// It handles both full documents and partial fragments.
 func (f *Formatter) Format(content string) (string, error) {
 	// Split frontmatter and content
 	frontmatter, body := f.splitFrontmatter(content)
@@ -47,8 +48,39 @@ func (f *Formatter) Format(content string) (string, error) {
 	// Trim leading newlines from body
 	body = strings.TrimLeft(body, "\n")
 
+	// Check if this looks like a full document (starts with <!DOCTYPE or <html)
+	trimmedBody := strings.TrimSpace(body)
+	isFullDocument := strings.HasPrefix(trimmedBody, "<!DOCTYPE") || strings.HasPrefix(trimmedBody, "<html")
+
+	if isFullDocument {
+		return f.formatFullDocument(frontmatter, body)
+	}
+
+	// Handle partial/fragment formatting
+	return f.formatFragment(frontmatter, body)
+}
+
+// formatFullDocument formats a complete HTML document.
+func (f *Formatter) formatFullDocument(frontmatter, body string) (string, error) {
+	trimmedBody := strings.TrimSpace(body)
+
+	// Extract DOCTYPE if present
+	var doctype string
+	var htmlContent string
+
+	if strings.HasPrefix(trimmedBody, "<!DOCTYPE") {
+		// Find the end of DOCTYPE declaration
+		endIdx := strings.Index(trimmedBody, ">")
+		if endIdx != -1 {
+			doctype = trimmedBody[:endIdx+1]
+			htmlContent = strings.TrimSpace(trimmedBody[endIdx+1:])
+		}
+	} else {
+		htmlContent = trimmedBody
+	}
+
 	// Parse HTML
-	doc, err := html.Parse(strings.NewReader(body))
+	doc, err := html.Parse(strings.NewReader(htmlContent))
 	if err != nil {
 		return "", fmt.Errorf("parsing HTML: %w", err)
 	}
@@ -60,6 +92,42 @@ func (f *Formatter) Format(content string) (string, error) {
 	output := result.String()
 
 	// Remove trailing newline if present (formatNode adds one)
+	output = strings.TrimRight(output, "\n")
+
+	// Reconstruct with frontmatter and DOCTYPE
+	result.Reset()
+	result.WriteString(frontmatter)
+	if doctype != "" {
+		result.WriteString(doctype)
+		result.WriteString("\n")
+	}
+	result.WriteString(output)
+
+	finalResult := result.String()
+
+	if f.opts.InsertFinal {
+		finalResult += "\n"
+	}
+
+	return finalResult, nil
+}
+
+// formatFragment formats a partial HTML fragment (e.g., single element or list of elements).
+func (f *Formatter) formatFragment(frontmatter, body string) (string, error) {
+	// Wrap fragment in a root div to parse it
+	wrapped := "<div>" + body + "</div>"
+	doc, err := html.Parse(strings.NewReader(wrapped))
+	if err != nil {
+		return "", fmt.Errorf("parsing HTML fragment: %w", err)
+	}
+
+	// Find the wrapping div and format its children
+	var result strings.Builder
+	f.formatFragmentChildren(doc, 0, &result)
+
+	output := result.String()
+
+	// Remove trailing newline if present
 	output = strings.TrimRight(output, "\n")
 
 	// Reconstruct with frontmatter
@@ -76,16 +144,35 @@ func (f *Formatter) Format(content string) (string, error) {
 	return finalResult, nil
 }
 
+// formatFragmentChildren formats children of a fragment's wrapper element,
+// skipping auto-inserted wrappers (html, head, body, and the wrapper div itself).
+func (f *Formatter) formatFragmentChildren(n *html.Node, depth int, buf *strings.Builder) {
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		// Skip the auto-inserted html/body wrappers and pure whitespace
+		if c.Type == html.ElementNode && (c.Data == "html" || c.Data == "body" || c.Data == "head") {
+			f.formatFragmentChildren(c, depth, buf)
+		} else if c.Type == html.ElementNode && c.Data == "div" && isFragmentWrapper(c) {
+			// This is our wrapper div - format its children at the same depth
+			f.formatFragmentChildren(c, depth, buf)
+		} else if c.Type != html.TextNode || !f.isIgnorableWhitespace(c) {
+			f.formatNode(c, depth, buf)
+		}
+	}
+}
+
+// isFragmentWrapper checks if a div is the auto-inserted wrapper div for fragments.
+// It checks if this div has no attributes (since we insert a bare <div>).
+func isFragmentWrapper(n *html.Node) bool {
+	if n.Data != "div" || len(n.Attr) > 0 {
+		return false
+	}
+	return true
+}
+
 // formatNodeChildren formats only the children of a node (skips the node itself).
 func (f *Formatter) formatNodeChildren(n *html.Node, depth int, buf *strings.Builder) {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		// Skip auto-inserted html, head, body tags
-		if c.Type == html.ElementNode && (c.Data == "html" || c.Data == "head" || c.Data == "body") {
-			// Process their children instead
-			f.formatNodeChildren(c, depth, buf)
-		} else {
-			f.formatNode(c, depth, buf)
-		}
+		f.formatNode(c, depth, buf)
 	}
 }
 

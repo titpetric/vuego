@@ -108,3 +108,86 @@ func TestIndentString_WithEmptyLines(t *testing.T) {
 	require.Contains(t, indented, "line1")
 	require.Contains(t, indented, "line3")
 }
+
+// Tests for formatter handling of partial fragments
+func TestFormatter_Format_PartialFragment_SingleElement(t *testing.T) {
+	f := formatter.NewFormatter()
+
+	content := `<div class="card">
+  <h1>Title</h1>
+  <p>Content</p>
+</div>`
+
+	formatted, err := f.Format(content)
+	require.NoError(t, err)
+	// Should not wrap in extra divs
+	require.True(t, len(formatted) > 0)
+	require.Contains(t, formatted, "card")
+	// Should not have outer wrapper
+	require.NotContains(t, formatted, "<div>\n  <div class=\"card\">")
+}
+
+func TestFormatter_Format_PartialFragment_MultipleElements(t *testing.T) {
+	f := formatter.NewFormatter()
+
+	content := `<li v-for="item in items" :key="item.id">
+  <span>{{ item.name }}</span>
+</li>
+<li v-for="item in items" :key="item.id">
+  <span>{{ item.name }}</span>
+</li>`
+
+	formatted, err := f.Format(content)
+	require.NoError(t, err)
+	require.Contains(t, formatted, "<li")
+	require.Contains(t, formatted, "v-for")
+	lines := 0
+	for i := 0; i < len(formatted); i++ {
+		if formatted[i] == '\n' {
+			lines++
+		}
+	}
+	require.Greater(t, lines, 1, "should format multiple list items")
+}
+
+// Tests for formatter handling of full documents
+func TestFormatter_Format_FullDocument_PreservesDoctype(t *testing.T) {
+	f := formatter.NewFormatter()
+
+	content := `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Test</title>
+</head>
+<body>
+  <h1>Hello</h1>
+</body>
+</html>`
+
+	formatted, err := f.Format(content)
+	require.NoError(t, err)
+	require.True(t, len(formatted) > 0)
+	require.Equal(t, "<!DOCTYPE html>", formatted[:15], "should preserve DOCTYPE")
+	require.Contains(t, formatted, "<html")
+}
+
+func TestFormatter_Format_FullDocument_WithHead(t *testing.T) {
+	f := formatter.NewFormatter()
+
+	content := `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Test Page</title>
+</head>
+<body>
+<h1>Content</h1>
+</body>
+</html>`
+
+	formatted, err := f.Format(content)
+	require.NoError(t, err)
+	require.Contains(t, formatted, "<meta")
+	require.Contains(t, formatted, "<title")
+	require.Contains(t, formatted, "<!DOCTYPE")
+}

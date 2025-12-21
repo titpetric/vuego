@@ -106,7 +106,7 @@ func TestVue_EvalAttributes_BoundAndInterpolated(t *testing.T) {
 			var buf bytes.Buffer
 			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
 			require.NoError(t, err)
-			require.True(t, helpers.CompareHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
 		})
 	}
 }
@@ -173,7 +173,7 @@ func TestVue_ObjectBinding_Class(t *testing.T) {
 			var buf bytes.Buffer
 			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
 			require.NoError(t, err)
-			require.True(t, helpers.CompareHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
 		})
 	}
 }
@@ -246,7 +246,7 @@ func TestVue_ObjectBinding_Style(t *testing.T) {
 			var buf bytes.Buffer
 			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
 			require.NoError(t, err)
-			require.True(t, helpers.CompareHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
 		})
 	}
 }
@@ -283,7 +283,7 @@ func TestVue_CombinedStyleAttributes(t *testing.T) {
 			var buf bytes.Buffer
 			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
 			require.NoError(t, err)
-			require.True(t, helpers.CompareHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
 		})
 	}
 }
