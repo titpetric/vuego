@@ -31,20 +31,13 @@ func (t *template) Layout(ctx context.Context, w io.Writer) error {
 
 		layout := tpl.Get("layout")
 		if layout == "" {
-			filename = "layouts/base.vuego"
-			break
+			// No layout specified, write rendered content and exit
+			_, err := io.Copy(w, &buf)
+			return err
 		}
 
 		delete(data, "layout")
 		filename = "layouts/" + layout + ".vuego"
 		continue
 	}
-
-	var buf bytes.Buffer
-	tpl := t.Load(filename).Fill(data)
-	if err := tpl.Render(ctx, &buf); err != nil {
-		return err
-	}
-	_, err := io.Copy(w, &buf)
-	return err
 }

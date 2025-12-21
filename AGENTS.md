@@ -170,3 +170,30 @@ To verify code changes:
 go test ./...
 go build ./...
 ```
+
+## Formatting
+
+The vuego CLI includes a formatter for vuego template files:
+
+```bash
+# Build the formatter binary
+go build -o vuego ./cmd/vuego
+
+# Format a single file (modifies in-place)
+./vuego fmt template.vuego
+
+# Format multiple files
+./vuego fmt file1.vuego file2.vuego
+
+# Usage help
+./vuego help
+```
+
+### Formatter Behavior
+
+- Preserves YAML frontmatter (content between `---` markers)
+- Formats HTML/template content with proper indentation (default: 2 spaces)
+- Adds final newline to output (configurable)
+- Handles Vue.js directives (`v-for`, `v-if`, etc.)
+- Supports inline and block-level tags
+- Modifies files in-place; always backup before running on new files

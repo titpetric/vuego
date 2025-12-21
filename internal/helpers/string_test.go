@@ -32,3 +32,37 @@ func TestIsIdentifier_EdgeCases(t *testing.T) {
 		})
 	}
 }
+
+func TestFormatAttr(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// Trim whitespace
+		{"  value  ", "value"},
+		{"\nvalue\n", "value"},
+		{"\tvalue\t", "value"},
+
+		// Replace newlines with spaces
+		{"line1\nline2", "line1 line2"},
+		{"line1\r\nline2", "line1 line2"},
+
+		// Reduce multiple spaces to single space
+		{"multiple  spaces", "multiple spaces"},
+		{"multiple   spaces", "multiple spaces"},
+		{"multiple\t\tspaces", "multiple spaces"},
+		{"multiple  \n  spaces", "multiple spaces"},
+
+		// Complex cases
+		{"  line1\n  line2  ", "line1 line2"},
+		{"\n\n  value  \n\n", "value"},
+		{"a  b\nc\t\td", "a b c d"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
+			result := helpers.FormatAttr(tc.input)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}

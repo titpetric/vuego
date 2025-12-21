@@ -3,6 +3,8 @@ name: Front-Matter Override
 enabled: true
 ---
 <div>
-  <span>{{ name }}</span>
-  <span>{{ enabled }}</span>
+<span>  {{ name }}
+</span>
+<span>{{ enabled }}
+</span>
 </div>

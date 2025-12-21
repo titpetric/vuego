@@ -1,6 +1,6 @@
 # Vuego CLI Documentation
 
-The `vuego` command-line tool renders `.vuego` templates with JSON data and outputs HTML to stdout.
+The `vuego` command-line tool renders `.vuego` templates with JSON or YAML data and outputs HTML to stdout.
 
 ## Installation
 
@@ -19,20 +19,21 @@ go build ./cmd/vuego
 ## Usage
 
 ```bash
-vuego <template-file> <data-file>
+vuego render <template-file> <data-file>
 ```
 
 ### Arguments
 
 - `<template-file>` - Path to the `.vuego` template file
-- `<data-file>` - Path to the JSON file containing template data
+- `<data-file>` - Path to the JSON or YAML file containing template data
 
 ### Output
 
 The rendered HTML is written to stdout. You can redirect it to a file:
 
 ```bash
-vuego template.vuego data.json > output.html
+vuego render template.vuego data.json > output.html
+vuego render template.vuego data.yaml > output.html
 ```
 
 ## Basic Example
@@ -46,8 +47,9 @@ vuego template.vuego data.json > output.html
 </template>
 ```
 
-### Data File: `hello.json`
+### Data File: `hello.json` (or `hello.yaml`)
 
+JSON format:
 ```json
 {
   "name": "World",
@@ -55,10 +57,18 @@ vuego template.vuego data.json > output.html
 }
 ```
 
+YAML format:
+```yaml
+name: World
+app: Vuego
+```
+
 ### Command
 
 ```bash
-vuego hello.vuego hello.json
+vuego render hello.vuego hello.json
+# or with YAML:
+vuego render hello.vuego hello.yaml
 ```
 
 ### Output
@@ -113,7 +123,7 @@ This example demonstrates using the vuego CLI to render a weather forecast templ
 ### Command
 
 ```bash
-vuego forecast.vuego forecast.json
+vuego render forecast.vuego forecast.json
 ```
 
 ### Output
@@ -193,7 +203,7 @@ pages/
 ### Command
 
 ```bash
-vuego pages/index.vuego pages/data/page.json > index.html
+vuego render pages/index.vuego pages/data/page.json > index.html
 ```
 
 ### Output: `index.html`
@@ -271,7 +281,7 @@ vuego pages/index.vuego pages/data/page.json > index.html
 ### Command
 
 ```bash
-vuego products.vuego products.json
+vuego render products.vuego products.json
 ```
 
 ## Error Handling
@@ -279,28 +289,36 @@ vuego products.vuego products.json
 ### Missing Arguments
 
 ```bash
-$ vuego template.vuego
-Error: Usage: vuego file.tpl file.json
+$ vuego render
+Error: render: requires exactly 2 arguments
+Usage: vuego render <file.tpl> <data>
 ```
 
 ### Template Not Found
 
 ```bash
-$ vuego missing.vuego data.json
-Error: reading JSON file: open data.json: no such file or directory
+$ vuego render missing.vuego data.json
+Error: opening template file: open missing.vuego: no such file or directory
 ```
 
-### Invalid JSON
+### Data File Not Found
 
 ```bash
-$ vuego template.vuego invalid.json
-Error: parsing JSON: invalid character '}' looking for beginning of value
+$ vuego render template.vuego missing.json
+Error: reading data file: open missing.json: no such file or directory
+```
+
+### Invalid Data Format
+
+```bash
+$ vuego render template.vuego invalid.json
+Error: parsing data file: invalid character '}' looking for beginning of value
 ```
 
 ### Missing Required Component Prop
 
 ```bash
-$ vuego page.vuego data.json
+$ vuego render page.vuego data.json
 Error: rendering template: required attribute 'name' not provided
 ```
 
@@ -377,7 +395,7 @@ See [components.md](components.md) for more details on component composition and
 ## Tips and Best Practices
 
 1. **Use stdout redirection** - Redirect output to files for static site generation
-2. **Validate JSON first** - Use `jq` to validate JSON before passing to vuego
+2. **Validate data files first** - Use `jq` for JSON or `yamllint` for YAML before passing to vuego
 3. **Version control templates** - Keep templates and example data in version control
 4. **Organize by feature** - Group related templates and data files together
 5. **Use Make or Task** - Automate builds with task runners for complex projects

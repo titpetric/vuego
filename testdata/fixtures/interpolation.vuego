@@ -1,20 +1,29 @@
 ---
 name: "Set values with vuego component"
 ---
-<vuego count="123"></vuego>
-<p>Please wait, there are {{count}} people in front.</p>
-
-<vuego count="95"></vuego>
-<p>Please wait, there are {{count}} people in front.</p>
-
-<vuego data="{&#34;id&#34;:123}"></vuego>
-<p>Your ticket ID is {{ data.id }}.</p>
-
-<p [v-if]="true">{{ name }}</p>
-
-<vuego data="{&#34;id&#34;:333}" v-keep></vuego>
-<p [v-if]="data.id" [v-text]="data.id"></p>
-
+<vuego count="123">
+</vuego>
+<p>
+  Please wait, there are {{count}} people in front.
+</p>
+<vuego count="95">
+</vuego>
+<p>
+  Please wait, there are {{count}} people in front.
+</p>
+<vuego data="{&#34;id&#34;:123}">
+</vuego>
+<p>
+  Your ticket ID is {{ data.id }}.
+</p>
+<p [v-if]="true">
+  {{ name }}
+</p>
+<vuego data="{&#34;id&#34;:333}" v-keep>
+</vuego>
+<p [v-if]="data.id" [v-text]="data.id">
+</p>
 <template [:data]="{&#34;id&#34;:666}" v-keep>
-	<p [v-text]="data.id"></p>
+  <p [v-text]="data.id">
+  </p>
 </template>

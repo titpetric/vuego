@@ -1,2 +1,3 @@
 <meta content="old-value" />
-<div v-html="content"></div>
+<div v-html="content">
+</div>

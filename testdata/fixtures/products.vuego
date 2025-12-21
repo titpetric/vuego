@@ -1,13 +1,24 @@
 <template>
-  <h1>{{ store }} - Product Catalog</h1>
-  
+  <h1>
+    {{ store }} - Product Catalog
+  </h1>
   <div v-for="item in products">
     <div class="product">
-      <h2>{{ item.name }}</h2>
-      <p>{{ item.description }}</p>
-      <p class="price">${{ item.price }}</p>
-      <p v-if="item.inStock" class="stock">In Stock</p>
-      <p v-if="!item.inStock" class="stock">Out of Stock</p>
+      <h2>
+        {{ item.name }}
+      </h2>
+      <p>
+        {{ item.description }}
+      </p>
+      <p class="price">
+        ${{ item.price }}
+      </p>
+      <p v-if="item.inStock" class="stock">
+        In Stock
+      </p>
+      <p v-if="!item.inStock" class="stock">
+        Out of Stock
+      </p>
     </div>
   </div>
 </template>

@@ -1,2 +1,6 @@
-<p>{{foo}}</p>
-<p>{{missingVar}}</p>
+<p>
+  {{foo}}
+</p>
+<p>
+  {{missingVar}}
+</p>

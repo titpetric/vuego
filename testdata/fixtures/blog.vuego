@@ -1,39 +1,65 @@
-<article>
-  <h1>{{ title }}</h1>
-  <p><em>By {{ author }} on {{ date }}</em></p>
-  
-  <p>{{ intro }}</p>
-
-  <h2>Key Features</h2>
-  <ul>
-    <li v-for="feature in features">
-      <strong>{{ feature.name }}</strong>: {{ feature.description }}
-    </li>
-  </ul>
-
-  <h2>Getting Started</h2>
-  <p>Follow these steps to begin:</p>
-  <ol>
-    <li v-for="step in steps">{{ step }}</li>
-  </ol>
-
-  <blockquote>
-    {{ quote.text }}
-    <br><strong>— {{ quote.author }}</strong>
-  </blockquote>
-
-  <h2>Code Example</h2>
-  <p>Here's a simple example:</p>
-  <pre><code>{{ codeExample }}</code></pre>
-
-  <hr>
-  
-  <h3>Related Articles</h3>
-  <ul>
-    <li v-for="article in related">
-      <a href="#">{{ article }}</a>
-    </li>
-  </ul>
-
-  <p><small>Tags: <span v-for="tag in tags">{{ tag }} </span></small></p>
+<article><h1>
+  {{ title }}
+</h1>
+<p>
+<em>  By {{ author }} on {{ date }}
+</em>
+</p>
+<p>
+  {{ intro }}
+</p>
+<h2>
+  Key Features
+</h2>
+<ul>
+  <li v-for="feature in features">
+<strong>    {{ feature.name }}
+  </strong>
+  : {{ feature.description }}
+</li>
+</ul>
+<h2>
+  Getting Started
+</h2>
+<p>
+  Follow these steps to begin:
+</p>
+<ol>
+  <li v-for="step in steps">
+    {{ step }}
+  </li>
+</ol>
+<blockquote>
+  {{ quote.text }}
+  <br>
+<strong>  — {{ quote.author }}
+</strong>
+</blockquote>
+<h2>
+  Code Example
+</h2>
+<p>
+  Here's a simple example:
+</p>
+<pre>
+<code>  {{ codeExample }}
+</code>
+</pre>
+<hr>
+<h3>
+  Related Articles
+</h3>
+<ul>
+  <li v-for="article in related">
+<a href="#">    {{ article }}
+  </a>
+</li>
+</ul>
+<p>
+  <small>
+    Tags:
+<span v-for="tag in tags">    {{ tag }}
+  </span>
+</small>
+</p>
 </article>

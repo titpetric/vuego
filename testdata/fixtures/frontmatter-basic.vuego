@@ -6,9 +6,15 @@ items:
   - banana
 ---
 <div>
-  <h1>{{ title }}</h1>
-  <p>Count: {{ count }}</p>
+  <h1>
+    {{ title }}
+  </h1>
+  <p>
+    Count: {{ count }}
+  </p>
   <ul>
-    <li v-for="item in items">{{ item }}</li>
+    <li v-for="item in items">
+      {{ item }}
+    </li>
   </ul>
 </div>

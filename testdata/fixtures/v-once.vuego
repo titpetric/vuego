@@ -5,5 +5,6 @@
       appearance && document.documentElement.setAttribute("data-appearance", appearance);
     })();
   </script>
-  <span>{{ item }}</span>
+<span>  {{ item }}
+</span>
 </div>

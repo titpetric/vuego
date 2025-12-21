@@ -1,8 +1,12 @@
 <div v-for="list in lists">
-  <h2>{{list.title}}</h2>
+  <h2>
+    {{list.title}}
+  </h2>
   <ul>
     <template v-for="item in list.items">
-      <li>{{item}}</li>
+      <li>
+        {{item}}
+      </li>
     </template>
   </ul>
 </div>

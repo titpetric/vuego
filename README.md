@@ -22,7 +22,7 @@ In your service you create a new vuego renderer.
 renderer := vuego.New(
 	vuego.WithFS(os.DirFS("templates")),
 	vuego.WithFuncs(funcMap),
-),
+)
 ```
 
 With this you have a `vuego.Template`. From here you can:
@@ -50,7 +50,7 @@ For rendering fragments (from variables or otherwise):
 An example of a rendering invocation is:
 
 ```go
-err = renderer.New().Fill(data).RenderString(r.Context(), w, `<li v-for="item in items">{{ item.title }}</li>`.
+err = renderer.New().Fill(data).RenderString(r.Context(), w, `<li v-for="item in items">{{ item.title }}</li>`)
 ```
 
 There's more detail around authoring vuego templates, check documentation:

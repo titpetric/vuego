@@ -1,5 +1,12 @@
 package helpers
 
+import (
+	"regexp"
+	"strings"
+)
+
+var spacesRe = regexp.MustCompile(`\s+`)
+
 // IsIdentifierChar reports whether ch is valid in an identifier.
 // If first is true, digits are not allowed.
 func IsIdentifierChar(ch rune, first bool) bool {
@@ -49,4 +56,23 @@ func NeedsHTMLEscape(s string) bool {
 		}
 	}
 	return false
+}
+
+// FormatAttr formats an attribute value by trimming whitespace, replacing newlines with spaces,
+// and reducing repeated spaces to single spaces.
+func FormatAttr(val string) string {
+	var b strings.Builder
+
+	// Trim leading and trailing whitespace
+	val = strings.TrimSpace(val)
+
+	// Replace newlines with spaces
+	val = strings.ReplaceAll(val, "\n", " ")
+	val = strings.ReplaceAll(val, "\r", " ")
+
+	// Reduce multiple spaces to single space
+	val = spacesRe.ReplaceAllString(val, " ")
+
+	b.WriteString(val)
+	return b.String()
 }

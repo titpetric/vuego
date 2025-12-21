@@ -1,2 +1,6 @@
-<div v-pre>{{ message }} and {{ count }}</div>
-<div>{{ actual }}</div>
+<div v-pre>
+  {{ message }} and {{ count }}
+</div>
+<div>
+  {{ actual }}
+</div>
