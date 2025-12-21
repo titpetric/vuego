@@ -66,11 +66,16 @@ func (v *Vue) RenderNodes(w io.Writer, nodes []*html.Node, data any) error {
 
 // renderNodesWithContext is an internal method that evaluates and renders nodes with a pre-configured context.
 func (v *Vue) renderNodesWithContext(ctx VueContext, w io.Writer, nodes []*html.Node) error {
-	if err := v.preProcessNodes(ctx, nodes); err != nil {
+	nodeCopy := make([]*html.Node, 0, len(nodes))
+	for i := 0; i < len(nodes); i++ {
+		nodeCopy = append(nodeCopy, helpers.DeepCloneNode(nodes[i]))
+	}
+
+	if err := v.preProcessNodes(ctx, nodeCopy); err != nil {
 		return err
 	}
 
-	result, err := v.evaluate(ctx, nodes, 0)
+	result, err := v.evaluate(ctx, nodeCopy, 0)
 	if err != nil {
 		return err
 	}
