@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.44%   | 932       | 3141  |
+| ✅     | titpetric/vuego                      | 85.06%   | 912       | 3115  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 22        | 132   |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/formatter            | 89.34%   | 112       | 318   |
@@ -79,7 +79,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.evalElseIfChain               | 91.70%   | 34        |
 | ✅     | titpetric/vuego                      | Vue.evalFilter                    | 100.00%  | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalFor                       | 81.80%   | 6         |
-| ❌     | titpetric/vuego                      | Vue.evalInclude                   | 0.00%    | 4         |
+| ✅     | titpetric/vuego                      | Vue.evalInclude                   | 87.50%   | 4         |
 | ❌     | titpetric/vuego                      | Vue.evalObjectBinding             | 53.80%   | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalPipe                      | 81.80%   | 16        |
 | ✅     | titpetric/vuego                      | Vue.evalSegment                   | 70.00%   | 5         |
@@ -88,7 +88,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.evalVHtml                     | 94.70%   | 9         |
 | ✅     | titpetric/vuego                      | Vue.evalVShow                     | 100.00%  | 5         |
 | ❌     | titpetric/vuego                      | Vue.evalVText                     | 75.00%   | 9         |
-| ✅     | titpetric/vuego                      | Vue.evaluate                      | 90.40%   | 169       |
+| ✅     | titpetric/vuego                      | Vue.evaluate                      | 91.80%   | 149       |
 | ✅     | titpetric/vuego                      | Vue.evaluateChildren              | 100.00%  | 1         |
 | ❌     | titpetric/vuego                      | Vue.evaluateNodeAsElement         | 61.80%   | 24        |
 | ✅     | titpetric/vuego                      | Vue.interpolate                   | 100.00%  | 2         |
