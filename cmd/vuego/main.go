@@ -10,6 +10,7 @@ import (
 	yaml "gopkg.in/yaml.v3"
 
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/formatter"
 )
 
 func main() {
@@ -43,23 +44,24 @@ func start() error {
 }
 
 func printUsage() error {
-	return fmt.Errorf("Usage: vuego [fmt|render] <args...>\n       vuego <template.tpl> <data.json>")
+	return fmt.Errorf("Usage: vuego [fmt|render] <args...>\n       vuego <template.vuego> <data.json/yml>")
 }
 
 func printHelp() error {
 	fmt.Fprintf(os.Stderr, `vuego - Template formatter and renderer
 
 Usage:
-  vuego fmt <file.vuego>           Format a vuego template file
-  vuego render <file.tpl> <data>   Render a template with data
+  vuego fmt <file.vuego>              Format a vuego template file
+  vuego render <file.vuego> <data>    Render a template with data
 
 Examples:
   vuego fmt layout.vuego
   vuego render index.vuego data.json
+  vuego render index.vuego data.yml
 
 Commands:
   fmt      Format vuego template files
-  render   Render templates with data
+  render   Render templates with data (supports JSON and YAML)
   help     Show this help message
 `)
 	return nil
@@ -70,7 +72,7 @@ func formatCommand(args []string) error {
 		return fmt.Errorf("fmt: missing file argument\nUsage: vuego fmt <file.vuego> [file2.vuego ...]")
 	}
 
-	formatter := vuego.NewFormatter()
+	f := formatter.NewFormatter()
 	var lastErr error
 
 	for _, file := range args {
@@ -81,7 +83,7 @@ func formatCommand(args []string) error {
 			continue
 		}
 
-		formatted, err := formatter.Format(string(content))
+		formatted, err := f.Format(string(content))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error formatting %s: %v\n", file, err)
 			lastErr = err
@@ -105,7 +107,7 @@ func formatCommand(args []string) error {
 func renderCommand(args []string) error {
 	fs := flag.NewFlagSet("render", flag.ContinueOnError)
 	fs.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: vuego render <file.tpl> <data>\n")
+		fmt.Fprintf(os.Stderr, "Usage: vuego render <file.vuego> <data.json/yml>\n")
 	}
 
 	if err := fs.Parse(args); err != nil {

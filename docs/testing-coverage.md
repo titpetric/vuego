@@ -12,10 +12,11 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.94%   | 928       | 3111  |
-| ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 6         | 41    |
+| ✅     | titpetric/vuego                      | 84.95%   | 927       | 3104  |
+| ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 22        | 132   |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
-| ✅     | titpetric/vuego/internal/helpers     | 95.28%   | 167       | 527   |
+| ✅     | titpetric/vuego/formatter            | 89.34%   | 112       | 318   |
+| ✅     | titpetric/vuego/internal/helpers     | 95.44%   | 167       | 545   |
 | ✅     | titpetric/vuego/internal/parser      | 84.60%   | 6         | 25    |
 | ✅     | titpetric/vuego/internal/reflect     | 94.12%   | 61        | 224   |
 | ✅     | titpetric/vuego/internal/ulid        | 50.00%   | 0         | 20    |
@@ -151,7 +152,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | template.Err                      | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | template.Fill                     | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | template.Get                      | 100.00%  | 4         |
-| ✅     | titpetric/vuego                      | template.Layout                   | 87.50%   | 7         |
+| ✅     | titpetric/vuego                      | template.Layout                   | 88.90%   | 6         |
 | ✅     | titpetric/vuego                      | template.Load                     | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | template.New                      | 0.00%    | 0         |
 | ✅     | titpetric/vuego                      | template.Render                   | 85.70%   | 3         |
@@ -166,8 +167,12 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | trimFunc                          | 66.70%   | 1         |
 | ✅     | titpetric/vuego                      | typeFunc                          | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | upperFunc                         | 66.70%   | 1         |
+| ❌     | titpetric/vuego/cmd/vuego            | formatCommand                     | 0.00%    | 11        |
 | ❌     | titpetric/vuego/cmd/vuego            | main                              | 0.00%    | 1         |
-| ❌     | titpetric/vuego/cmd/vuego            | start                             | 0.00%    | 5         |
+| ✅     | titpetric/vuego/cmd/vuego            | printHelp                         | 0.00%    | 0         |
+| ✅     | titpetric/vuego/cmd/vuego            | printUsage                        | 0.00%    | 0         |
+| ❌     | titpetric/vuego/cmd/vuego            | renderCommand                     | 0.00%    | 6         |
+| ❌     | titpetric/vuego/cmd/vuego            | start                             | 0.00%    | 4         |
 | ❌     | titpetric/vuego/cmd/vuego-playground | NewIndexPageData                  | 0.00%    | 10        |
 | ❌     | titpetric/vuego/cmd/vuego-playground | combinedFilesystem.Open           | 0.00%    | 1         |
 | ✅     | titpetric/vuego/cmd/vuego-playground | combinedFilesystem.ReadDir        | 0.00%    | 0         |
@@ -178,6 +183,20 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego/cmd/vuego-playground | handleSave                        | 0.00%    | 9         |
 | ❌     | titpetric/vuego/cmd/vuego-playground | loadExamplesMap                   | 0.00%    | 26        |
 | ❌     | titpetric/vuego/cmd/vuego-playground | main                              | 0.00%    | 10        |
+| ✅     | titpetric/vuego/formatter            | DefaultFormatterOptions           | 100.00%  | 0         |
+| ✅     | titpetric/vuego/formatter            | FormatString                      | 100.00%  | 0         |
+| ✅     | titpetric/vuego/formatter            | Formatter.Format                  | 93.80%   | 2         |
+| ❌     | titpetric/vuego/formatter            | Formatter.formatNode              | 43.50%   | 71        |
+| ✅     | titpetric/vuego/formatter            | Formatter.formatNodeChildren      | 100.00%  | 6         |
+| ✅     | titpetric/vuego/formatter            | Formatter.isIgnorableWhitespace   | 66.70%   | 1         |
+| ✅     | titpetric/vuego/formatter            | Formatter.renderCloseTag          | 100.00%  | 0         |
+| ✅     | titpetric/vuego/formatter            | Formatter.renderOpenTag           | 100.00%  | 3         |
+| ❌     | titpetric/vuego/formatter            | Formatter.shouldKeepInline        | 77.80%   | 18        |
+| ✅     | titpetric/vuego/formatter            | Formatter.splitFrontmatter        | 88.90%   | 5         |
+| ✅     | titpetric/vuego/formatter            | IndentString                      | 100.00%  | 3         |
+| ✅     | titpetric/vuego/formatter            | NewFormatter                      | 100.00%  | 0         |
+| ✅     | titpetric/vuego/formatter            | NewFormatterWithOptions           | 100.00%  | 0         |
+| ✅     | titpetric/vuego/formatter            | isVoidElement                     | 80.00%   | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | AppendAttr                        | 100.00%  | 0         |
 | ✅     | titpetric/vuego/internal/helpers     | CloneNode                         | 100.00%  | 0         |
 | ✅     | titpetric/vuego/internal/helpers     | CompareHTML                       | 93.80%   | 8         |
@@ -185,6 +204,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego/internal/helpers     | CountChildren                     | 83.30%   | 2         |
 | ✅     | titpetric/vuego/internal/helpers     | DeepCloneNode                     | 100.00%  | 6         |
 | ✅     | titpetric/vuego/internal/helpers     | FilterAttrs                       | 100.00%  | 3         |
+| ✅     | titpetric/vuego/internal/helpers     | FormatAttr                        | 100.00%  | 0         |
 | ✅     | titpetric/vuego/internal/helpers     | GetAttr                           | 100.00%  | 3         |
 | ✅     | titpetric/vuego/internal/helpers     | GetBodyNode                       | 100.00%  | 11        |
 | ✅     | titpetric/vuego/internal/helpers     | HasAttr                           | 100.00%  | 3         |

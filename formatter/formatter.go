@@ -1,10 +1,8 @@
-package vuego
+package formatter
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
-	"unicode"
 
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
