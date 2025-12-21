@@ -49,6 +49,7 @@ func TestExprEvaluator_SimpleExpressions(t *testing.T) {
 		{"logical NOT true", "!x", map[string]any{"x": true}, false},
 
 		// String comparisons
+		{"string equality", "name === 'Alice'", map[string]any{"name": "Alice"}, true},
 		{"string equality", "name == 'Alice'", map[string]any{"name": "Alice"}, true},
 		{"string inequality", "name != 'Bob'", map[string]any{"name": "Alice"}, true},
 

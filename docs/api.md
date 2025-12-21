@@ -387,7 +387,7 @@ func (*ExprEvaluator) ClearCache()
 
 Eval evaluates an expression against the given environment (stack). It returns the result value and any error. The expression can contain:
 - Variable references: item, item.title, items[0]
-- Comparison: ==, !=, <, >, <=, >=
+- Comparison: ==, !=, <, >, <=, >=, === (same as ==, for convenience)
 - Boolean operations: &&, ||, !
 - Function calls: len(items), isActive(v)
 - Literals: 42, "text", true, false

@@ -2,6 +2,7 @@ package vuego
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/expr-lang/expr"
@@ -26,11 +27,13 @@ func NewExprEvaluator() *ExprEvaluator {
 // It returns the result value and any error.
 // The expression can contain:
 //   - Variable references: item, item.title, items[0]
-//   - Comparison: ==, !=, <, >, <=, >=
+//   - Comparison: ==, !=, <, >, <=, >=, === (same as ==, for convenience)
 //   - Boolean operations: &&, ||, !
 //   - Function calls: len(items), isActive(v)
 //   - Literals: 42, "text", true, false
 func (e *ExprEvaluator) Eval(expression string, env map[string]any) (any, error) {
+	expression = strings.ReplaceAll(expression, "===", "==")
+
 	// Get or compile the program
 	prog, err := e.getProgram(expression)
 	if err != nil {

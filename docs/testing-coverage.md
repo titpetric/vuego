@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.06%   | 912       | 3115  |
+| ✅     | titpetric/vuego                      | 85.07%   | 912       | 3117  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 22        | 132   |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ✅     | titpetric/vuego/formatter            | 89.34%   | 112       | 318   |
@@ -26,7 +26,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | Status | Package                              | Function                          | Coverage | Cognitive |
 |--------|--------------------------------------|-----------------------------------|----------|-----------|
 | ✅     | titpetric/vuego                      | ExprEvaluator.ClearCache          | 100.00%  | 0         |
-| ✅     | titpetric/vuego                      | ExprEvaluator.Eval                | 85.70%   | 2         |
+| ✅     | titpetric/vuego                      | ExprEvaluator.Eval                | 87.50%   | 2         |
 | ✅     | titpetric/vuego                      | ExprEvaluator.getProgram          | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | LessProcessor.New                 | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | LessProcessor.PostProcess         | 75.00%   | 3         |
