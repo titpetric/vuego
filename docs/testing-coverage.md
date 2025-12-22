@@ -12,14 +12,14 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.09%   | 915       | 3128  |
+| ✅     | titpetric/vuego                      | 84.89%   | 916       | 3133  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 45        | 246   |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ❌     | titpetric/vuego/diff                 | 0.00%    | 60        | 193   |
 | ✅     | titpetric/vuego/formatter            | 92.92%   | 127       | 401   |
 | ✅     | titpetric/vuego/internal/helpers     | 95.10%   | 166       | 552   |
 | ✅     | titpetric/vuego/internal/parser      | 84.60%   | 6         | 25    |
-| ✅     | titpetric/vuego/internal/reflect     | 94.12%   | 61        | 224   |
+| ✅     | titpetric/vuego/internal/reflect     | 94.50%   | 61        | 224   |
 | ✅     | titpetric/vuego/internal/ulid        | 50.00%   | 0         | 20    |
 
 ## Functions
@@ -58,7 +58,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Stack.GetMap                      | 100.00%  | 5         |
 | ✅     | titpetric/vuego                      | Stack.GetSlice                    | 100.00%  | 3         |
 | ✅     | titpetric/vuego                      | Stack.GetString                   | 72.70%   | 3         |
-| ✅     | titpetric/vuego                      | Stack.Lookup                      | 100.00%  | 6         |
+| ✅     | titpetric/vuego                      | Stack.Lookup                      | 85.70%   | 6         |
 | ✅     | titpetric/vuego                      | Stack.Pop                         | 90.90%   | 6         |
 | ✅     | titpetric/vuego                      | Stack.Push                        | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | Stack.Resolve                     | 92.30%   | 7         |
@@ -165,7 +165,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | template.SetErr                   | 0.00%    | 0         |
 | ✅     | titpetric/vuego                      | template.new                      | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | titleFunc                         | 85.70%   | 6         |
-| ✅     | titpetric/vuego                      | toMapData                         | 100.00%  | 2         |
+| ✅     | titpetric/vuego                      | toMapData                         | 85.70%   | 3         |
 | ✅     | titpetric/vuego                      | trimFunc                          | 66.70%   | 1         |
 | ✅     | titpetric/vuego                      | typeFunc                          | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | upperFunc                         | 66.70%   | 1         |
@@ -247,7 +247,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego/internal/reflect     | PopulateStructFields              | 79.20%   | 17        |
 | ✅     | titpetric/vuego/internal/reflect     | ResolveValue                      | 100.00%  | 2         |
 | ✅     | titpetric/vuego/internal/reflect     | SliceToAny                        | 100.00%  | 4         |
-| ❌     | titpetric/vuego/internal/reflect     | StructToMap                       | 73.10%   | 18        |
+| ❌     | titpetric/vuego/internal/reflect     | StructToMap                       | 76.90%   | 18        |
 | ✅     | titpetric/vuego/internal/reflect     | resolveMap                        | 100.00%  | 1         |
 | ✅     | titpetric/vuego/internal/reflect     | resolveSliceIndex                 | 100.00%  | 2         |
 | ✅     | titpetric/vuego/internal/reflect     | resolveStruct                     | 100.00%  | 6         |
