@@ -9,6 +9,7 @@ import (
 
 	"github.com/titpetric/vuego/internal/helpers"
 	"github.com/titpetric/vuego/internal/parser"
+	"github.com/titpetric/vuego/internal/reflect"
 )
 
 // Vue is the main template renderer for .vuego templates.
@@ -89,7 +90,8 @@ func (v *Vue) renderNodesWithContext(ctx VueContext, w io.Writer, nodes []*html.
 
 // toMapData converts any value to map[string]any for use as template context.
 // If data is already a map[string]any, it's returned as-is.
-// Otherwise, returns an empty map (struct fields will be resolved via fallback in Stack.Lookup).
+// If data is a struct, it's converted to a map using JSON tags.
+// Otherwise, returns an empty map (which will still allow field access via Stack.rootData fallback).
 func toMapData(data any) map[string]any {
 	if data == nil {
 		return make(map[string]any)
@@ -97,7 +99,11 @@ func toMapData(data any) map[string]any {
 	if m, ok := data.(map[string]any); ok {
 		return m
 	}
-	// Return empty map; struct fields will be accessible via Stack.rootData fallback
+	// Try to convert struct to map using JSON tags
+	if m := reflect.StructToMap(data); len(m) > 0 {
+		return m
+	}
+	// Return empty map; fields will be accessible via Stack.rootData fallback
 	return make(map[string]any)
 }
 
