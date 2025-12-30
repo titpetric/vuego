@@ -36,17 +36,10 @@ tasks:
     desc: "Lint codebase"
     cmds:
       - task: fmt
-      - task: lint:tools:golangci-lint
-      - task: lint:godoc
+      - task: lint:golangci-lint
 
-  lint:tools:golangci-lint:
+  lint:golangci-lint:
     cmd: golangci-lint run --fix ./...
-
-  lint:godoc:
-    desc: "Lint godoc comments"
-    cmds:
-      - schema-gen extract --pretty-json
-      - schema-gen lint --summary
 
   test:
     desc: "Run tests and collect coverage"
@@ -64,6 +57,7 @@ tasks:
       - go-fsck docs > docs/api.md
       - go tool cover -func=pkg.cov | summary coverfunc --json > pkg.cov.json
       - go-fsck extract --pretty-json ./...
+      - go-fsck lint --exclude=imports ./...
       - go-fsck coverage -c pkg.cov.json -o go-fsck.json
       - go-fsck coverage --template=docs/testing-coverage.md.tpl -v > docs/testing-coverage.md
       - perl -pi -e 's/github.com\/titpetric/titpetric/g' docs/testing-coverage.md

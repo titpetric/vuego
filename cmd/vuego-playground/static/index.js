@@ -29,57 +29,128 @@ function loadExample(name) {
 
 // Rebuild the example button list from the loaded examples
 function refreshExampleButtons() {
-    const exampleList = [];
-    
-    // Build the example list from the examples object
-    for (const name in examples) {
-        const depth = name.split('/').length - 1;
-        const label = name.split('/').pop();
-        const isNested = depth > 0;
-        const buttonClass = isNested ? 'example-nested' : 'example-root';
-        
-        exampleList.push({
-            name: name,
-            label: label,
-            depth: depth,
-            isNested: isNested,
-            buttonClass: buttonClass
-        });
-    }
-    
-    // Sort by depth first (root first), then alphabetically
-    exampleList.sort((a, b) => {
-        if (a.depth !== b.depth) {
-            return a.depth - b.depth;
-        }
-        return a.name.localeCompare(b.name);
-    });
-    
-    // Rebuild Pages group
-    const pagesGroup = document.querySelector('.example-group:first-child .button-group');
-    pagesGroup.innerHTML = '';
-    exampleList.forEach(ex => {
-        if (!ex.isNested) {
-            const button = document.createElement('button');
-            button.className = ex.buttonClass;
-            button.textContent = ex.label;
-            button.onclick = () => loadExample(ex.name);
-            pagesGroup.appendChild(button);
-        }
-    });
-    
-    // Rebuild Components group
-    const componentsGroup = document.querySelector('.example-group:last-child .button-group');
-    componentsGroup.innerHTML = '';
-    exampleList.forEach(ex => {
-        if (ex.isNested) {
-            const button = document.createElement('button');
-            button.className = ex.buttonClass;
-            button.textContent = ex.label;
-            button.onclick = () => loadExample(ex.name);
-            componentsGroup.appendChild(button);
-        }
-    });
+	const pageButtons = [];
+	const componentsByFolder = {};
+	
+	// Build the example lists from the examples object
+	for (const name in examples) {
+		const parts = name.split('/');
+		
+		// Check if this is a component (starts with "components")
+		const isComponent = parts.length > 1 && parts[0] === 'components';
+		
+		const label = parts[parts.length - 1];
+		
+		if (!isComponent) {
+			// Root-level page
+			pageButtons.push({
+				name: name,
+				label: label,
+				component: label,
+				buttonClass: 'example-root'
+			});
+		} else {
+			// Component in components folder
+			let folderGroup;
+			if (parts.length === 2) {
+				// Root component: components/list.vuego
+				folderGroup = 'Component';
+			} else {
+				// Nested component: components/form/input.vuego
+				folderGroup = parts[1];
+			}
+			
+			const componentName = buildComponentName(parts);
+			
+			if (!componentsByFolder[folderGroup]) {
+				componentsByFolder[folderGroup] = [];
+			}
+			componentsByFolder[folderGroup].push({
+				name: name,
+				label: label,
+				component: componentName,
+				buttonClass: 'example-nested'
+			});
+		}
+	}
+	
+	// Sort pages alphabetically
+	pageButtons.sort((a, b) => a.name.localeCompare(b.name));
+	
+	// Get sorted folder names (with "Component" first)
+	const folderNames = Object.keys(componentsByFolder).sort((a, b) => {
+		// Put "Component" (root components) first
+		if (a === 'Component') return -1;
+		if (b === 'Component') return 1;
+		return a.localeCompare(b);
+	});
+	
+	// Sort components within each folder
+	folderNames.forEach(folder => {
+		componentsByFolder[folder].sort((a, b) => a.name.localeCompare(b.name));
+	});
+	
+	// Rebuild Pages group
+	const exampleGroups = document.querySelector('.example-groups');
+	const firstGroup = exampleGroups.querySelector('.example-group');
+	if (firstGroup) {
+		const pagesGroup = firstGroup.querySelector('.button-group');
+		pagesGroup.innerHTML = '';
+		pageButtons.forEach(page => {
+			const button = document.createElement('button');
+			button.className = page.buttonClass;
+			button.textContent = page.label;
+			button.onclick = () => loadExample(page.name);
+			pagesGroup.appendChild(button);
+		});
+	}
+	
+	// Rebuild component groups
+	// First, remove all component groups except the pages group
+	const allGroups = exampleGroups.querySelectorAll('.example-group');
+	for (let i = allGroups.length - 1; i > 0; i--) {
+		allGroups[i].remove();
+	}
+	
+	// Add new component groups
+	folderNames.forEach(folder => {
+		const group = document.createElement('div');
+		group.className = 'example-group';
+		
+		const label = document.createElement('span');
+		label.className = 'group-label';
+		label.textContent = folder === 'Component' ? 'Component' : `Component / ${folder}`;
+		group.appendChild(label);
+		
+		const buttonGroup = document.createElement('div');
+		buttonGroup.className = 'button-group';
+		
+		componentsByFolder[folder].forEach(component => {
+			const button = document.createElement('button');
+			button.className = component.buttonClass;
+			button.textContent = component.label;
+			button.title = component.component;
+			button.onclick = () => loadExample(component.name);
+			buttonGroup.appendChild(button);
+		});
+		
+		group.appendChild(buttonGroup);
+		exampleGroups.appendChild(group);
+	});
+}
+
+// Helper function to build component name from parts
+function buildComponentName(parts) {
+	let startIdx = 0;
+	if (parts.length > 0 && parts[0] === 'components') {
+		startIdx = 1;
+	}
+	
+	if (startIdx >= parts.length) {
+		return '';
+	}
+	
+	return parts.slice(startIdx).join('-');
 }
 
 async function render() {

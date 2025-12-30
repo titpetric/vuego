@@ -15,6 +15,8 @@ import (
 	"strings"
 	"testing/fstest"
 
+	yaml "gopkg.in/yaml.v2"
+
 	"github.com/titpetric/vuego"
 )
 
@@ -43,12 +45,20 @@ type ExamplesResponse struct {
 	Error    string             `json:"error,omitempty"`
 }
 
+// ComponentGroup represents a grouped set of components by folder
+type ComponentGroup struct {
+	Label      string
+	Components []ExampleButton
+}
+
 // ExampleButton represents an example button with metadata.
 type ExampleButton struct {
 	Name        string
 	Label       string
+	Component   string // Component name with folder prefix (e.g., "form-input")
+	Folder      string // Folder path (e.g., "form")
 	Depth       int
-	IsNested    bool
+	IsPage      bool
 	ButtonClass string
 	OnClick     string
 }
@@ -61,52 +71,109 @@ type FirstExample struct {
 
 // IndexPageData holds the data for rendering the index template.
 type IndexPageData struct {
-	Title        string
-	Subtitle     string
-	ExampleList  []any
-	FirstExample FirstExample
+	Title         string
+	Subtitle      string
+	PageButtons   []ExampleButton
+	ComponentList []ComponentGroup
+	FirstExample  FirstExample
 }
 
 // NewIndexPageData creates a new IndexPageData with default values.
 func NewIndexPageData(examples map[string]Example) IndexPageData {
-	exampleList := make([]any, 0, len(examples))
+	var pageButtons []ExampleButton
+	componentsByFolder := make(map[string][]ExampleButton)
+
 	for name := range examples {
-		depth := strings.Count(name, "/")
-		label := name
-		isNested := depth > 0
-		if idx := strings.LastIndex(name, "/"); idx != -1 {
-			label = name[idx+1:]
-		}
+		parts := strings.Split(name, "/")
 
-		buttonClass := "example-root"
-		if isNested {
-			buttonClass = "example-nested"
-		}
+		// Check if this is a component (starts with "components")
+		isComponent := len(parts) > 1 && parts[0] == "components"
 
-		exampleList = append(exampleList, ExampleButton{
-			Name:        name,
-			Label:       label,
-			Depth:       depth,
-			IsNested:    isNested,
-			ButtonClass: buttonClass,
-			OnClick:     fmt.Sprintf("loadExample('%s')", name),
+		label := parts[len(parts)-1]
+
+		if !isComponent {
+			// Root-level page
+			pageButtons = append(pageButtons, ExampleButton{
+				Name:        name,
+				Label:       label,
+				Component:   label,
+				Folder:      "",
+				Depth:       0,
+				IsPage:      true,
+				ButtonClass: "example-root",
+				OnClick:     fmt.Sprintf("loadExample('%s')", name),
+			})
+		} else {
+			// Component in components folder
+			// Determine folder group
+			var folderGroup string
+			if len(parts) == 2 {
+				// Root component: components/list.vuego
+				folderGroup = "Component"
+			} else {
+				// Nested component: components/form/input.vuego
+				folderGroup = parts[1]
+			}
+
+			componentName := buildComponentName(parts)
+
+			componentsByFolder[folderGroup] = append(componentsByFolder[folderGroup], ExampleButton{
+				Name:        name,
+				Label:       label,
+				Component:   componentName,
+				Folder:      folderGroup,
+				Depth:       len(parts) - 1,
+				IsPage:      false,
+				ButtonClass: "example-nested",
+				OnClick:     fmt.Sprintf("loadExample('%s')", name),
+			})
+		}
+	}
+
+	// Sort pages alphabetically
+	sort.Slice(pageButtons, func(i, j int) bool {
+		return pageButtons[i].Name < pageButtons[j].Name
+	})
+
+	// Sort component groups by folder name (with "Component" first)
+	var folderNames []string
+	for folder := range componentsByFolder {
+		folderNames = append(folderNames, folder)
+	}
+	sort.Slice(folderNames, func(i, j int) bool {
+		// Put "Component" (root components) first
+		if folderNames[i] == "Component" {
+			return true
+		}
+		if folderNames[j] == "Component" {
+			return false
+		}
+		return folderNames[i] < folderNames[j]
+	})
+
+	var componentList []ComponentGroup
+	for _, folder := range folderNames {
+		components := componentsByFolder[folder]
+		// Sort components alphabetically
+		sort.Slice(components, func(i, j int) bool {
+			return components[i].Name < components[j].Name
+		})
+		componentList = append(componentList, ComponentGroup{
+			Label:      folder,
+			Components: components,
 		})
 	}
 
-	// Sort by depth first (root first), then alphabetically
-	sort.Slice(exampleList, func(i, j int) bool {
-		ei := exampleList[i].(ExampleButton)
-		ej := exampleList[j].(ExampleButton)
-		if ei.Depth != ej.Depth {
-			return ei.Depth < ej.Depth
-		}
-		return ei.Name < ej.Name
-	})
-
 	// Get first example for initial render
 	firstEx := FirstExample{Template: "", Data: "{}"}
-	if len(exampleList) > 0 {
-		ex := exampleList[0].(ExampleButton)
+	if len(pageButtons) > 0 {
+		ex := pageButtons[0]
+		if example, ok := examples[ex.Name]; ok {
+			firstEx.Template = example.Template
+			firstEx.Data = example.Data
+		}
+	} else if len(componentList) > 0 && len(componentList[0].Components) > 0 {
+		ex := componentList[0].Components[0]
 		if example, ok := examples[ex.Name]; ok {
 			firstEx.Template = example.Template
 			firstEx.Data = example.Data
@@ -114,11 +181,29 @@ func NewIndexPageData(examples map[string]Example) IndexPageData {
 	}
 
 	return IndexPageData{
-		Title:        "VueGo Playground",
-		Subtitle:     "Test your VueGo templates in real-time",
-		ExampleList:  exampleList,
-		FirstExample: firstEx,
+		Title:         "VueGo Playground",
+		Subtitle:      "Test your VueGo templates in real-time",
+		PageButtons:   pageButtons,
+		ComponentList: componentList,
+		FirstExample:  firstEx,
 	}
+}
+
+// buildComponentName builds a kebab-case component name from path parts
+// e.g., ["components", "form", "input"] -> "form-input"
+func buildComponentName(parts []string) string {
+	// Skip first part if it's "components"
+	startIdx := 0
+	if len(parts) > 0 && parts[0] == "components" {
+		startIdx = 1
+	}
+
+	if startIdx >= len(parts) {
+		return ""
+	}
+
+	// Join remaining parts with hyphens
+	return strings.Join(parts[startIdx:], "-")
 }
 
 func main() {
@@ -236,7 +321,7 @@ func loadExamplesMap(examplesFS fs.FS) map[string]Example {
 		ext := filepath.Ext(name)
 
 		// Only process .vuego and .json files
-		if ext != ".vuego" && ext != ".json" {
+		if ext != ".vuego" && ext != ".json" && ext != ".yaml" && ext != ".yml" {
 			return nil
 		}
 
@@ -274,6 +359,8 @@ func loadExamplesMap(examplesFS fs.FS) map[string]Example {
 				continue
 			}
 			example.Template = string(data)
+		} else {
+			continue
 		}
 
 		// Read data file (.json) - default to {} if not found
@@ -285,6 +372,27 @@ func loadExamplesMap(examplesFS fs.FS) map[string]Example {
 			}
 		}
 
+		yamlfile, ok := files[".yaml"]
+		if !ok {
+			yamlfile, ok = files[".yml"]
+		}
+		if ok {
+			data, err := fs.ReadFile(examplesFS, yamlfile)
+			if err == nil {
+				var v any
+				if err := yaml.Unmarshal(data, &v); err != nil {
+					log.Printf("error decoding %s: %v (ignored)\n", yamlfile, err)
+				} else {
+					v = convert(v)
+					b, err := json.MarshalIndent(v, "", "  ")
+					example.Data = string(b)
+					if err != nil {
+						log.Printf("Reading %s, got %s, err %s\n", yamlfile, example.Data, err)
+					}
+				}
+			}
+		}
+
 		// Only add if we have at least a template
 		if example.Template != "" {
 			examples[exampleName] = example
@@ -292,6 +400,22 @@ func loadExamplesMap(examplesFS fs.FS) map[string]Example {
 	}
 
 	return examples
+}
+
+func convert(i any) any {
+	switch x := i.(type) {
+	case map[any]any:
+		m2 := map[string]any{}
+		for k, v := range x {
+			m2[k.(string)] = convert(v)
+		}
+		return m2
+	case []any:
+		for i, v := range x {
+			x[i] = convert(v)
+		}
+	}
+	return i
 }
 
 func handleExamples(w http.ResponseWriter, r *http.Request, examplesFS fs.FS) {

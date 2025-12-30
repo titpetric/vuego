@@ -119,14 +119,14 @@ func (t *template) new() *template {
 	}
 }
 
-// WithLessProcessor returns a LoadOption that registers a LESS processor
+// WithLessProcessor returns a LoadOption that registers a LESS processor.
 func WithLessProcessor() LoadOption {
 	return func(vue *Vue) {
 		vue.RegisterNodeProcessor(NewLessProcessor(vue.templateFS))
 	}
 }
 
-// WithProcessor returns a LoadOption that registers a custom node processor
+// WithProcessor returns a LoadOption that registers a custom node processor.
 func WithProcessor(processor NodeProcessor) LoadOption {
 	return func(vue *Vue) {
 		vue.RegisterNodeProcessor(processor)

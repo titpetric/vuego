@@ -450,7 +450,7 @@ func convertValue(val reflect.Value, targetType reflect.Type) (reflect.Value, bo
 	return reflect.Value{}, false
 }
 
-// DefaultFuncMap returns a FuncMap with built-in utility functions
+// DefaultFuncMap returns a FuncMap with built-in utility functions.
 func (v *Vue) DefaultFuncMap() FuncMap {
 	return FuncMap{
 		"upper":      upperFunc,

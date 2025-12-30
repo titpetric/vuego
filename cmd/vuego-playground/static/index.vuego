@@ -38,19 +38,19 @@
 
     <div class="config-bar">
         <div class="example-groups">
-            <div class="example-group">
+            <div class="example-group" v-if="PageButtons">
                 <span class="group-label">Pages</span>
                 <div class="button-group">
-                    <span v-for="example in ExampleList">
-                        <button v-if="!example.IsNested" class="{{ example.ButtonClass }}" :onclick="example.OnClick">{{ example.Label }}</button>
+                    <span v-for="page in PageButtons">
+                        <button class="{{ page.ButtonClass }}" :onclick="page.OnClick">{{ page.Label }}</button>
                     </span>
                 </div>
             </div>
-            <div class="example-group">
-                <span class="group-label">Components</span>
+            <div class="example-group" v-for="group in ComponentList">
+                <span class="group-label">{{ group.Label == 'Component' ? 'Component' : 'Component / ' + group.Label }}</span>
                 <div class="button-group">
-                    <span v-for="example in ExampleList">
-                        <button v-if="example.IsNested" class="{{ example.ButtonClass }}" :onclick="example.OnClick">{{ example.Label }}</button>
+                    <span v-for="component in group.Components">
+                        <button class="{{ component.ButtonClass }}" :onclick="component.OnClick" :title="component.Component">{{ component.Label }}</button>
                     </span>
                 </div>
             </div>

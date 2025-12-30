@@ -396,12 +396,7 @@ func NewVueContext(fromFilename string, options *VueContextOptions) VueContext
 
 ### WithComponents
 
-WithComponents returns a LoadOption that registers all component shorthands. It recursively loads all .vuego files from the components folder and subfolders. File paths are mapped to kebab-case tag names using directory path and filename. For example:
-- components/ButtonPrimary.vuego → <button-primary>
-
-- components/forms/button.vuego → <forms-button>
-
-- components/forms/inputs/text-field.vuego → <forms-inputs-text-field>
+WithComponents returns a LoadOption that registers all component shorthands. It recursively loads all .vuego files from the components folder and subfolders. File paths are mapped to kebab-case tag names using directory path and filename.
 
 ```go
 func WithComponents() LoadOption
@@ -425,7 +420,7 @@ func WithFuncs(funcMap FuncMap) LoadOption
 
 ### WithLessProcessor
 
-WithLessProcessor returns a LoadOption that registers a LESS processor
+WithLessProcessor returns a LoadOption that registers a LESS processor.
 
 ```go
 func WithLessProcessor() LoadOption
@@ -433,7 +428,7 @@ func WithLessProcessor() LoadOption
 
 ### WithProcessor
 
-WithProcessor returns a LoadOption that registers a custom node processor
+WithProcessor returns a LoadOption that registers a custom node processor.
 
 ```go
 func WithProcessor(processor NodeProcessor) LoadOption
@@ -454,7 +449,7 @@ Eval evaluates an expression against the given environment (stack). It returns t
 - Comparison: ==, !=, <, >, <=, >=, === (same as ==, for convenience)
 - Boolean operations: &&, ||, !
 - Function calls: len(items), isActive(v)
-- Literals: 42, "text", true, false
+- Literals: 42, "text", true, false.
 
 ```go
 func (*ExprEvaluator) Eval(expression string, env map[string]any) (any, error)
@@ -478,10 +473,18 @@ func (*LessProcessor) PostProcess(nodes []*html.Node) error
 
 ### PreProcess
 
-PreProcess.
+PreProcess currently does nothing.
 
 ```go
 func (*LessProcessor) PreProcess(nodes []*html.Node) error
+```
+
+### Error
+
+Error returns the combined reason and underlying error message.
+
+```go
+func (*LessProcessorError) Error() string
 ```
 
 ### Load
@@ -628,7 +631,7 @@ func (*Stack) Set(key string, val any)
 
 ### DefaultFuncMap
 
-DefaultFuncMap returns a FuncMap with built-in utility functions
+DefaultFuncMap returns a FuncMap with built-in utility functions.
 
 ```go
 func (*Vue) DefaultFuncMap() FuncMap
@@ -736,10 +739,4 @@ WithTemplate returns a copy of the context extended with filename in the inclusi
 
 ```go
 func (VueContext) WithTemplate(filename string) VueContext
-```
-
-### Error
-
-```go
-func (*LessProcessorError) Error() string
 ```

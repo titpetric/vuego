@@ -30,7 +30,7 @@ func NewExprEvaluator() *ExprEvaluator {
 //   - Comparison: ==, !=, <, >, <=, >=, === (same as ==, for convenience)
 //   - Boolean operations: &&, ||, !
 //   - Function calls: len(items), isActive(v)
-//   - Literals: 42, "text", true, false
+//   - Literals: 42, "text", true, false.
 func (e *ExprEvaluator) Eval(expression string, env map[string]any) (any, error) {
 	expression = strings.ReplaceAll(expression, "===", "==")
 

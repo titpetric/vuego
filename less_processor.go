@@ -18,6 +18,7 @@ type LessProcessorError struct {
 	Reason string
 }
 
+// Error returns the combined reason and underlying error message.
 func (e *LessProcessorError) Error() string {
 	return e.Reason + ": " + e.Err.Error()
 }
@@ -47,7 +48,7 @@ func (lp *LessProcessor) New() NodeProcessor {
 	}
 }
 
-// PreProcess.
+// PreProcess currently does nothing.
 func (lp *LessProcessor) PreProcess(nodes []*html.Node) error {
 	return nil
 }
