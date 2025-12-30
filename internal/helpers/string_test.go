@@ -66,3 +66,37 @@ func TestFormatAttr(t *testing.T) {
 		})
 	}
 }
+
+func TestCamelToKebab(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// PascalCase
+		{"ButtonPrimary", "button-primary"},
+		{"Button", "button"},
+		{"B", "b"},
+
+		// camelCase
+		{"myVariable", "my-variable"},
+		{"myVar", "my-var"},
+		{"testAPIKey", "test-a-p-i-key"},
+
+		// Already kebab-case
+		{"button-primary", "button-primary"},
+		{"my-variable", "my-variable"},
+
+		// Edge cases
+		{"", ""},
+		{"a", "a"},
+		{"A", "a"},
+		{"ABC", "a-b-c"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
+			result := helpers.CamelToKebab(tc.input)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
