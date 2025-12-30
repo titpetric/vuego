@@ -173,6 +173,10 @@ type Vue struct {
 
 	// Custom node processors for post-processing rendered DOM
 	nodeProcessors []NodeProcessor
+
+	// Component shorthand mapping: maps kebab-case tag names to component filenames
+	// e.g., "button-primary" -> "components/ButtonPrimary.vuego"
+	componentMap map[string]string
 }
 ```
 
@@ -225,6 +229,7 @@ type VueContextOptions struct {
 - `func NewStackWithData (root map[string]any, originalData any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
 - `func NewVueContext (fromFilename string, options *VueContextOptions) VueContext`
+- `func WithComponents (patterns ...string) LoadOption`
 - `func WithFS (templateFS fs.FS) LoadOption`
 - `func WithFuncs (funcMap FuncMap) LoadOption`
 - `func WithLessProcessor () LoadOption`
@@ -252,6 +257,8 @@ type VueContextOptions struct {
 - `func (*Stack) Set (key string, val any)`
 - `func (*Vue) DefaultFuncMap () FuncMap`
 - `func (*Vue) Funcs (funcMap FuncMap) *Vue`
+- `func (*Vue) GetComponentFile (tagName string) (string, bool)`
+- `func (*Vue) RegisterComponent (tagName,filename string) *Vue`
 - `func (*Vue) RegisterNodeProcessor (processor NodeProcessor) *Vue`
 - `func (*Vue) Render (w io.Writer, filename string, data any) error`
 - `func (*Vue) RenderFragment (w io.Writer, filename string, data any) error`
@@ -341,6 +348,17 @@ NewVueContext returns a VueContext initialized for the given template filename w
 
 ```go
 func NewVueContext(fromFilename string, options *VueContextOptions) VueContext
+```
+
+### WithComponents
+
+WithComponents returns a LoadOption that registers component shorthands. If no patterns are provided, "components/*.vuego" is used as the default. Components are loaded from the filesystem and mapped to kebab-case tag names. For example, a file named "components/ButtonPrimary.vuego" can be used as <button-primary>
+
+</button-primary>
+.
+
+```go
+func WithComponents(patterns ...string) LoadOption
 ```
 
 ### WithFS
@@ -560,6 +578,22 @@ Funcs merges custom template functions into the existing funcmap, overwriting an
 
 ```go
 func (*Vue) Funcs(funcMap FuncMap) *Vue
+```
+
+### GetComponentFile
+
+GetComponentFile looks up a component file by its kebab-case tag name. Returns the filename and true if found, otherwise returns empty string and false.
+
+```go
+func (*Vue) GetComponentFile(tagName string) (string, bool)
+```
+
+### RegisterComponent
+
+RegisterComponent registers a component shorthand mapping. The tagName (e.g., "button-primary") will be resolved to the given filename (e.g., "components/ButtonPrimary.vuego").
+
+```go
+func (*Vue) RegisterComponent(tagName, filename string) *Vue
 ```
 
 ### RegisterNodeProcessor
