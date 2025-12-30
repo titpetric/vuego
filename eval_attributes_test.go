@@ -287,3 +287,187 @@ func TestVue_CombinedStyleAttributes(t *testing.T) {
 		})
 	}
 }
+
+func TestVue_EvalBoundAttribute_WithComplexExpressions(t *testing.T) {
+	tests := []struct {
+		name     string
+		template string
+		data     map[string]any
+		expected string
+	}{
+		{
+			name:     "bound attribute with direct expression",
+			template: `<div :data-value="id"></div>`,
+			data:     map[string]any{"id": "123"},
+			expected: `<div data-value="123"></div>`,
+		},
+		{
+			name:     "bound attribute with piped filter",
+			template: `<a :href="url"></a>`,
+			data:     map[string]any{"url": "/posts/42"},
+			expected: `<a href="/posts/42"></a>`,
+		},
+		{
+			name:     "bound attribute with default filter",
+			template: `<div :title="message | default('no title')"></div>`,
+			data:     map[string]any{},
+			expected: `<div title="no title"></div>`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			template := []byte(tc.template)
+			fs := fstest.MapFS{
+				"test.vuego": &fstest.MapFile{Data: template},
+			}
+			vue := vuego.NewVue(fs)
+
+			var buf bytes.Buffer
+			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			require.NoError(t, err)
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+		})
+	}
+}
+
+func TestVue_EvalBoundAttribute_WithFunctionCalls(t *testing.T) {
+	tests := []struct {
+		name     string
+		template string
+		data     map[string]any
+		expected string
+	}{
+		{
+			name:     "bound attribute with function call",
+			template: `<div :title="len(items)"></div>`,
+			data:     map[string]any{"items": []int{1, 2, 3}},
+			expected: `<div title="3"></div>`,
+		},
+		{
+			name:     "bound attribute with nested function",
+			template: `<p :data-text="trim(text)"></p>`,
+			data:     map[string]any{"text": "  spaces  "},
+			expected: `<p data-text="spaces"></p>`,
+		},
+		{
+			name:     "bound attribute with default filter",
+			template: `<span :data-value="missing | default('fallback')"></span>`,
+			data:     map[string]any{},
+			expected: `<span data-value="fallback"></span>`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			template := []byte(tc.template)
+			fs := fstest.MapFS{
+				"test.vuego": &fstest.MapFile{Data: template},
+			}
+			vue := vuego.NewVue(fs)
+
+			var buf bytes.Buffer
+			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			require.NoError(t, err)
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+		})
+	}
+}
+
+func TestVue_ParseObjectPairs_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name     string
+		template string
+		data     map[string]any
+		expected string
+	}{
+		{
+			name:     "class object empty",
+			template: `<div :class="{}"></div>`,
+			data:     map[string]any{},
+			expected: `<div></div>`,
+		},
+		{
+			name:     "style object empty",
+			template: `<div :style="{}"></div>`,
+			data:     map[string]any{},
+			expected: `<div></div>`,
+		},
+		{
+			name:     "class object with spaces around colons",
+			template: `<div :class="{ active : isActive , error : hasError }"></div>`,
+			data:     map[string]any{"isActive": true, "hasError": false},
+			expected: `<div class="active"></div>`,
+		},
+		{
+			name:     "style with numeric string values",
+			template: `<div :style="{margin: '0', padding: '10px'}"></div>`,
+			data:     map[string]any{},
+			expected: `<div style="margin:0;padding:10px;"></div>`,
+		},
+		{
+			name:     "class object with variable values",
+			template: `<div :class="{btn: true, active: isActive, disabled: hasError}"></div>`,
+			data:     map[string]any{"isActive": true, "hasError": false},
+			expected: `<div class="btn active"></div>`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			template := []byte(tc.template)
+			fs := fstest.MapFS{
+				"test.vuego": &fstest.MapFile{Data: template},
+			}
+			vue := vuego.NewVue(fs)
+
+			var buf bytes.Buffer
+			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			require.NoError(t, err)
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+		})
+	}
+}
+
+func TestVue_EvalAttributes_MultipleBindings(t *testing.T) {
+	tests := []struct {
+		name     string
+		template string
+		data     map[string]any
+		expected string
+	}{
+		{
+			name:     "multiple bound attributes",
+			template: `<button :id="id" :class="btnClass" :disabled="disabled"></button>`,
+			data:     map[string]any{"id": "submit-btn", "btnClass": "primary", "disabled": false},
+			expected: `<button id="submit-btn" class="primary"></button>`,
+		},
+		{
+			name:     "bound attributes mixed with static",
+			template: `<input type="text" :value="name" :placeholder="hint" class="form-input" />`,
+			data:     map[string]any{"name": "John", "hint": "Enter your name"},
+			expected: `<input type="text" value="John" placeholder="Enter your name" class="form-input" />`,
+		},
+		{
+			name:     "v-bind shorthand with multiple attributes",
+			template: `<a v-bind:href="url" v-bind:target="target" v-bind:title="title">Link</a>`,
+			data:     map[string]any{"url": "/page", "target": "_blank", "title": "External"},
+			expected: `<a href="/page" target="_blank" title="External">Link</a>`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			template := []byte(tc.template)
+			fs := fstest.MapFS{
+				"test.vuego": &fstest.MapFile{Data: template},
+			}
+			vue := vuego.NewVue(fs)
+
+			var buf bytes.Buffer
+			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			require.NoError(t, err)
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+		})
+	}
+}

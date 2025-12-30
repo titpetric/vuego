@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.78%   | 1048      | 3473  |
+| ✅     | titpetric/vuego                      | 84.97%   | 1048      | 3473  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 45        | 246   |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ❌     | titpetric/vuego/diff                 | 0.00%    | 60        | 193   |
@@ -95,7 +95,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.evalVFor                      | 84.00%   | 29        |
 | ✅     | titpetric/vuego                      | Vue.evalVHtml                     | 94.70%   | 9         |
 | ✅     | titpetric/vuego                      | Vue.evalVShow                     | 100.00%  | 5         |
-| ❌     | titpetric/vuego                      | Vue.evalVText                     | 75.00%   | 9         |
+| ✅     | titpetric/vuego                      | Vue.evalVText                     | 95.00%   | 9         |
 | ✅     | titpetric/vuego                      | Vue.evaluate                      | 91.40%   | 156       |
 | ✅     | titpetric/vuego                      | Vue.evaluateChildren              | 100.00%  | 1         |
 | ❌     | titpetric/vuego                      | Vue.evaluateNodeAsElement         | 61.80%   | 24        |
@@ -136,7 +136,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | escapeFunc                        | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | extractFrontMatter                | 85.70%   | 5         |
 | ✅     | titpetric/vuego                      | extractSlotContent                | 91.20%   | 47        |
-| ❌     | titpetric/vuego                      | fileFunc                          | 70.00%   | 9         |
+| ❌     | titpetric/vuego                      | fileFunc                          | 80.00%   | 9         |
 | ❌     | titpetric/vuego                      | formatDateFunc                    | 0.00%    | 1         |
 | ✅     | titpetric/vuego                      | formatTimeFunc                    | 62.50%   | 4         |
 | ✅     | titpetric/vuego                      | getCachedPath                     | 100.00%  | 2         |
