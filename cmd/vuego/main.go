@@ -257,7 +257,7 @@ func diffCommand(args []string) error {
 		cmd := exec.Command("dyff", "between", tmp1.Name(), tmp2.Name())
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		cmd.Run() // Ignore error as dyff returns 1 when files differ
+		_ = cmd.Run() // Ignore error as dyff returns 1 when files differ
 
 		if !isEqual {
 			return fmt.Errorf("DOM trees do not match")
