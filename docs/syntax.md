@@ -6,7 +6,7 @@ Vuego implements a subset of Vue.js template syntax. This document provides a co
 
 - [Values](#values)
 - [Directives](#directives)
-  - [Slots](#slots-slot-v-slot-) 
+  - [Slots](#slots)
 - [Components](#components)
 - [Advanced](#advanced)
 - [Notes and Limitations](#notes-and-limitations)
@@ -332,7 +332,7 @@ Render an element once and skip it on subsequent evaluations. Useful for `<scrip
 
 The `v-once` directive also works inside `v-for` loops and with reusable components, preventing duplicate content when components are rendered multiple times.
 
-### Slots (`<slot>`, `v-slot`, `#`)
+### Slots
 
 Slots allow parent components to provide content to child components. This enables flexible component composition and content distribution.
 
