@@ -255,7 +255,7 @@ type VueContextOptions struct {
 - `func NewStackWithData (root map[string]any, originalData any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
 - `func NewVueContext (fromFilename string, options *VueContextOptions) VueContext`
-- `func WithComponents (patterns ...string) LoadOption`
+- `func WithComponents () LoadOption`
 - `func WithFS (templateFS fs.FS) LoadOption`
 - `func WithFuncs (funcMap FuncMap) LoadOption`
 - `func WithLessProcessor () LoadOption`
@@ -396,13 +396,15 @@ func NewVueContext(fromFilename string, options *VueContextOptions) VueContext
 
 ### WithComponents
 
-WithComponents returns a LoadOption that registers component shorthands. If no patterns are provided, "components/*.vuego" is used as the default. Components are loaded from the filesystem and mapped to kebab-case tag names. For example, a file named "components/ButtonPrimary.vuego" can be used as <button-primary>
+WithComponents returns a LoadOption that registers all component shorthands. It recursively loads all .vuego files from the components folder and subfolders. File paths are mapped to kebab-case tag names using directory path and filename. For example:
+- components/ButtonPrimary.vuego → <button-primary>
 
-</button-primary>
-.
+- components/forms/button.vuego → <forms-button>
+
+- components/forms/inputs/text-field.vuego → <forms-inputs-text-field>
 
 ```go
-func WithComponents(patterns ...string) LoadOption
+func WithComponents() LoadOption
 ```
 
 ### WithFS

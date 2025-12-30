@@ -133,39 +133,48 @@ func WithProcessor(processor NodeProcessor) LoadOption {
 	}
 }
 
-// WithComponents returns a LoadOption that registers component shorthands.
-// If no patterns are provided, "components/*.vuego" is used as the default.
-// Components are loaded from the filesystem and mapped to kebab-case tag names.
-// For example, a file named "components/ButtonPrimary.vuego" can be used as <button-primary></button-primary>.
-func WithComponents(patterns ...string) LoadOption {
+// WithComponents returns a LoadOption that registers all component shorthands.
+// It recursively loads all .vuego files from the components folder and subfolders.
+// File paths are mapped to kebab-case tag names using directory path and filename.
+func WithComponents() LoadOption {
 	return func(vue *Vue) {
-		// Use default pattern if none provided
-		if len(patterns) == 0 {
-			patterns = []string{"components/*.vuego"}
-		}
-
-		// Load all component files matching the patterns
-		for _, pattern := range patterns {
-			files, err := fs.Glob(vue.templateFS, pattern)
+		// Walk the components directory recursively
+		err := fs.WalkDir(vue.templateFS, "components", func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
-				// Skip patterns that don't match anything
-				continue
+				// Skip directories that don't exist or can't be accessed
+				return nil
 			}
 
-			for _, file := range files {
-				// Extract the filename without extension
-				base := filepath.Base(file)
-				ext := filepath.Ext(base)
-				componentName := strings.TrimSuffix(base, ext)
-
-				// Convert to kebab-case for the tag name
-				tagName := helpers.CamelToKebab(componentName)
-
-				// Store the mapping
-				vue.RegisterComponent(tagName, file)
+			// Skip directories, only process files
+			if d.IsDir() {
+				return nil
 			}
-		}
-		// Component resolution is handled internally in Vue.preProcessNodes
+
+			// Only process .vuego files
+			if !strings.HasSuffix(d.Name(), ".vuego") {
+				return nil
+			}
+
+			// Extract the relative path from components folder
+			relPath := strings.TrimPrefix(path, "components/")
+			relPath = strings.TrimSuffix(relPath, ".vuego")
+
+			// Convert to kebab-case for the tag name
+			// Split by path separators and convert each part
+			parts := strings.Split(relPath, string(filepath.Separator))
+			for i, part := range parts {
+				parts[i] = helpers.CamelToKebab(part)
+			}
+			tagName := strings.Join(parts, "-")
+
+			// Store the mapping
+			vue.RegisterComponent(tagName, path)
+
+			return nil
+		})
+
+		// Silently ignore if components directory doesn't exist
+		_ = err
 	}
 }
 

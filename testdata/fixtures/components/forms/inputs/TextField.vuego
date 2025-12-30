@@ -1,0 +1,3 @@
+<template :require="name">
+  <input type="text" class="text-field" :name="name" />
+</template>

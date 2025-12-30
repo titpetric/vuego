@@ -27,19 +27,9 @@ func TestVue_Render(t *testing.T) {
 
 func TestFixtures(t *testing.T) {
 	fixtures := os.DirFS("testdata/fixtures")
-	vue := vuego.NewVue(fixtures)
 
-	// Register components for shorthand usage
-	componentFiles, err := fs.Glob(fixtures, "components/*.vuego")
-	require.NoError(t, err)
-	for _, file := range componentFiles {
-		// Extract filename without extension
-		base := strings.TrimSuffix(strings.TrimPrefix(file, "components/"), ".vuego")
-		// Convert to kebab-case
-		tagName := helpers.CamelToKebab(base)
-		vue.RegisterComponent(tagName, file)
-	}
-	// Component resolution is handled internally in Vue.preProcessNodes
+	// Create a template with components loaded recursively
+	tpl := vuego.NewFS(fixtures, vuego.WithComponents())
 
 	templates, err := fs.Glob(fixtures, "*.vuego")
 	require.NoError(t, err)
@@ -59,7 +49,8 @@ func TestFixtures(t *testing.T) {
 
 		t.Run(template, func(t *testing.T) {
 			var got bytes.Buffer
-			require.NoError(t, vue.RenderFragment(&got, template, data))
+			loaded := tpl.Load(template).Fill(data)
+			require.NoError(t, loaded.Render(t.Context(), &got))
 			if !helpers.EqualHTML(t, want, got.Bytes(), templateBytes, dataBytes) {
 				t.Logf("HTML mismatch in %s", template)
 				t.Logf("Expected:\n%s", string(want))

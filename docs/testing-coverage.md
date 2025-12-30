@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.97%   | 1048      | 3473  |
+| ✅     | titpetric/vuego                      | 84.89%   | 1050      | 3486  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 45        | 246   |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ❌     | titpetric/vuego/diff                 | 0.00%    | 60        | 193   |
@@ -74,7 +74,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.RegisterComponent             | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Vue.RegisterNodeProcessor         | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | Vue.Render                        | 90.00%   | 3         |
-| ✅     | titpetric/vuego                      | Vue.RenderFragment                | 84.60%   | 4         |
+| ✅     | titpetric/vuego                      | Vue.RenderFragment                | 76.90%   | 4         |
 | ✅     | titpetric/vuego                      | Vue.RenderNodes                   | 0.00%    | 0         |
 | ✅     | titpetric/vuego                      | Vue.buildClassString              | 85.70%   | 7         |
 | ✅     | titpetric/vuego                      | Vue.buildStyleString              | 87.50%   | 10        |
@@ -121,7 +121,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | VueContext.Stack                  | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | VueContext.WithTemplate           | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | VueContext.nextSeenID             | 100.00%  | 0         |
-| ✅     | titpetric/vuego                      | WithComponents                    | 92.30%   | 10        |
+| ✅     | titpetric/vuego                      | WithComponents                    | 88.20%   | 12        |
 | ✅     | titpetric/vuego                      | WithFS                            | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | WithFuncs                         | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | WithLessProcessor                 | 100.00%  | 0         |
