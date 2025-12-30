@@ -1,0 +1,5 @@
+<simple-slot :msg="message">
+  <template v-slot="props">
+    Message: {{ props.value }}
+  </template>
+</simple-slot>

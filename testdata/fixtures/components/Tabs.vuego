@@ -1,0 +1,8 @@
+<div class="tabs">
+  <div class="tabs-header">
+    <slot name="header" :message="'Welcome'"></slot>
+  </div>
+  <div class="tabs-content">
+    <slot name="content" :count="3"></slot>
+  </div>
+</div>

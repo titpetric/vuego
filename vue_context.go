@@ -30,6 +30,9 @@ type VueContext struct {
 
 	// v-once element tracking for deep clones
 	seen map[string]bool
+
+	// SlotScope contains slot content for the current component.
+	SlotScope *SlotScope
 }
 
 // VueContextOptions holds configurable options for a new VueContext.
@@ -70,6 +73,7 @@ func (ctx VueContext) WithTemplate(filename string) VueContext {
 		TagStack:      ctx.TagStack, // Share the same tag stack
 		seen:          ctx.seen,     // Share the v-once tracking map
 		Processors:    ctx.Processors,
+		SlotScope:     ctx.SlotScope, // Share the slot scope
 	}
 }
 

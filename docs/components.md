@@ -6,6 +6,7 @@ This document covers component composition in Vuego using the `<vuego include>` 
 
 - [Component Shorthands](#component-shorthands)
 - [Basic Component Composition](#basic-component-composition)
+- [Slots](#slots)
 - [The Template Tag](#the-template-tag)
 - [Required Attributes](#required-attributes)
 - [YAML Front-Matter for Single File Components](#yaml-front-matter-for-single-file-components)
@@ -50,14 +51,32 @@ Component shorthands use custom HTML tags that match your component names (conve
 
 ```html
 <button class="btn-primary">
-  {{ slot }}
+  <slot>Click me</slot>
 </button>
 ```
 
 **Usage with shorthand:**
 
 ```html
+<button-primary>Submit</button-primary>
+```
+
+**Rendered output:**
+
+```html
+<button class="btn-primary">Submit</button>
+```
+
+**Usage without content (uses fallback):**
+
+```html
 <button-primary></button-primary>
+```
+
+**Rendered output with fallback:**
+
+```html
+<button class="btn-primary">Click me</button>
 ```
 
 **Equivalent full syntax:**
@@ -156,6 +175,179 @@ The path is relative to the filesystem root passed to `vuego.NewVue()`.
     </main>
   </body>
 </html>
+```
+
+## Slots
+
+Slots enable powerful component composition by allowing parent components to provide content to child components. Vuego supports default slots, named slots, and scoped slots.
+
+### Default Slots
+
+The simplest form of slot - parent content goes into a single unnamed slot:
+
+**components/Card.vuego**
+
+```html
+<div class="card">
+  <slot></slot>
+</div>
+```
+
+**Usage:**
+
+```html
+<card>
+  <h2>My Card Title</h2>
+  <p>Card content here</p>
+</card>
+```
+
+**Rendered output:**
+
+```html
+<div class="card">
+  <h2>My Card Title</h2>
+  <p>Card content here</p>
+</div>
+```
+
+### Named Slots
+
+Use multiple slots in a component by giving each a name:
+
+**components/Modal.vuego**
+
+```html
+<div class="modal">
+  <div class="modal-header">
+    <slot name="header"></slot>
+  </div>
+  <div class="modal-body">
+    <slot></slot>
+  </div>
+  <div class="modal-footer">
+    <slot name="footer"></slot>
+  </div>
+</div>
+```
+
+**Usage with v-slot:name syntax:**
+
+```html
+<modal>
+  <template v-slot:header>Confirm Action</template>
+  <template v-slot:footer>
+    <button>Cancel</button>
+    <button>Confirm</button>
+  </template>
+  Are you sure you want to proceed?
+</modal>
+```
+
+**Shorthand with #name:**
+
+```html
+<modal>
+  <template #header>Confirm Action</template>
+  <template #footer>
+    <button>Cancel</button>
+    <button>Confirm</button>
+  </template>
+  Are you sure you want to proceed?
+</modal>
+```
+
+### Scoped Slots
+
+Pass data from the child component to the parent's slot template using `:prop="expression"` bindings:
+
+**components/List.vuego**
+
+```html
+<ul>
+  <li v-for="(index, item) in items">
+    <slot :item="item" :index="index"></slot>
+  </li>
+</ul>
+```
+
+**Parent receives props:**
+
+```html
+<list :items="products">
+  <template v-slot="slotProps">
+    <strong>{{ slotProps.item.name }}</strong> ({{ slotProps.index }})
+  </template>
+</list>
+```
+
+**With destructuring:**
+
+```html
+<list :items="products">
+  <template v-slot="{ item, index }">
+    <strong>{{ item.name }}</strong> ({{ index }})
+  </template>
+</list>
+```
+
+### Named Scoped Slots
+
+Combine named slots with scoped props:
+
+**components/DataTable.vuego**
+
+```html
+<table>
+  <thead>
+    <slot name="header" :columns="columns"></slot>
+  </thead>
+  <tbody>
+    <tr v-for="row in rows">
+      <slot name="row" :row="row"></slot>
+    </tr>
+  </tbody>
+</table>
+```
+
+**Parent component:**
+
+```html
+<data-table :columns="cols" :rows="data">
+  <template #header="{ columns }">
+    <tr>
+      <th v-for="col in columns">{{ col }}</th>
+    </tr>
+  </template>
+  <template #row="{ row }">
+    <td>{{ row.name }}</td>
+    <td>{{ row.value }}</td>
+  </template>
+</data-table>
+```
+
+### Fallback Content
+
+Provide default content inside a `<slot>` that renders when no content is provided:
+
+**components/Button.vuego**
+
+```html
+<button class="btn">
+  <slot>Click me</slot>
+</button>
+```
+
+**Usage:**
+
+```html
+<!-- With content -->
+<button>Submit</button>
+<!-- Renders: <button class="btn">Submit</button> -->
+
+<!-- Without content -->
+<button></button>
+<!-- Renders: <button class="btn">Click me</button> (uses fallback) -->
 ```
 
 ## The Template Tag

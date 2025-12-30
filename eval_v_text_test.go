@@ -125,3 +125,143 @@ func TestVue_EvalVText_PreservesWhitespace(t *testing.T) {
 		})
 	}
 }
+
+func TestVue_EvalVText_WithFiltersAndFunctions(t *testing.T) {
+	// Test v-text with pipe filters and complex expressions
+	tests := []struct {
+		name     string
+		template string
+		data     map[string]any
+		expected string
+	}{
+		{
+			name:     "v-text with upper filter",
+			template: "<span v-text=\"name | upper\"></span>",
+			data:     map[string]any{"name": "hello world"},
+			expected: "<span>HELLO WORLD</span>",
+		},
+		{
+			name:     "v-text with multiple filters",
+			template: "<span v-text=\"text | trim | upper\"></span>",
+			data:     map[string]any{"text": "  hello world  "},
+			expected: "<span>HELLO WORLD</span>",
+		},
+		{
+			name:     "v-text with default filter",
+			template: "<span v-text=\"missing | default('placeholder')\"></span>",
+			data:     map[string]any{},
+			expected: "<span>placeholder</span>",
+		},
+		{
+			name:     "v-text with function call",
+			template: "<span v-text=\"len(items)\"></span>",
+			data:     map[string]any{"items": []int{1, 2, 3}},
+			expected: "<span>3</span>",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			template := []byte(tc.template)
+			fs := fstest.MapFS{
+				"test.vuego": &fstest.MapFile{Data: template},
+			}
+			vue := vuego.NewVue(fs)
+
+			var buf bytes.Buffer
+			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			require.NoError(t, err)
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+		})
+	}
+}
+
+func TestVue_EvalVText_WithComplexVariables(t *testing.T) {
+	// Test v-text with nested property access and variables
+	tests := []struct {
+		name     string
+		template string
+		data     map[string]any
+		expected string
+	}{
+		{
+			name:     "v-text with nested property access",
+			template: "<span v-text=\"user.profile.name\"></span>",
+			data: map[string]any{
+				"user": map[string]any{
+					"profile": map[string]any{
+						"name": "Alice",
+					},
+				},
+			},
+			expected: "<span>Alice</span>",
+		},
+		{
+			name:     "v-text with array index",
+			template: "<span v-text=\"items.0\"></span>",
+			data: map[string]any{
+				"items": []string{"first", "second", "third"},
+			},
+			expected: "<span>first</span>",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			template := []byte(tc.template)
+			fs := fstest.MapFS{
+				"test.vuego": &fstest.MapFile{Data: template},
+			}
+			vue := vuego.NewVue(fs)
+
+			var buf bytes.Buffer
+			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			require.NoError(t, err)
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+		})
+	}
+}
+
+func TestVue_EvalVText_HTMLEscaping(t *testing.T) {
+	// Test various HTML content that needs escaping
+	tests := []struct {
+		name     string
+		template string
+		data     map[string]any
+		expected string
+	}{
+		{
+			name:     "v-text with mixed entities",
+			template: "<div v-text=\"text\"></div>",
+			data:     map[string]any{"text": "a < b && c > d"},
+			expected: "<div>a &lt; b &amp;&amp; c &gt; d</div>",
+		},
+		{
+			name:     "v-text with single quotes",
+			template: "<div v-text=\"text\"></div>",
+			data:     map[string]any{"text": `it's a test`},
+			expected: "<div>it&#39;s a test</div>",
+		},
+		{
+			name:     "v-text with script injection attempt",
+			template: "<div v-text=\"text\"></div>",
+			data:     map[string]any{"text": `"><script>alert('xss')</script>`},
+			expected: "<div>&quot;&gt;&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;</div>",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			template := []byte(tc.template)
+			fs := fstest.MapFS{
+				"test.vuego": &fstest.MapFile{Data: template},
+			}
+			vue := vuego.NewVue(fs)
+
+			var buf bytes.Buffer
+			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			require.NoError(t, err)
+			require.True(t, helpers.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+		})
+	}
+}

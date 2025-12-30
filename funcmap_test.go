@@ -1498,3 +1498,134 @@ func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
 		assert.NotContains(t, output, `<script>`)
 	})
 }
+
+func TestFileFunc(t *testing.T) {
+	t.Run("file function loads file content", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ file("content.txt") }}</div>`),
+			},
+			"content.txt": &fstest.MapFile{
+				Data: []byte("Hello from file"),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "Hello from file")
+	})
+
+	t.Run("file function with variable reference", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ file(filename) }}</div>`),
+			},
+			"data.txt": &fstest.MapFile{
+				Data: []byte("Variable file content"),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{
+			"filename": "data.txt",
+		}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "Variable file content")
+	})
+
+	t.Run("file function with nested path", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ file("nested/content.txt") }}</div>`),
+			},
+			"nested/content.txt": &fstest.MapFile{
+				Data: []byte("Nested file content"),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "Nested file content")
+	})
+
+	t.Run("file function missing file error", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ file("missing.txt") }}</div>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "file")
+	})
+
+	t.Run("file function empty filename", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ file("") }}</div>`),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.Error(t, err)
+	})
+
+	t.Run("file function in template context", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>Content: {{ file("data.txt") }}</div>`),
+			},
+			"data.txt": &fstest.MapFile{
+				Data: []byte("important data"),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "important data")
+	})
+
+	t.Run("file function with HTML content", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{
+				Data: []byte(`<div>{{ file("snippet.html") }}</div>`),
+			},
+			"snippet.html": &fstest.MapFile{
+				Data: []byte("<strong>Bold text</strong>"),
+			},
+		}
+
+		vue := vuego.NewVue(fs)
+		data := map[string]any{}
+
+		var buf bytes.Buffer
+		err := vue.Render(&buf, "test.vuego", data)
+		assert.NoError(t, err)
+		// Content from file function is escaped by default
+		assert.Contains(t, buf.String(), "&lt;strong&gt;")
+	})
+}

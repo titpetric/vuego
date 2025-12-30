@@ -1,0 +1,8 @@
+<tabs>
+  <template #header="headerProps">
+    Header: {{ headerProps.message }}
+  </template>
+  <template #content="contentProps">
+    Items: {{ contentProps.count }}
+  </template>
+</tabs>

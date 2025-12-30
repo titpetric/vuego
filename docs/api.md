@@ -103,6 +103,27 @@ type Renderer interface {
 ```
 
 ```go
+// SlotContent holds the processed content for a slot along with any scoped props.
+type SlotContent struct {
+	// Nodes contains the rendered content for this slot.
+	Nodes []*html.Node
+	// Props contains any scoped props passed to the slot.
+	Props map[string]any
+	// TemplateNode holds the original template node for processing scoped slots.
+	TemplateNode *html.Node
+}
+```
+
+```go
+// SlotScope holds all slot contents indexed by name for a component instance.
+type SlotScope struct {
+	// Slots maps slot names to their content.
+	// Empty string key is the default slot.
+	Slots map[string]*SlotContent
+}
+```
+
+```go
 // Stack provides stack-based variable lookup and convenient typed accessors.
 type Stack struct {
 	stack    []map[string]any // bottom..top, top is last element
@@ -204,6 +225,9 @@ type VueContext struct {
 
 	// v-once element tracking for deep clones
 	seen map[string]bool
+
+	// SlotScope contains slot content for the current component.
+	SlotScope *SlotScope
 }
 ```
 
@@ -219,12 +243,14 @@ type VueContextOptions struct {
 
 ## Function symbols
 
+- `func GetSlotName (attr string) string`
 - `func New (opts ...LoadOption) Template`
 - `func NewExprEvaluator () *ExprEvaluator`
 - `func NewFS (templateFS fs.FS, opts ...LoadOption) Template`
 - `func NewLessProcessor (fsys ...fs.FS) *LessProcessor`
 - `func NewLoader (fs fs.FS) *Loader`
 - `func NewRenderer () Renderer`
+- `func NewSlotScope () *SlotScope`
 - `func NewStack (root map[string]any) *Stack`
 - `func NewStackWithData (root map[string]any, originalData any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
@@ -243,6 +269,8 @@ type VueContextOptions struct {
 - `func (*Loader) Load (filename string) ([]*html.Node, error)`
 - `func (*Loader) LoadFragment (filename string) ([]*html.Node, error)`
 - `func (*Loader) Stat (filename string) error`
+- `func (*SlotScope) GetSlot (name string) *SlotContent`
+- `func (*SlotScope) SetSlot (name string, content *SlotContent)`
 - `func (*Stack) Copy () *Stack`
 - `func (*Stack) EnvMap () map[string]any`
 - `func (*Stack) ForEach (expr string, fn func(index int, value any) error) error`
@@ -269,6 +297,14 @@ type VueContextOptions struct {
 - `func (VueContext) FormatTemplateChain () string`
 - `func (VueContext) Stack () *Stack`
 - `func (VueContext) WithTemplate (filename string) VueContext`
+
+### GetSlotName
+
+GetSlotName extracts the slot name from a v-slot directive. Returns "default" if no name is specified.
+
+```go
+func GetSlotName(attr string) string
+```
 
 ### New
 
@@ -316,6 +352,14 @@ NewRenderer creates a new Renderer.
 
 ```go
 func NewRenderer() Renderer
+```
+
+### NewSlotScope
+
+NewSlotScope creates a new SlotScope for a component.
+
+```go
+func NewSlotScope() *SlotScope
 ```
 
 ### NewStack
@@ -460,6 +504,22 @@ Stat checks that filename exists in the loader filesystem.
 
 ```go
 func (*Loader) Stat(filename string) error
+```
+
+### GetSlot
+
+GetSlot retrieves slot content by name. Returns nil if the slot doesn't exist.
+
+```go
+func (*SlotScope) GetSlot(name string) *SlotContent
+```
+
+### SetSlot
+
+SetSlot sets the content for a named slot.
+
+```go
+func (*SlotScope) SetSlot(name string, content *SlotContent)
 ```
 
 ### Copy

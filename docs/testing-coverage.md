@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 85.07%   | 939       | 3232  |
+| ✅     | titpetric/vuego                      | 84.97%   | 1048      | 3473  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 45        | 246   |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 76        | 484   |
 | ❌     | titpetric/vuego/diff                 | 0.00%    | 60        | 193   |
@@ -29,6 +29,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | ExprEvaluator.ClearCache          | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | ExprEvaluator.Eval                | 87.50%   | 2         |
 | ✅     | titpetric/vuego                      | ExprEvaluator.getProgram          | 100.00%  | 2         |
+| ❌     | titpetric/vuego                      | GetSlotName                       | 0.00%    | 1         |
 | ✅     | titpetric/vuego                      | LessProcessor.New                 | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | LessProcessor.PostProcess         | 75.00%   | 3         |
 | ✅     | titpetric/vuego                      | LessProcessor.PreProcess          | 100.00%  | 0         |
@@ -47,10 +48,13 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | NewLessProcessor                  | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | NewLoader                         | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | NewRenderer                       | 100.00%  | 0         |
+| ✅     | titpetric/vuego                      | NewSlotScope                      | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | NewStack                          | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | NewStackWithData                  | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | NewVue                            | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | NewVueContext                     | 100.00%  | 1         |
+| ✅     | titpetric/vuego                      | SlotScope.GetSlot                 | 100.00%  | 0         |
+| ✅     | titpetric/vuego                      | SlotScope.SetSlot                 | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Stack.Copy                        | 100.00%  | 0         |
 | ✅     | titpetric/vuego                      | Stack.EnvMap                      | 100.00%  | 4         |
 | ✅     | titpetric/vuego                      | Stack.ForEach                     | 100.00%  | 12        |
@@ -82,16 +86,17 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.evalElseIfChain               | 91.70%   | 34        |
 | ✅     | titpetric/vuego                      | Vue.evalFilter                    | 100.00%  | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalFor                       | 81.80%   | 6         |
-| ✅     | titpetric/vuego                      | Vue.evalInclude                   | 87.50%   | 4         |
+| ✅     | titpetric/vuego                      | Vue.evalInclude                   | 88.90%   | 5         |
 | ❌     | titpetric/vuego                      | Vue.evalObjectBinding             | 53.80%   | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalPipe                      | 81.80%   | 16        |
 | ✅     | titpetric/vuego                      | Vue.evalSegment                   | 70.00%   | 5         |
+| ✅     | titpetric/vuego                      | Vue.evalSlot                      | 91.70%   | 41        |
 | ✅     | titpetric/vuego                      | Vue.evalTemplate                  | 88.00%   | 25        |
 | ✅     | titpetric/vuego                      | Vue.evalVFor                      | 84.00%   | 29        |
 | ✅     | titpetric/vuego                      | Vue.evalVHtml                     | 94.70%   | 9         |
 | ✅     | titpetric/vuego                      | Vue.evalVShow                     | 100.00%  | 5         |
-| ❌     | titpetric/vuego                      | Vue.evalVText                     | 75.00%   | 9         |
-| ✅     | titpetric/vuego                      | Vue.evaluate                      | 91.80%   | 149       |
+| ✅     | titpetric/vuego                      | Vue.evalVText                     | 95.00%   | 9         |
+| ✅     | titpetric/vuego                      | Vue.evaluate                      | 91.40%   | 156       |
 | ✅     | titpetric/vuego                      | Vue.evaluateChildren              | 100.00%  | 1         |
 | ❌     | titpetric/vuego                      | Vue.evaluateNodeAsElement         | 61.80%   | 24        |
 | ✅     | titpetric/vuego                      | Vue.interpolate                   | 100.00%  | 2         |
@@ -130,11 +135,13 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | escapeAttrValue                   | 100.00%  | 4         |
 | ✅     | titpetric/vuego                      | escapeFunc                        | 100.00%  | 1         |
 | ✅     | titpetric/vuego                      | extractFrontMatter                | 85.70%   | 5         |
-| ❌     | titpetric/vuego                      | fileFunc                          | 70.00%   | 9         |
+| ✅     | titpetric/vuego                      | extractSlotContent                | 91.20%   | 47        |
+| ❌     | titpetric/vuego                      | fileFunc                          | 80.00%   | 9         |
 | ❌     | titpetric/vuego                      | formatDateFunc                    | 0.00%    | 1         |
 | ✅     | titpetric/vuego                      | formatTimeFunc                    | 62.50%   | 4         |
 | ✅     | titpetric/vuego                      | getCachedPath                     | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | getIndent                         | 66.70%   | 1         |
+| ✅     | titpetric/vuego                      | hasVSlot                          | 100.00%  | 8         |
 | ❌     | titpetric/vuego                      | htmlRenderer.Render               | 0.00%    | 3         |
 | ❌     | titpetric/vuego                      | init                              | 0.00%    | 1         |
 | ✅     | titpetric/vuego                      | intFunc                           | 42.90%   | 3         |
@@ -148,6 +155,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | parsePipeExpr                     | 92.90%   | 7         |
 | ✅     | titpetric/vuego                      | parseStyleMap                     | 92.90%   | 6         |
 | ✅     | titpetric/vuego                      | parseStyleString                  | 100.00%  | 6         |
+| ✅     | titpetric/vuego                      | parseVSlotDirective               | 50.00%   | 4         |
 | ❌     | titpetric/vuego                      | parseValue                        | 63.60%   | 7         |
 | ✅     | titpetric/vuego                      | renderAttrs                       | 100.00%  | 6         |
 | ✅     | titpetric/vuego                      | renderNode                        | 100.00%  | 0         |
