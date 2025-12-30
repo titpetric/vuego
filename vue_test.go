@@ -28,6 +28,19 @@ func TestVue_Render(t *testing.T) {
 func TestFixtures(t *testing.T) {
 	fixtures := os.DirFS("testdata/fixtures")
 	vue := vuego.NewVue(fixtures)
+
+	// Register components for shorthand usage
+	componentFiles, err := fs.Glob(fixtures, "components/*.vuego")
+	require.NoError(t, err)
+	for _, file := range componentFiles {
+		// Extract filename without extension
+		base := strings.TrimSuffix(strings.TrimPrefix(file, "components/"), ".vuego")
+		// Convert to kebab-case
+		tagName := helpers.CamelToKebab(base)
+		vue.RegisterComponent(tagName, file)
+	}
+	// Component resolution is handled internally in Vue.preProcessNodes
+
 	templates, err := fs.Glob(fixtures, "*.vuego")
 	require.NoError(t, err)
 

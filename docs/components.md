@@ -1,14 +1,122 @@
 # Components in Vuego
 
-This document covers component composition in Vuego using the `<vuego include>` tag, the `<template>` tag, and the `:required` attribute for validating component props.
+This document covers component composition in Vuego using the `<vuego include>` tag, component shorthands, the `<template>` tag, and the `:required` attribute for validating component props.
 
 ## Table of Contents
 
+- [Component Shorthands](#component-shorthands)
 - [Basic Component Composition](#basic-component-composition)
 - [The Template Tag](#the-template-tag)
 - [Required Attributes](#required-attributes)
 - [YAML Front-Matter for Single File Components](#yaml-front-matter-for-single-file-components)
 - [Complete Examples](#complete-examples)
+
+## Component Shorthands
+
+Vuego provides a convenient shorthand syntax for using components without needing to write out the full `<vuego include>` tag. This allows you to use custom tags that are automatically mapped to component files.
+
+### Enabling Component Shorthands
+
+To use component shorthands, enable them when creating your template renderer:
+
+```go
+package main
+
+import (
+	"github.com/titpetric/vuego"
+	"os"
+)
+
+func main() {
+	root := os.DirFS("templates")
+
+	// Enable component shorthands with the default pattern
+	tpl := vuego.NewFS(root, vuego.WithComponents())
+
+	// Or specify custom patterns
+	tpl := vuego.NewFS(root, vuego.WithComponents("components/*.vuego", "ui/*.vuego"))
+}
+```
+
+### Default Behavior
+
+If you call `WithComponents()` without any arguments, it automatically loads all components from `components/*.vuego`. Each component file is converted to a kebab-case tag name.
+
+### Shorthand Syntax
+
+Component shorthands use custom HTML tags that match your component names (converted to kebab-case):
+
+**File: components/ButtonPrimary.vuego**
+
+```html
+<button class="btn-primary">
+  {{ slot }}
+</button>
+```
+
+**Usage with shorthand:**
+
+```html
+<button-primary></button-primary>
+```
+
+**Equivalent full syntax:**
+
+```html
+<vuego include="components/ButtonPrimary.vuego"></vuego>
+```
+
+### How It Works
+
+1. Component files are scanned using glob patterns (e.g., `components/*.vuego`)
+2. The filename (without extension) is converted from PascalCase to kebab-case:
+   - `ButtonPrimary.vuego` → `<button-primary>`
+   - `AlertBox.vuego` → `<alert-box>`
+   - `MyComponent.vuego` → `<my-component>`
+3. When a shorthand tag is encountered, it's replaced with a `<vuego include>` directive
+4. Attributes on the tag are passed as context variables to the component
+
+### Passing Attributes
+
+Attributes on component shorthand tags are passed as context variables to the component:
+
+**components/Badge.vuego:**
+
+```html
+<template :require="type" :require="text">
+  <span class="badge badge-{{ type }}">{{ text }}</span>
+</template>
+```
+
+**Usage:**
+
+```html
+<badge type="success" text="Approved"></badge>
+```
+
+**Rendered output:**
+
+```html
+<span class="badge badge-success">Approved</span>
+```
+
+### Custom Glob Patterns
+
+You can use custom glob patterns to load components from different directories:
+
+```go
+// Load components from multiple directories
+tpl := vuego.NewFS(root, vuego.WithComponents(
+	"components/*.vuego",
+	"ui/buttons/*.vuego",
+	"ui/modals/*.vuego",
+))
+```
+
+With this setup:
+- Files in `components/` use the format `<component-name>`
+- Files in `ui/buttons/` use the format `<button-name>`
+- Files in `ui/modals/` use the format `<modal-name>`
 
 ## Basic Component Composition
 

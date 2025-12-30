@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"path/filepath"
+	"strings"
+
+	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // LoadOption is a functional option for configuring Load().
@@ -126,6 +130,42 @@ func WithLessProcessor() LoadOption {
 func WithProcessor(processor NodeProcessor) LoadOption {
 	return func(vue *Vue) {
 		vue.RegisterNodeProcessor(processor)
+	}
+}
+
+// WithComponents returns a LoadOption that registers component shorthands.
+// If no patterns are provided, "components/*.vuego" is used as the default.
+// Components are loaded from the filesystem and mapped to kebab-case tag names.
+// For example, a file named "components/ButtonPrimary.vuego" can be used as <button-primary></button-primary>.
+func WithComponents(patterns ...string) LoadOption {
+	return func(vue *Vue) {
+		// Use default pattern if none provided
+		if len(patterns) == 0 {
+			patterns = []string{"components/*.vuego"}
+		}
+
+		// Load all component files matching the patterns
+		for _, pattern := range patterns {
+			files, err := fs.Glob(vue.templateFS, pattern)
+			if err != nil {
+				// Skip patterns that don't match anything
+				continue
+			}
+
+			for _, file := range files {
+				// Extract the filename without extension
+				base := filepath.Base(file)
+				ext := filepath.Ext(base)
+				componentName := strings.TrimSuffix(base, ext)
+
+				// Convert to kebab-case for the tag name
+				tagName := helpers.CamelToKebab(componentName)
+
+				// Store the mapping
+				vue.RegisterComponent(tagName, file)
+			}
+		}
+		// Component resolution is handled internally in Vue.preProcessNodes
 	}
 }
 

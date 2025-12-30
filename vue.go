@@ -27,6 +27,10 @@ type Vue struct {
 
 	// Custom node processors for post-processing rendered DOM
 	nodeProcessors []NodeProcessor
+
+	// Component shorthand mapping: maps kebab-case tag names to component filenames
+	// e.g., "button-primary" -> "components/ButtonPrimary.vuego"
+	componentMap map[string]string
 }
 
 // NewVue creates a new Vue backed by the given filesystem.
@@ -38,6 +42,7 @@ func NewVue(templateFS fs.FS) *Vue {
 		renderer:      NewRenderer(),
 		exprEval:      NewExprEvaluator(),
 		templateCache: make(map[string][]*html.Node),
+		componentMap:  make(map[string]string),
 	}
 	v.funcMap = v.DefaultFuncMap()
 	return v

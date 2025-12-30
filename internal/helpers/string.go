@@ -76,3 +76,24 @@ func FormatAttr(val string) string {
 	b.WriteString(val)
 	return b.String()
 }
+
+// CamelToKebab converts a camelCase or PascalCase string to kebab-case.
+// For example: "ButtonPrimary" becomes "button-primary", "myVariable" becomes "my-variable".
+func CamelToKebab(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+
+	var b strings.Builder
+	for i, r := range s {
+		if i > 0 && r >= 'A' && r <= 'Z' {
+			b.WriteRune('-')
+		}
+		if r >= 'A' && r <= 'Z' {
+			b.WriteRune(r + 32) // Convert uppercase to lowercase
+		} else {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
