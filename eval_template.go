@@ -2,12 +2,14 @@ package vuego
 
 import (
 	"fmt"
+	"strings"
 
 	"golang.org/x/net/html"
 )
 
 // evalTemplate processes `<template>` entries from nodes.
-// If a `<template>` element has a :required attribute, the value must be provided.
+// If a `<template>` element has a :required attribute, the value(s) must be provided.
+// Values can be a single field or comma-separated list (e.g., :required="name,title,author").
 // A template element may repeat `:required` as needed. If a value is not provided,
 // template evaluation fails with an error that needs to be bubbled up preventing render.
 func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map[string]any, depth int) ([]*html.Node, error) {
@@ -24,7 +26,14 @@ func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map
 		var requiredAttrs []string
 		for _, attr := range node.Attr {
 			if attr.Key == ":require" || attr.Key == ":required" {
-				requiredAttrs = append(requiredAttrs, attr.Val)
+				// Support CSV format: :required="name,label,type"
+				fields := strings.Split(attr.Val, ",")
+				for _, field := range fields {
+					field = strings.TrimSpace(field)
+					if field != "" {
+						requiredAttrs = append(requiredAttrs, field)
+					}
+				}
 			}
 		}
 

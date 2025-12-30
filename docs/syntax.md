@@ -516,7 +516,7 @@ Wrap component content or fragments:
 </template>
 ```
 
-For component validation, use the `:required` attribute on the `<template>` tag to ensure props are provided:
+For component validation, use the `:required` attribute on the `<template>` tag to ensure props are provided. Specify multiple required props as a comma-separated list:
 
 ```html
 <template :required="name,title">

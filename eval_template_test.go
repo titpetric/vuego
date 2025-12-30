@@ -65,3 +65,19 @@ func TestRootLevelTemplateRequiredSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "<h1>My Page Title</h1>")
 }
+
+// TestRequiredCSVExpansion tests that :required supports CSV format
+// e.g., :required="name,title,author" expands to multiple required fields.
+func TestRequiredCSVExpansion(t *testing.T) {
+	vue := vuego.NewVue(os.DirFS("testdata"))
+
+	// Missing 'author' when both 'title' and 'author' are required via CSV
+	data := map[string]any{
+		"title": "Article Title",
+	}
+
+	var buf bytes.Buffer
+	err := vue.Render(&buf, "required-error-test/page.vuego", data)
+
+	require.Equal(t, "error in required-error-test/component.vuego (included from required-error-test/page.vuego): required attribute 'author' not provided", err.Error())
+}
