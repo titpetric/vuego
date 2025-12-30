@@ -121,6 +121,16 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				continue
 			}
 
+			// Handle slot elements
+			if tag == "slot" {
+				slotResult, err := v.evalSlot(ctx, node, ctx.SlotScope)
+				if err != nil {
+					return nil, err
+				}
+				result = append(result, slotResult...)
+				continue
+			}
+
 			if tag == "template" {
 				evaluated, err := v.evalTemplate(ctx, []*html.Node{node}, ctx.stack.EnvMap(), depth+1)
 				if err != nil {

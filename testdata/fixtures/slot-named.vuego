@@ -1,0 +1,5 @@
+<modal>
+  <template v-slot:header>Header Content</template>
+  <template v-slot:footer>Footer Content</template>
+  Body Content
+</modal>

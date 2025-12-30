@@ -15,6 +15,11 @@ func (v *Vue) evalInclude(ctx VueContext, node *html.Node, vars map[string]any, 
 	ctx.stack.Push(vars)
 	defer ctx.stack.Pop()
 
+	// Extract slot content from the component tag if not already processed
+	if ctx.SlotScope == nil {
+		ctx.SlotScope = extractSlotContent(node)
+	}
+
 	name := helpers.GetAttr(node, "include")
 	frontMatter, templateBytes, err := v.loader.loadFragment(name)
 	if err != nil {

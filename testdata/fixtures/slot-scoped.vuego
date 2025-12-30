@@ -1,0 +1,5 @@
+<list :items="products">
+  <template v-slot="slotProps">
+    {{ slotProps.item }} (#{{ slotProps.index }})
+  </template>
+</list>
