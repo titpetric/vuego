@@ -6,6 +6,7 @@ Vuego implements a subset of Vue.js template syntax. This document provides a co
 
 - [Values](#values)
 - [Directives](#directives)
+  - [Slots](#slots-slot-v-slot-) 
 - [Components](#components)
 - [Advanced](#advanced)
 - [Notes and Limitations](#notes-and-limitations)
@@ -114,6 +115,7 @@ Directives are special attributes that apply dynamic behavior to elements.
 | `v-show`                 | Toggle element visibility with CSS display         |
 | `v-pre`                  | Skip template processing for element and children  |
 | `v-once`                 | Render element once and skip on subsequent renders |
+| `v-slot` or `#`          | Define slot content and scoped slot props          |
 
 ### Attribute Binding (`:attr` / `v-bind:attr`)
 
@@ -330,6 +332,164 @@ Render an element once and skip it on subsequent evaluations. Useful for `<scrip
 
 The `v-once` directive also works inside `v-for` loops and with reusable components, preventing duplicate content when components are rendered multiple times.
 
+### Slots (`<slot>`, `v-slot`, `#`)
+
+Slots allow parent components to provide content to child components. This enables flexible component composition and content distribution.
+
+#### Default Slots
+
+A child component defines where content should be rendered using a `<slot>` element:
+
+**Child Component (components/Card.vuego):**
+
+```html
+<div class="card">
+  <slot></slot>
+</div>
+```
+
+**Parent Component Usage:**
+
+```html
+<card>
+  <h2>Card Title</h2>
+  <p>Card content goes here.</p>
+</card>
+```
+
+**Rendered Output:**
+
+```html
+<div class="card">
+  <h2>Card Title</h2>
+  <p>Card content goes here.</p>
+</div>
+```
+
+#### Fallback Content
+
+Provide default content inside `<slot>` tags that renders when no content is provided:
+
+**Child Component:**
+
+```html
+<button class="btn">
+  <slot>Click me</slot>
+</button>
+```
+
+**Usage without content:**
+
+```html
+<button></button>
+```
+
+**Rendered output uses fallback:**
+
+```html
+<button class="btn">Click me</button>
+```
+
+#### Named Slots
+
+Multiple slots can be used with `name` attributes to distribute content to specific locations:
+
+**Child Component (components/Modal.vuego):**
+
+```html
+<div class="modal">
+  <div class="modal-header">
+    <slot name="header"></slot>
+  </div>
+  <div class="modal-body">
+    <slot></slot>
+  </div>
+  <div class="modal-footer">
+    <slot name="footer"></slot>
+  </div>
+</div>
+```
+
+**Parent Component with Named Slots:**
+
+```html
+<modal>
+  <template v-slot:header>Modal Title</template>
+  <template v-slot:footer>Action Buttons</template>
+  Modal content goes here.
+</modal>
+```
+
+The `#name` shorthand is equivalent to `v-slot:name`:
+
+```html
+<modal>
+  <template #header>Modal Title</template>
+  <template #footer>Action Buttons</template>
+  Modal content goes here.
+</modal>
+```
+
+#### Scoped Slots
+
+Child components can pass data to slots via attribute bindings (`:prop="value"`), which become available in the parent's template context:
+
+**Child Component (components/List.vuego):**
+
+```html
+<ul>
+  <li v-for="(index, item) in items">
+    <slot :item="item" :index="index"></slot>
+  </li>
+</ul>
+```
+
+**Parent Component Receives Props:**
+
+```html
+<list :items="products">
+  <template v-slot="slotProps">
+    {{ slotProps.item.name }} (#{{ slotProps.index }})
+  </template>
+</list>
+```
+
+**Shorthand with destructuring:**
+
+```html
+<list :items="products">
+  <template v-slot="{ item, index }">
+    {{ item.name }} (#{{ index }})
+  </template>
+</list>
+```
+
+#### Named Scoped Slots
+
+Combine named slots with scoped props for maximum flexibility:
+
+**Child Component:**
+
+```html
+<div>
+  <slot name="header" :title="headerTitle"></slot>
+  <slot name="content" :count="items.length"></slot>
+</div>
+```
+
+**Parent Component:**
+
+```html
+<my-component>
+  <template #header="props">
+    Title: {{ props.title }}
+  </template>
+  <template #content="props">
+    Items: {{ props.count }}
+  </template>
+</my-component>
+```
+
 ## Components
 
 Vuego supports component composition using `<vuego>` and `<template>` tags. See [Components Guide](components.md) for detailed examples.
@@ -416,6 +576,7 @@ Both styles are valid and work identically.
 - ✅ Raw HTML with `v-html`
 - ✅ Skip template processing with `v-pre`
 - ✅ Single render deduplication with `v-once`
+- ✅ Slots with `<slot>`, `v-slot`, and `#` (default, named, scoped)
 - ✅ Component composition with `<vuego include>`
 - ✅ Component prop validation with `:required`
 - ✅ Full HTML documents and fragments
@@ -426,7 +587,6 @@ Both styles are valid and work identically.
 - ❌ Event handling (`@click`, `v-on`)
 - ❌ Two-way binding (`v-model`)
 - ❌ Computed properties
-- ❌ Slots
 - ❌ Custom directives
 
 ### Security
