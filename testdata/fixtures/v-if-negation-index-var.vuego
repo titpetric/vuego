@@ -1,0 +1,12 @@
+<template>
+  <!-- CORRECT pattern: (i, idx) where i=index, idx=value -->
+  <ul>
+    <li v-for="(i, idx) in indexes">
+      <!-- This should work -->
+      <span v-if="idx.primary">Primary: {{ idx.name }}</span>
+      
+      <!-- This should also work -->
+      <span v-if="!idx.primary">Not primary: {{ idx.name }}</span>
+    </li>
+  </ul>
+</template>

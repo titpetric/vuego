@@ -1,0 +1,7 @@
+{
+  "indexes": [
+    { "name": "primary_key", "primary": true },
+    { "name": "idx_name", "primary": false },
+    { "name": "idx_status", "primary": false }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "items": [
+    { "primary": true },
+    { "primary": false }
+  ]
+}

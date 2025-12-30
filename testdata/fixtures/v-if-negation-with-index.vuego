@@ -1,0 +1,9 @@
+<template>
+  <div v-for="(idx, item) in items">
+    <!-- This works -->
+    <span v-if="item.primary">PRIMARY</span>
+    
+    <!-- This doesn't work -->
+    <span v-if="!item.primary">NOT PRIMARY</span>
+  </div>
+</template>
