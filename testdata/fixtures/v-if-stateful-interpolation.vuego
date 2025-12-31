@@ -22,17 +22,19 @@ Index:
     <strong>{{ indexes | len }}</strong>
   </li>
 
-  <li v-if="indexes" :shown="0">
+  <li v-if="indexes">
+    <template :shown="0">
     Primary keys:
 
-    <strong v-for="item in indexes" v-if="item.primary" :shown="shown+1">{{ shown > 1 ? ", " : "" }}{{ item.name | default(item.columns) }}</strong>
+    <strong v-for="item in indexes" v-if="item.primary"><template :shown="shown+1">{{ shown > 1 ? ", " : "" }}{{ item.name | default(item.columns) }}</template></strong>
+    </template>
   </li>
 
-  <li :shown="0">
+  <li v-if="indexes">
+  <template :shown="0">
     Performance indexes:
 
-    <strong>
-      <span v-for="item in indexes" v-if="!item.primary" :shown="shown+1">{{ shown > 1 ? ", " : "" }}{{ item.name | default(item.columns) }}</span>
-    </strong>
+    <strong v-for="item in indexes" v-if="!item.primary"><template :shown="shown+1">{{ shown > 1 ? ", " : "" }}{{ item.name | default(item.columns) }}</template></strong>
+  </template>
   </li>
 </ul>
