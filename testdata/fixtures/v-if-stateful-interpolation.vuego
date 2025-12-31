@@ -1,0 +1,11 @@
+Primary:
+
+<template :printed="0">
+  <template v-for="item in indexes" v-if="item.primary" :printed="printed+1">{{ printed > 1 ? ", " : "" }}{{ item.name | default(item.columns) }}</template>
+</template>
+
+Index:
+
+<template :printed="0">
+  <template v-for="item in indexes" v-if="!item.primary" :printed="printed+1">{{ printed > 1 ? ", " : "" }}{{ item.name | default(item.columns) }}</template>
+</template>

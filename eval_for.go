@@ -96,7 +96,6 @@ func (v *Vue) evalFor(ctx VueContext, node *html.Node, expr string, depth int) (
 		helpers.RemoveAttr(iterNode, "v-for")
 
 		ctx.stack.Push(nil)
-		defer ctx.stack.Pop()
 
 		switch len(vars) {
 		case 1:
@@ -105,13 +104,41 @@ func (v *Vue) evalFor(ctx VueContext, node *html.Node, expr string, depth int) (
 			ctx.stack.Set(vars[0], index)
 			ctx.stack.Set(vars[1], value)
 		default:
+			ctx.stack.Pop()
 			return fmt.Errorf("v-for variables must be 1 or 2, got %d", len(vars))
 		}
 
 		evaluated, err := v.evaluate(ctx, []*html.Node{iterNode}, depth)
 		if err != nil {
+			ctx.stack.Pop()
 			return err
 		}
+
+		// After evaluation, propagate bound attributes from template back to parent scope
+		// This allows stateful attributes like :printed="printed+1" to persist across iterations
+		if iterNode.Type == html.ElementNode && iterNode.Data == "template" {
+			for _, attr := range iterNode.Attr {
+				boundName := attr.Key
+				if strings.HasPrefix(boundName, ":") {
+					boundName = boundName[1:]
+				} else if strings.HasPrefix(boundName, "v-bind:") {
+					boundName = boundName[7:]
+				} else {
+					continue
+				}
+				// Get the value that was set in the current scope and propagate to parent
+				if val, ok := ctx.stack.Lookup(boundName); ok {
+					// Pop current scope, set in parent, push back
+					topIdx := len(ctx.stack.stack) - 1
+					topMap := ctx.stack.stack[topIdx]
+					ctx.stack.stack = ctx.stack.stack[:topIdx]
+					ctx.stack.Set(boundName, val)
+					ctx.stack.stack = append(ctx.stack.stack, topMap)
+				}
+			}
+		}
+
+		ctx.stack.Pop()
 		result = append(result, evaluated...)
 		return nil
 	})

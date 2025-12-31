@@ -63,6 +63,40 @@ func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map
 			return nodes, nil
 		}
 
+		// Evaluate bound attributes on the template tag and set them in current scope
+		// For templates, bound attributes modify the current scope (don't create new scope)
+		for _, attr := range node.Attr {
+			// Check for bound attributes (: or v-bind:)
+			boundName := attr.Key
+			if strings.HasPrefix(boundName, ":") {
+				boundName = boundName[1:]
+			} else if strings.HasPrefix(boundName, "v-bind:") {
+				boundName = boundName[7:]
+			} else {
+				// Not a bound attribute, skip it
+				continue
+			}
+
+			// Evaluate the bound attribute expression
+			// Use expression evaluator for templates to support literals and expressions
+			expr := strings.TrimSpace(attr.Val)
+			val, err := v.exprEval.Eval(expr, ctx.stack.EnvMap())
+			if err == nil {
+				// Expression evaluated successfully
+				ctx.stack.Set(boundName, val)
+				continue
+			}
+
+			// Fall back to variable resolution if expression evaluation fails
+			valResolved, ok := ctx.stack.Resolve(expr)
+			if ok {
+				ctx.stack.Set(boundName, valResolved)
+			} else {
+				// Variable not found - set to nil
+				ctx.stack.Set(boundName, nil)
+			}
+		}
+
 		// Otherwise, evaluate children and return them (omitting the template tag)
 		evaluated, err := v.evaluateChildren(ctx, node, depth+1)
 		if err != nil {

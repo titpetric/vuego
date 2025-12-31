@@ -29,11 +29,30 @@ func (v *Vue) evalConditionExpr(ctx VueContext, expr string) (bool, error) {
 		return helpers.IsTruthy(result), nil
 	}
 
+	// If expr evaluation failed and expression starts with !, handle nil negation manually.
+	// expr library fails when trying to negate nil (e.g., "!item.primary" where primary key doesn't exist).
+	// Workaround: evaluate the inner expression and negate the boolean conversion.
+	if strings.HasPrefix(expr, "!") {
+		innerExpr := strings.TrimSpace(expr[1:])
+		// Try to evaluate inner expression (may return nil)
+		innerResult, innerErr := v.exprEval.Eval(innerExpr, ctx.stack.EnvMap())
+		if innerErr == nil {
+			// Successfully evaluated - convert nil to bool and negate
+			return !helpers.IsTruthy(innerResult), nil
+		}
+		// Fall back to stack resolution if expr evaluation fails
+		val, ok := ctx.stack.Resolve(innerExpr)
+		if ok {
+			return !helpers.IsTruthy(val), nil
+		}
+		// Undefined value: !undefined = true
+		return true, nil
+	}
+
 	// Fall back to legacy behavior for simple variable references
-	// This handles cases like "show" or "!show"
 	val, ok := ctx.stack.Resolve(expr)
 	if !ok {
-		// Variable not found - return false unless negated
+		// Variable not found - return false
 		return false, nil
 	}
 
@@ -146,6 +165,49 @@ func (v *Vue) evaluateNodeAsElement(ctx VueContext, node *html.Node, depth int) 
 
 		result = append(result, loopNodes...)
 		return result, nil
+	}
+
+	// Special handling for template tags: evaluate bound attributes and set them in current scope
+	if node.Data == "template" {
+		// For templates, bound attributes modify the current scope (don't create new scope)
+		for _, attr := range node.Attr {
+			// Check for bound attributes (: or v-bind:)
+			boundName := attr.Key
+			if strings.HasPrefix(boundName, ":") {
+				boundName = boundName[1:]
+			} else if strings.HasPrefix(boundName, "v-bind:") {
+				boundName = boundName[7:]
+			} else {
+				// Not a bound attribute, skip it
+				continue
+			}
+
+			// Evaluate the bound attribute expression
+			// Use expression evaluator for templates to support literals and expressions
+			expr := strings.TrimSpace(attr.Val)
+			val, err := v.exprEval.Eval(expr, ctx.stack.EnvMap())
+			if err == nil {
+				// Expression evaluated successfully
+				ctx.stack.Set(boundName, val)
+				continue
+			}
+
+			// Fall back to variable resolution if expression evaluation fails
+			valResolved, ok := ctx.stack.Resolve(expr)
+			if ok {
+				ctx.stack.Set(boundName, valResolved)
+			} else {
+				// Variable not found - set to nil
+				ctx.stack.Set(boundName, nil)
+			}
+		}
+
+		// Evaluate children and return them (omitting the template tag)
+		evaluated, err := v.evaluateChildren(ctx, node, depth+1)
+		if err != nil {
+			return nil, err
+		}
+		return evaluated, nil
 	}
 
 	// Regular element node processing (no v-for)

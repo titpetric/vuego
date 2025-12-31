@@ -1,0 +1,7 @@
+indexes:
+  - name: name
+    primary: true
+  - name: name2
+  - name: name3
+  - columns: ["id"]
+    primary: true

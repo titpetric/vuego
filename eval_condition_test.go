@@ -1146,3 +1146,97 @@ func TestEvaluateNodeAsElement_NestedVIfWithChildren(t *testing.T) {
 		})
 	}
 }
+
+// TestVIfNegationWithVFor reproduces the bug with !item.primary in v-for loops
+func TestVIfNegationWithVFor(t *testing.T) {
+	templateFS := &fstest.MapFS{
+		"test.vuego": {Data: []byte(`
+<template v-for="(idx, item) in indexes">
+  <span v-if="item.primary">PRIMARY</span>
+</template>
+
+<template v-for="(idx, item) in indexes">
+  <span v-if="!item.primary">NOT PRIMARY</span>
+</template>
+`)},
+	}
+
+	data := map[string]any{
+		"indexes": []map[string]any{
+			{"name": "name", "primary": true},
+			{"name": "name2"}, // no primary key
+			{"name": "name3"}, // no primary key
+			{"columns": []string{"id"}, "primary": true},
+		},
+	}
+
+	var buf bytes.Buffer
+	vue := vuego.NewVue(templateFS)
+	err := vue.RenderFragment(&buf, "test.vuego", data)
+	require.NoError(t, err)
+
+	output := buf.String()
+	t.Logf("Output:\n%s", output)
+
+	// Count how many times <span>PRIMARY</span> appears
+	primaryCount := bytes.Count(buf.Bytes(), []byte("<span>PRIMARY</span>"))
+	require.Equal(t, 2, primaryCount, "PRIMARY should appear exactly 2 times (for items with primary=true)")
+
+	// Count how many times <span>NOT PRIMARY</span> appears
+	notPrimaryCount := bytes.Count(buf.Bytes(), []byte("<span>NOT PRIMARY</span>"))
+	require.Equal(t, 2, notPrimaryCount, "NOT PRIMARY should appear exactly 2 times (for items without primary or primary=false)")
+}
+
+// TestVIfNegationSimple tests basic negation without v-for (no == true comparison)
+func TestVIfNegationSimple(t *testing.T) {
+	templateFS := &fstest.MapFS{
+		"test.vuego": {Data: []byte(`<div v-if="item.primary">PRIMARY</div><div v-if="!item.primary">NOT PRIMARY</div>`)},
+	}
+
+	tests := []struct {
+		name        string
+		data        any
+		expectPrim  bool
+		expectNotPr bool
+	}{
+		{
+			"primary=true",
+			map[string]any{"item": map[string]any{"primary": true}},
+			true,
+			false,
+		},
+		{
+			"primary=false",
+			map[string]any{"item": map[string]any{"primary": false}},
+			false,
+			true,
+		},
+		{
+			"primary missing",
+			map[string]any{"item": map[string]any{"name": "test"}},
+			false,
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			vue := vuego.NewVue(templateFS)
+			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			require.NoError(t, err)
+
+			output := buf.String()
+			if tt.expectPrim {
+				require.Contains(t, output, "<div>PRIMARY</div>", "expected PRIMARY to be rendered")
+			} else {
+				require.NotContains(t, output, "<div>PRIMARY</div>", "expected PRIMARY to NOT be rendered")
+			}
+			if tt.expectNotPr {
+				require.Contains(t, output, "<div>NOT PRIMARY</div>", "expected NOT PRIMARY to be rendered")
+			} else {
+				require.NotContains(t, output, "<div>NOT PRIMARY</div>", "expected NOT PRIMARY to NOT be rendered")
+			}
+		})
+	}
+}

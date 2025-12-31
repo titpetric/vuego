@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.90%   | 1059      | 3491  |
+| ✅     | titpetric/vuego                      | 84.85%   | 1111      | 3616  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 45        | 246   |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 114       | 595   |
 | ❌     | titpetric/vuego/diff                 | 0.00%    | 60        | 193   |
@@ -27,7 +27,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | Status | Package                              | Function                          | Coverage | Cognitive |
 |--------|--------------------------------------|-----------------------------------|----------|-----------|
 | ✅     | titpetric/vuego                      | ExprEvaluator.ClearCache          | 100.00%  | 0         |
-| ✅     | titpetric/vuego                      | ExprEvaluator.Eval                | 87.50%   | 2         |
+| ✅     | titpetric/vuego                      | ExprEvaluator.Eval                | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | ExprEvaluator.getProgram          | 100.00%  | 2         |
 | ❌     | titpetric/vuego                      | GetSlotName                       | 0.00%    | 1         |
 | ✅     | titpetric/vuego                      | LessProcessor.New                 | 100.00%  | 0         |
@@ -82,23 +82,23 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.evalAttributes                | 94.20%   | 44        |
 | ❌     | titpetric/vuego                      | Vue.evalBoundAttribute            | 72.20%   | 10        |
 | ✅     | titpetric/vuego                      | Vue.evalCondition                 | 100.00%  | 0         |
-| ✅     | titpetric/vuego                      | Vue.evalConditionExpr             | 88.90%   | 2         |
+| ❌     | titpetric/vuego                      | Vue.evalConditionExpr             | 72.20%   | 7         |
 | ✅     | titpetric/vuego                      | Vue.evalElseIfChain               | 91.70%   | 34        |
 | ✅     | titpetric/vuego                      | Vue.evalFilter                    | 100.00%  | 6         |
-| ✅     | titpetric/vuego                      | Vue.evalFor                       | 81.80%   | 6         |
+| ✅     | titpetric/vuego                      | Vue.evalFor                       | 81.60%   | 22        |
 | ✅     | titpetric/vuego                      | Vue.evalInclude                   | 88.90%   | 5         |
 | ❌     | titpetric/vuego                      | Vue.evalObjectBinding             | 53.80%   | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalPipe                      | 81.80%   | 16        |
 | ✅     | titpetric/vuego                      | Vue.evalSegment                   | 70.00%   | 5         |
 | ✅     | titpetric/vuego                      | Vue.evalSlot                      | 91.70%   | 41        |
-| ✅     | titpetric/vuego                      | Vue.evalTemplate                  | 89.70%   | 34        |
+| ✅     | titpetric/vuego                      | Vue.evalTemplate                  | 82.20%   | 48        |
 | ✅     | titpetric/vuego                      | Vue.evalVFor                      | 84.00%   | 29        |
 | ✅     | titpetric/vuego                      | Vue.evalVHtml                     | 94.70%   | 9         |
 | ✅     | titpetric/vuego                      | Vue.evalVShow                     | 100.00%  | 5         |
 | ✅     | titpetric/vuego                      | Vue.evalVText                     | 95.00%   | 9         |
 | ✅     | titpetric/vuego                      | Vue.evaluate                      | 91.40%   | 156       |
 | ✅     | titpetric/vuego                      | Vue.evaluateChildren              | 100.00%  | 1         |
-| ❌     | titpetric/vuego                      | Vue.evaluateNodeAsElement         | 61.80%   | 24        |
+| ❌     | titpetric/vuego                      | Vue.evaluateNodeAsElement         | 65.50%   | 41        |
 | ✅     | titpetric/vuego                      | Vue.interpolate                   | 100.00%  | 2         |
 | ✅     | titpetric/vuego                      | Vue.interpolateToWriter           | 83.70%   | 48        |
 | ✅     | titpetric/vuego                      | Vue.loadCachedWithFrontMatter     | 83.30%   | 5         |

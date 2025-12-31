@@ -131,6 +131,26 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 				continue
 			}
 
+			// Handle v-if chains (v-if, v-else-if, v-else) early, even for templates
+			// This ensures v-if/v-else-if/v-else are processed before template attributes
+			if helpers.HasAttr(node, "v-if") {
+				chainResult, skipCount, err := v.evalElseIfChain(ctx, node, nodes[i:], depth)
+				if err != nil {
+					return nil, err
+				}
+				result = append(result, chainResult...)
+				// Skip past the v-else-if and v-else nodes that were part of this chain
+				i += skipCount
+				continue
+			}
+
+			// Skip v-else-if and v-else if they appear without v-if
+			// (they should be handled as part of a chain)
+			if helpers.HasAttr(node, "v-else-if") || helpers.HasAttr(node, "v-else") {
+				continue
+			}
+
+			// Handle template elements (without v-if/v-for, those are handled above)
 			if tag == "template" {
 				evaluated, err := v.evalTemplate(ctx, []*html.Node{node}, ctx.stack.EnvMap(), depth+1)
 				if err != nil {
@@ -157,24 +177,6 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 					result = append(result, evaluated...)
 				}
 
-				continue
-			}
-
-			// Handle v-if chains (v-if, v-else-if, v-else)
-			if helpers.HasAttr(node, "v-if") {
-				chainResult, skipCount, err := v.evalElseIfChain(ctx, node, nodes[i:], depth)
-				if err != nil {
-					return nil, err
-				}
-				result = append(result, chainResult...)
-				// Skip past the v-else-if and v-else nodes that were part of this chain
-				i += skipCount
-				continue
-			}
-
-			// Skip v-else-if and v-else if they appear without v-if
-			// (they should be handled as part of a chain)
-			if helpers.HasAttr(node, "v-else-if") || helpers.HasAttr(node, "v-else") {
 				continue
 			}
 
