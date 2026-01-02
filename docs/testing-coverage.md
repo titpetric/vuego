@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                              | Coverage | Cognitive | Lines |
 |--------|--------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                      | 84.85%   | 1111      | 3616  |
+| ✅     | titpetric/vuego                      | 84.84%   | 1109      | 3632  |
 | ❌     | titpetric/vuego/cmd/vuego            | 0.00%    | 45        | 246   |
 | ❌     | titpetric/vuego/cmd/vuego-playground | 0.00%    | 114       | 595   |
 | ❌     | titpetric/vuego/diff                 | 0.00%    | 60        | 193   |
@@ -85,7 +85,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego                      | Vue.evalConditionExpr             | 72.20%   | 7         |
 | ✅     | titpetric/vuego                      | Vue.evalElseIfChain               | 91.70%   | 34        |
 | ✅     | titpetric/vuego                      | Vue.evalFilter                    | 100.00%  | 6         |
-| ✅     | titpetric/vuego                      | Vue.evalFor                       | 81.60%   | 22        |
+| ❌     | titpetric/vuego                      | Vue.evalFor                       | 76.00%   | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalInclude                   | 88.90%   | 5         |
 | ❌     | titpetric/vuego                      | Vue.evalObjectBinding             | 53.80%   | 6         |
 | ✅     | titpetric/vuego                      | Vue.evalPipe                      | 81.80%   | 16        |
@@ -107,6 +107,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                      | Vue.postProcessNodes              | 75.00%   | 3         |
 | ✅     | titpetric/vuego                      | Vue.preProcessNodes               | 66.70%   | 4         |
 | ❌     | titpetric/vuego                      | Vue.processComponentNode          | 77.80%   | 9         |
+| ✅     | titpetric/vuego                      | Vue.propagateTemplateAttributes   | 88.90%   | 14        |
 | ✅     | titpetric/vuego                      | Vue.render                        | 75.00%   | 3         |
 | ✅     | titpetric/vuego                      | Vue.renderNodesWithContext        | 81.80%   | 4         |
 | ✅     | titpetric/vuego                      | Vue.replaceWithInclude            | 100.00%  | 0         |
