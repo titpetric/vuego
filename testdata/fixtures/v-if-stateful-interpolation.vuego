@@ -1,18 +1,14 @@
 Primary:
 
-<div>
 <template :printed="0">
   <template v-for="item in indexes" v-if="item.primary" :printed="printed+1">{{ printed > 1 ? ", " : "" }}{{ item.name | default(item.columns) }}</template>
 </template>
-</div>
 
 Index:
 
-<div>
 <template :printed="0">
   <template v-for="item in indexes" v-if="!item.primary" :printed="printed+1">{{ printed > 1 ? ", " : "" }}{{ item.name | default(item.columns) }}</template>
 </template>
-</div>
 
 <h4>Index Summary</h4>
 <ul>
@@ -31,10 +27,10 @@ Index:
   </li>
 
   <li v-if="indexes">
-  <template :shown="0">
+    <template :shown="0">
     Performance indexes:
 
     <strong v-for="item in indexes" v-if="!item.primary"><template :shown="shown+1">{{ shown > 1 ? ", " : "" }}{{ item.name | default(item.columns) }}</template></strong>
-  </template>
+    </template>
   </li>
 </ul>

@@ -37,6 +37,43 @@ func parseFor(s string) ([]string, string, error) {
 	return vars, right, nil
 }
 
+// propagateTemplateAttributes recursively finds template elements with bound attributes
+// and propagates their evaluated values from the current scope to the parent scope.
+// This allows stateful attributes like :printed="printed+1" to persist across loop iterations.
+func (v *Vue) propagateTemplateAttributes(ctx VueContext, node *html.Node) {
+	if node == nil {
+		return
+	}
+
+	// If this node is a template, propagate its bound attributes
+	if node.Type == html.ElementNode && node.Data == "template" {
+		for _, attr := range node.Attr {
+			boundName := attr.Key
+			if strings.HasPrefix(boundName, ":") {
+				boundName = boundName[1:]
+			} else if strings.HasPrefix(boundName, "v-bind:") {
+				boundName = boundName[7:]
+			} else {
+				continue
+			}
+			// Get the value that was set in the current scope and propagate to parent
+			if val, ok := ctx.stack.Lookup(boundName); ok {
+				// Pop current scope, set in parent, push back
+				topIdx := len(ctx.stack.stack) - 1
+				topMap := ctx.stack.stack[topIdx]
+				ctx.stack.stack = ctx.stack.stack[:topIdx]
+				ctx.stack.Set(boundName, val)
+				ctx.stack.stack = append(ctx.stack.stack, topMap)
+			}
+		}
+	}
+
+	// Recursively check children for template elements
+	for child := node.FirstChild; child != nil; child = child.NextSibling {
+		v.propagateTemplateAttributes(ctx, child)
+	}
+}
+
 func (v *Vue) evalVFor(ctx VueContext, node *html.Node, nodes []*html.Node, depth int) ([]*html.Node, int, error) {
 	skipCount := 0
 	result := []*html.Node{}
@@ -116,27 +153,7 @@ func (v *Vue) evalFor(ctx VueContext, node *html.Node, expr string, depth int) (
 
 		// After evaluation, propagate bound attributes from template back to parent scope
 		// This allows stateful attributes like :printed="printed+1" to persist across iterations
-		if iterNode.Type == html.ElementNode && iterNode.Data == "template" {
-			for _, attr := range iterNode.Attr {
-				boundName := attr.Key
-				if strings.HasPrefix(boundName, ":") {
-					boundName = boundName[1:]
-				} else if strings.HasPrefix(boundName, "v-bind:") {
-					boundName = boundName[7:]
-				} else {
-					continue
-				}
-				// Get the value that was set in the current scope and propagate to parent
-				if val, ok := ctx.stack.Lookup(boundName); ok {
-					// Pop current scope, set in parent, push back
-					topIdx := len(ctx.stack.stack) - 1
-					topMap := ctx.stack.stack[topIdx]
-					ctx.stack.stack = ctx.stack.stack[:topIdx]
-					ctx.stack.Set(boundName, val)
-					ctx.stack.stack = append(ctx.stack.stack, topMap)
-				}
-			}
-		}
+		v.propagateTemplateAttributes(ctx, iterNode)
 
 		ctx.stack.Pop()
 		result = append(result, evaluated...)
