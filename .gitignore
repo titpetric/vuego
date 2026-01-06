@@ -4,6 +4,7 @@
 /atkins.log
 *.test
 *.txt
+*.log
 *.prof
 pkg.cov
 pkg.cov.json

@@ -1,6 +1,6 @@
 name: Vuego CI pipeline
 
-tasks:
+jobs:
   fmt:
     desc: "Format the code"
     steps:
@@ -24,11 +24,19 @@ tasks:
     steps:
       - task: docker:up
       - for: item in $(ls ./bin/*.test)
-        run: ${{ item }}
+        task: test:detail
         detach: true
       - name: cleanup
         task: docker:down
         deferred: true
+
+  test:detail:
+    dest: "Collect per-function test runs"
+    requires: [item]
+    steps:
+      - for: funcName in $(${{ item }} -test.list .)
+        summarize: true
+        run: ${{ item }} -test.run "^${{ funcName }}$"
 
   docker:up:
     desc: "Bring up docker env"
