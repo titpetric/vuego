@@ -1,4 +1,4 @@
-package vuego_test
+package tests
 
 import (
 	"strings"

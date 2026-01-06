@@ -1,0 +1,4 @@
+services:
+  my-test:
+    image: ubuntu
+    command: tail -F anything

@@ -1,0 +1,41 @@
+name: Vuego CI pipeline
+
+tasks:
+  fmt:
+    desc: "Format the code"
+    steps:
+      - goimports -w .
+      - go fmt ./...
+      - go mod tidy
+
+  test:
+    depends_on: fmt
+    steps:
+      - task: test:build
+      - task: test:run
+
+  test:build:
+    desc: "Build tests"
+    steps:
+      - go-fsck test -c -o bin/ ./...
+
+  test:run:
+    desc: "Run built tests"
+    steps:
+      - task: docker:up
+      - for: item in $(ls ./bin/*.test)
+        run: ${{ item }}
+        detach: true
+      - name: cleanup
+        task: docker:down
+        deferred: true
+
+  docker:up:
+    desc: "Bring up docker env"
+    steps:
+      - docker compose up -d --wait --remove-orphans
+
+  docker:down:
+    desc: "Bring down docker env"
+    steps:
+      - docker compose down

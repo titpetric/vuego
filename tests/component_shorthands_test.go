@@ -1,4 +1,4 @@
-package vuego_test
+package tests
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 )
 
 func TestComponentShorthandBasic(t *testing.T) {
-	root := os.DirFS("../testdata/fixtures")
+	root := os.DirFS("testdata/fixtures")
 
 	// Create template with WithComponents option
 	tpl := vuego.NewFS(root, vuego.WithComponents())
@@ -32,7 +32,7 @@ func TestComponentShorthandBasic(t *testing.T) {
 }
 
 func TestComponentShorthandWithAttributes(t *testing.T) {
-	root := os.DirFS("../testdata/fixtures")
+	root := os.DirFS("testdata/fixtures")
 
 	// Create a template with WithComponents
 	tmpl := vuego.NewFS(root, vuego.WithComponents())
@@ -50,7 +50,7 @@ func TestComponentShorthandWithAttributes(t *testing.T) {
 }
 
 func TestComponentProcessorRegistration(t *testing.T) {
-	root := os.DirFS("../testdata/fixtures")
+	root := os.DirFS("testdata/fixtures")
 
 	// Create template without components first
 	tpl1 := vuego.NewFS(root)
@@ -64,7 +64,7 @@ func TestComponentProcessorRegistration(t *testing.T) {
 }
 
 func TestComponentMappingLookup(t *testing.T) {
-	root := os.DirFS("../testdata/fixtures")
+	root := os.DirFS("testdata/fixtures")
 
 	vue := vuego.NewVue(root)
 

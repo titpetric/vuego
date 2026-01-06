@@ -1,6 +1,7 @@
 # Coverage files
 *.out
 /*.json
+/atkins.log
 *.test
 *.txt
 *.prof
