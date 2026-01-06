@@ -17,13 +17,14 @@ jobs:
   test:build:
     desc: "Build tests"
     steps:
-      - go-fsck test -c -o bin/ ./...
+      - go-fsck test -cover -coverpkg=./... -c -o bin/ ./...
 
   test:run:
     desc: "Run built tests"
     steps:
       - task: docker:up
-      - for: item in $(ls ./bin/*.test)
+      - rm -rf coverage
+      - for: item in $(ls ./bin/*.test | xargs -n1 basename)
         task: test:detail
         detach: true
       - name: cleanup
@@ -34,9 +35,10 @@ jobs:
     dest: "Collect per-function test runs"
     requires: [item]
     steps:
-      - for: funcName in $(${{ item }} -test.list .)
+      - mkdir -p coverage/${{item}}
+      - for: funcName in $(./bin/${{ item }} -test.list ^Test.)
         summarize: true
-        run: ${{ item }} -test.run "^${{ funcName }}$"
+        run: ./bin/${{ item }} -test.coverprofile "./coverage/${{item}}/${{ funcName }}.cov" -test.run "^${{ funcName }}$"
 
   docker:up:
     desc: "Bring up docker env"
