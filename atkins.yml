@@ -1,4 +1,5 @@
-# Atkins CI: https://github.com/titpetric/atkins-ci
+#!/usr/bin/env atkins
+# Atkins CI: https://github.com/titpetric/atkins
 
 name: Vuego CI pipeline
 
