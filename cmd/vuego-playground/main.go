@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -242,14 +243,14 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Create Vue renderer for the index template
-	vue := vuego.NewVue(staticContent)
+	tmpl := vuego.NewFS(staticContent, vuego.WithLessProcessor())
 
 	// Handle root path to render index.vuego
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			pageData := NewIndexPageData(examplesMap) // Pass examplesMap
-			if err := vue.Render(w, "index.vuego", pageData); err != nil {
+			if err := tmpl.Load("index.vuego").Fill(pageData).Render(r.Context(), w); err != nil {
 				http.Error(w, fmt.Sprintf("could not render index.vuego: %v", err), http.StatusInternalServerError)
 				return
 			}
@@ -467,11 +468,10 @@ func handleRender(w http.ResponseWriter, r *http.Request, examplesFS fs.FS) {
 		secondary: examplesFS,
 	}
 
-	// Render the template
-	vue := vuego.NewVue(combinedFS)
+	// Render the template with Less processor support
+	tmpl := vuego.NewFS(combinedFS, vuego.WithLessProcessor())
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "template.html", data)
-	if err != nil {
+	if err := tmpl.Load("template.html").Fill(data).Render(context.Background(), &buf); err != nil {
 		_ = json.NewEncoder(w).Encode(RenderResponse{
 			Error: err.Error(),
 		})
@@ -509,8 +509,8 @@ func handleCheatsheet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var buf bytes.Buffer
-	vue := vuego.NewVue(staticFS)
-	err := vue.RenderFragment(&buf, "static/footer.vuego", map[string]any{})
+	tmpl := vuego.NewFS(staticFS, vuego.WithLessProcessor())
+	err := tmpl.Load("static/footer.vuego").Fill(map[string]any{}).Render(r.Context(), &buf)
 	if err != nil {
 		_ = json.NewEncoder(w).Encode(map[string]string{
 			"error": err.Error(),
