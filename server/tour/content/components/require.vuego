@@ -1,0 +1,6 @@
+<template :required="title, author">
+  <article>
+    <h1>{{ title }}</h1>
+    <p>By {{ author }}</p>
+  </article>
+</template>

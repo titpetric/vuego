@@ -1,0 +1,8 @@
+<ul>
+  <li v-for="fruit in fruits">{{ fruit }}</li>
+</ul>
+<ul>
+  <li v-for="(idx, user) in users">
+    {{ idx + 1 }}. {{ user.name }} ({{ user.age }})
+  </li>
+</ul>

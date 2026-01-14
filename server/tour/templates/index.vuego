@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vuego tour</title>
+  <link rel="stylesheet" href="/static/tour.css">
+</head>
+<body>
+  <header>
+    <h1><a href="/" style="color: inherit; text-decoration: none;">Vuego tour</a></h1>
+    <div class="progress" id="progressText"></div>
+    <div class="nav-buttons" v-if="isDone">
+      <a href="/" class="btn btn-primary">Restart</a>
+    </div>
+    <div class="nav-buttons" v-else-if="readme">
+      <a href="/lesson/interpolation/0" class="btn btn-primary">Start &rarr;</a>
+    </div>
+    <div class="nav-buttons" v-else>
+      <a v-if="lesson.HasPrev" id="prevBtn" href="#" class="btn" onclick="navigate('prev'); return false;">&larr; Previous</a>
+      <a id="nextBtn" href="#" class="btn btn-primary" onclick="navigate('next'); return false;">Next &rarr;</a>
+    </div>
+  </header>
+  <main>
+    <div class="lesson-panel">
+      <div v-if="lesson">
+        <h2 id="lessonTitle">{{ lesson.Title }}</h2>
+        <div class="content" id="lessonContent"></div>
+      </div>
+      <div v-if="readme" class="readme" id="readmeContent" v-bind:data-markdown="readme"></div>
+    </div>
+    <div class="editor-panel">
+      <div class="editors-area" id="editorsContainer"></div>
+      <div class="output-section">
+        <div class="file-header" onclick="toggleOutput()">
+          <span class="file-toggle" id="outputToggle">&darr;</span> Output
+          <button onclick="event.stopPropagation(); render()">Render</button>
+        </div>
+        <div class="output-content" id="outputContent">
+          <iframe id="output"></iframe>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer v-if="!isDone" class="chapter-nav">
+    <strong>Chapters:</strong>
+    <template v-for="chapter in chapters">
+      <a v-bind:href="'/lesson/' + chapter.Slug + '/0'">{{ chapter.Title }}</a>
+    </template>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-min-noconflict/ace.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-min-noconflict/mode-html.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-min-noconflict/mode-json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-min-noconflict/mode-yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-min-noconflict/theme-github.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/static/tour.js"></script>
+</body>
+</html>

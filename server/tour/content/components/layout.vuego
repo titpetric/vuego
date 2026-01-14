@@ -1,0 +1,6 @@
+---
+layout: base.vuego
+---
+<h1>{{ title }}</h1>
+<p>This content is wrapped by a layout template.</p>
+<p>The layout provides the HTML structure.</p>

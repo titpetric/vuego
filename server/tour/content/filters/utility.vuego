@@ -1,0 +1,5 @@
+<div>
+  <p>Name: {{ userName | default("Guest") }}</p>
+  <p>Items as JSON: {{ items | json }}</p>
+  <p>Number of colors: {{ colors | len }}</p>
+</div>

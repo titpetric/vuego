@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ siteName }}</title>
+</head>
+<body>
+  <header>
+    <nav>{{ siteName }}</nav>
+  </header>
+  <main v-html="content">
+  </main>
+  <footer>
+    <p>&copy; 2024 {{ siteName }}</p>
+  </footer>
+</body>
+</html>

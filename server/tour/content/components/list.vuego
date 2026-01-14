@@ -1,0 +1,5 @@
+<ul>
+  <li v-for="(index, item) in items">
+    <slot :item="item" :index="index">{{ item }}</slot>
+  </li>
+</ul>

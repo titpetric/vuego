@@ -1,0 +1,5 @@
+<div>
+  <p>Original: {{ text }}</p>
+  <p>Trimmed: {{ text | trim }}</p>
+  <p>Chained: {{ text | trim | lower | title }}</p>
+</div>

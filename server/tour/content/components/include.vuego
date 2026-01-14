@@ -1,0 +1,5 @@
+<div>
+  <h1>{{ pageTitle }}</h1>
+  <vuego include="header.vuego"></vuego>
+  <p>Main content here.</p>
+</div>

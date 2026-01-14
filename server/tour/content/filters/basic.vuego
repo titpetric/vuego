@@ -1,0 +1,6 @@
+<div>
+  <p>Original: {{ message }}</p>
+  <p>Upper: {{ message | upper }}</p>
+  <p>Lower: {{ message | lower }}</p>
+  <p>Title case: {{ name | title }}</p>
+</div>

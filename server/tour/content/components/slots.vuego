@@ -1,0 +1,8 @@
+<div class="card">
+  <div class="card-header">
+    <slot name="header">Default Header</slot>
+  </div>
+  <div class="card-body">
+    <slot>Default content goes here.</slot>
+  </div>
+</div>

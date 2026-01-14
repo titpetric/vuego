@@ -1,0 +1,8 @@
+<div>
+  <p v-if="loggedIn">Welcome back, {{ username }}!</p>
+  <p v-else>Please log in.</p>
+
+  <div v-if="role == 'admin'">Admin Panel</div>
+  <div v-else-if="role == 'user'">User Dashboard</div>
+  <div v-else>Guest View</div>
+</div>

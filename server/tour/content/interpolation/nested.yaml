@@ -1,0 +1,6 @@
+user:
+  name: Alice
+  email: alice@example.com
+  address:
+    city: New York
+    country: USA
