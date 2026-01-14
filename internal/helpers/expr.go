@@ -27,14 +27,24 @@ func ContainsPipe(expr string) bool {
 	return false
 }
 
-// IsComplexExpr checks if an expression contains operators like ==, ===, !=, <, >, etc.
+// IsComplexExpr checks if an expression contains operators like ==, ===, !=, <, >, +, -, etc.
 func IsComplexExpr(expr string) bool {
-	operators := []string{"==", "===", "!=", "!==", "<=", ">=", "<", ">", "&&", "||"}
+	// Comparison and logical operators - can appear anywhere
+	operators := []string{"==", "===", "!=", "!==", "<=", ">=", "&&", "||"}
 	for _, op := range operators {
 		if strings.Contains(expr, op) {
 			return true
 		}
 	}
+
+	// Arithmetic operators - must be surrounded by spaces to avoid matching paths like "foo/bar" or "foo-bar"
+	arithOperators := []string{" + ", " - ", " * ", " / ", " % ", " < ", " > "}
+	for _, op := range arithOperators {
+		if strings.Contains(expr, op) {
+			return true
+		}
+	}
+
 	return false
 }
 

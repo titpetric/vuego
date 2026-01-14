@@ -78,7 +78,7 @@ Vuego supports the following template features:
 
 ## Playground
 
-Try VueGo in your browser! The interactive playground lets you experiment with templates and see results instantly.
+Try Vuego in your browser! The interactive playground lets you experiment with templates and see results instantly.
 
 - [vuego.incubator.to](https://vuego.incubator.to/)
 
@@ -86,7 +86,7 @@ You can run the playground locally, and if you pass a folder as the first parame
 
 ```bash
 # go run github.com/titpetric/vuego/cmd/vuego-playground
-2025/11/14 20:07:31 VueGo Playground starting on http://localhost:3000
+2025/11/14 20:07:31 Vuego Playground starting on http://localhost:3000
 ```
 
 ## Documentation

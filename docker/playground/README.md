@@ -1,6 +1,6 @@
-# VueGo Playground Docker Setup
+# Vuego Playground Docker Setup
 
-This directory contains Docker configuration for the VueGo Playground.
+This directory contains Docker configuration for the Vuego Playground.
 
 ## Quick Start
 
@@ -38,7 +38,7 @@ The playground supports:
 - **Real-time rendering** - Auto-refresh as you edit templates and data
 - **Save functionality** - Save edited templates and data to the filesystem
 - **Create new files** - Create new pages (root) or components (components/)
-- **Cheatsheet footer** - Quick reference for VueGo syntax
+- **Cheatsheet footer** - Quick reference for Vuego syntax
 - **Example browser** - Load pre-built examples
 
 ## Notes

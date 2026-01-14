@@ -1,8 +1,8 @@
 {
-  "title": "Building Modern Web Applications with VueGo",
+  "title": "Building Modern Web Applications with Vuego",
   "author": "Jane Developer",
   "date": "November 14, 2025",
-  "intro": "VueGo combines the simplicity of Vue.js-style templates with the power of Go's template engine. This article explores how to leverage both for building dynamic, server-rendered applications.",
+  "intro": "Vuego combines the simplicity of Vue.js-style templates with the power of Go's template engine. This article explores how to leverage both for building dynamic, server-rendered applications.",
   "features": [
     {
       "name": "Server-Side Rendering",
@@ -18,7 +18,7 @@
     }
   ],
   "steps": [
-    "Install VueGo package with go get",
+    "Install Vuego package with go get",
     "Create your first template with .vuego extension",
     "Set up data as a map[string]any",
     "Render using vue.Render()",

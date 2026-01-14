@@ -52,7 +52,7 @@ Template:
 
 ### Automatic Type Conversion
 
-VueGo automatically converts between compatible types:
+Vuego automatically converts between compatible types:
 
 ```go
 vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{

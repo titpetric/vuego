@@ -6,7 +6,7 @@ The project uses [Task](https://taskfile.dev) for common development workflows. 
 
 ### `task` (default)
 
-Starts the VueGo playground web server on http://localhost:8080
+Starts the Vuego playground web server on http://localhost:8080
 
 ### `task test`
 

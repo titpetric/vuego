@@ -1,13 +1,13 @@
-# VueGo Playground Guide
+# Vuego Playground Guide
 
-The VueGo Playground is an interactive web application for testing and experimenting with VueGo templates in real-time.
+The Vuego Playground is an interactive web application for testing and experimenting with Vuego templates in real-time.
 
 ## Features
 
 ### 1. **Split-Panel Interface**
 
 The playground uses a 4-panel layout:
-- **Template Editor** (top-left): Write your VueGo template
+- **Template Editor** (top-left): Write your Vuego template
 - **Data Editor** (top-right): Provide JSON data
 - **Preview** (bottom): See rendered HTML output
 - **Controls** (bottom bar): Render button and status
@@ -105,9 +105,9 @@ Response:
 
 ## Common Use Cases
 
-### 1. Learning VueGo
+### 1. Learning Vuego
 
-New to VueGo? Use the playground to:
+New to Vuego? Use the playground to:
 
 - Try examples from documentation
 - Experiment with syntax

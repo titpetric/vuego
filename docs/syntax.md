@@ -531,7 +531,7 @@ Props listed in `:required` must be provided when the component is included, or 
 
 ### Template Functions and Filters
 
-VueGo supports custom template functions and pipe-based filter chaining. See [FuncMap & Filters](funcmap.md) for detailed documentation on:
+Vuego supports custom template functions and pipe-based filter chaining. See [FuncMap & Filters](funcmap.md) for detailed documentation on:
 - Setting custom functions with `FuncMap`
 - Built-in utility functions
 - Function signatures and type conversion

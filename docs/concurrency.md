@@ -1,6 +1,6 @@
 # Concurrency Safety
 
-VueGo is designed to be **safe for concurrent use** after initialization.
+Vuego is designed to be **safe for concurrent use** after initialization.
 
 ## Thread-Safe Design
 

@@ -1,6 +1,6 @@
 # FuncMap - Template Functions
 
-VueGo supports template functions similar to Go's `text/template` and `html/template` packages. Functions can be used in interpolations with pipe-based chaining and in `v-if` conditions.
+Vuego supports template functions similar to Go's `text/template` and `html/template` packages. Functions can be used in interpolations with pipe-based chaining and in `v-if` conditions.
 
 ## Basic Usage
 
@@ -62,7 +62,7 @@ Functions can be chained using the `|` (pipe) operator:
 
 ## Built-in Functions
 
-VueGo comes with several built-in utility functions:
+Vuego comes with several built-in utility functions:
 
 ### String Functions
 
@@ -213,7 +213,7 @@ vue.Funcs(vuego.FuncMap{
 
 ## Function Signatures
 
-VueGo uses reflection to support arbitrary function signatures, matching `text/template` behavior.
+Vuego uses reflection to support arbitrary function signatures, matching `text/template` behavior.
 
 Functions can accept any number and type of arguments:
 
@@ -235,7 +235,7 @@ func(v any) any                          // Generic any type
 
 ## Error Messages
 
-When function calls fail, VueGo provides detailed error messages:
+When function calls fail, Vuego provides detailed error messages:
 
 ```
 in test.html: in expression '{{ items | double }}': double(): cannot convert argument 0 from []string to int
