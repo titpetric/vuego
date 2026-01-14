@@ -52,18 +52,20 @@ var filterRe = regexp.MustCompile(`^(\w+)(?:\((.*?)\))?$`)
 
 // parsePipeExpr parses "item | double | . > 5" into segments, auto-detecting expressions vs filters
 func parsePipeExpr(expr string) pipeExpr {
-	if !strings.Contains(expr, "|") {
-		trimmed := strings.TrimSpace(expr)
-		// Check if it's a complex expression first
-		if helpers.IsComplexExpr(trimmed) {
-			return pipeExpr{
-				initial: "",
-				segments: []pipeSegment{{
-					typ:  segmentExpr,
-					expr: trimmed,
-				}},
-			}
+	// Check if this is a complex expression (contains operators like ||, &&, etc.)
+	// before trying to split on pipe character
+	trimmed := strings.TrimSpace(expr)
+	if helpers.IsComplexExpr(trimmed) {
+		return pipeExpr{
+			initial: "",
+			segments: []pipeSegment{{
+				typ:  segmentExpr,
+				expr: trimmed,
+			}},
 		}
+	}
+
+	if !strings.Contains(expr, "|") {
 		// Check if it's a function call (including no-arg functions like "fn()")
 		if matches := filterRe.FindStringSubmatch(trimmed); matches != nil && matches[1] != "" {
 			return pipeExpr{
