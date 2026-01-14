@@ -182,8 +182,8 @@ func NewIndexPageData(examples map[string]Example) IndexPageData {
 	}
 
 	return IndexPageData{
-		Title:         "VueGo Playground",
-		Subtitle:      "Test your VueGo templates in real-time",
+		Title:         "Vuego Playground",
+		Subtitle:      "Test your Vuego templates in real-time",
 		PageButtons:   pageButtons,
 		ComponentList: componentList,
 		FirstExample:  firstEx,
@@ -294,7 +294,7 @@ func main() {
 	})
 
 	port := ":8080"
-	log.Printf("VueGo Playground starting on http://localhost%s", port)
+	log.Printf("Vuego Playground starting on http://localhost%s", port)
 	if err := http.ListenAndServe(port, mux); err != nil {
 		log.Fatal(err)
 	}
