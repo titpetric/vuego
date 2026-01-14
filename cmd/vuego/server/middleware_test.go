@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/titpetric/vuego/server"
+	"github.com/titpetric/vuego/cmd/vuego/server"
 )
 
 func TestMiddleware(t *testing.T) {

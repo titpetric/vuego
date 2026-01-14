@@ -7,7 +7,6 @@ import (
 	"os/exec"
 
 	"github.com/titpetric/vuego/diff"
-	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // Run executes the diff command with the given arguments.
@@ -40,7 +39,7 @@ func Run(args []string) error {
 	}
 
 	// Compare using DOM-aware comparison
-	isEqual := helpers.CompareHTML(content1, content2)
+	isEqual := diff.CompareHTML(content1, content2)
 
 	switch *outputFormat {
 	case "simple":

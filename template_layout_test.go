@@ -78,6 +78,62 @@ func TestRenderLayout(t *testing.T) {
 		assert.Contains(t, output, "<p>This is a test blog post page</p>", "page content should be rendered in post layout")
 	})
 
+	t.Run("relative_layout_path", func(t *testing.T) {
+		inlineFS := &fstest.MapFS{
+			"pages/page.vuego": &fstest.MapFile{Data: []byte(`---
+layout: base.vuego
+---
+<p>Page content</p>`)},
+			"pages/base.vuego": &fstest.MapFile{Data: []byte(`<div class="wrapper" v-html="content"></div>`)},
+		}
+		inlineRenderer := vuego.NewFS(inlineFS)
+
+		var buf bytes.Buffer
+		err := inlineRenderer.Load("pages/page.vuego").Fill(nil).Layout(t.Context(), &buf)
+		assert.NoError(t, err)
+
+		output := buf.String()
+		assert.Contains(t, output, `<div class="wrapper">`, "relative layout should be resolved")
+		assert.Contains(t, output, "<p>Page content</p>", "page content should be rendered")
+	})
+
+	t.Run("relative_layout_fallback_to_layouts_dir", func(t *testing.T) {
+		inlineFS := &fstest.MapFS{
+			"pages/page.vuego": &fstest.MapFile{Data: []byte(`---
+layout: main
+---
+<p>Page content</p>`)},
+			"layouts/main.vuego": &fstest.MapFile{Data: []byte(`<main v-html="content"></main>`)},
+		}
+		inlineRenderer := vuego.NewFS(inlineFS)
+
+		var buf bytes.Buffer
+		err := inlineRenderer.Load("pages/page.vuego").Fill(nil).Layout(t.Context(), &buf)
+		assert.NoError(t, err)
+
+		output := buf.String()
+		assert.Contains(t, output, "<main>", "fallback to layouts/ should work")
+		assert.Contains(t, output, "<p>Page content</p>", "page content should be rendered")
+	})
+
+	t.Run("relative_layout_without_extension", func(t *testing.T) {
+		inlineFS := &fstest.MapFS{
+			"pages/page.vuego": &fstest.MapFile{Data: []byte(`---
+layout: wrapper
+---
+<p>Content</p>`)},
+			"pages/wrapper.vuego": &fstest.MapFile{Data: []byte(`<section v-html="content"></section>`)},
+		}
+		inlineRenderer := vuego.NewFS(inlineFS)
+
+		var buf bytes.Buffer
+		err := inlineRenderer.Load("pages/page.vuego").Fill(nil).Layout(t.Context(), &buf)
+		assert.NoError(t, err)
+
+		output := buf.String()
+		assert.Contains(t, output, "<section>", "relative layout without extension should work")
+	})
+
 	t.Run("struct_data_converted_to_map", func(t *testing.T) {
 		// Test that structs are automatically converted to maps via toMapData
 		type TestData struct {

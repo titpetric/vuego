@@ -6,7 +6,8 @@ import (
 	"log"
 
 	"github.com/titpetric/platform"
-	"github.com/titpetric/vuego/server/tour"
+
+	"github.com/titpetric/vuego/cmd/vuego/server/tour"
 )
 
 // Run executes the tour command with the given arguments.

@@ -1,4 +1,4 @@
-package helpers_test
+package diff_test
 
 import (
 	"bytes"
@@ -7,12 +7,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 
-	"github.com/titpetric/vuego/internal/helpers"
+	"github.com/titpetric/vuego/diff"
 )
 
 func TestSignificantChildren(t *testing.T) {
 	t.Run("nil node returns nil", func(t *testing.T) {
-		result := helpers.SignificantChildren(nil)
+		result := diff.SignificantChildren(nil)
 		require.Nil(t, result)
 	})
 
@@ -20,7 +20,7 @@ func TestSignificantChildren(t *testing.T) {
 		n := &html.Node{Type: html.DocumentNode}
 		div := &html.Node{Type: html.ElementNode, Data: "div"}
 		n.AppendChild(div)
-		result := helpers.SignificantChildren(n)
+		result := diff.SignificantChildren(n)
 		require.Len(t, result, 1)
 		require.Equal(t, div, result[0])
 	})
@@ -35,7 +35,7 @@ func TestSignificantChildren(t *testing.T) {
 		n.AppendChild(div)
 		n.AppendChild(whitespace2)
 
-		result := helpers.SignificantChildren(n)
+		result := diff.SignificantChildren(n)
 		require.Len(t, result, 1)
 		require.Equal(t, div, result[0])
 	})
@@ -47,7 +47,7 @@ func TestSignificantChildren(t *testing.T) {
 		n.AppendChild(div1)
 		n.AppendChild(div2)
 
-		result := helpers.SignificantChildren(n)
+		result := diff.SignificantChildren(n)
 		require.Len(t, result, 2)
 		require.Equal(t, div1, result[0])
 		require.Equal(t, div2, result[1])
@@ -55,14 +55,14 @@ func TestSignificantChildren(t *testing.T) {
 
 	t.Run("element node returns itself wrapped", func(t *testing.T) {
 		div := &html.Node{Type: html.ElementNode, Data: "div"}
-		result := helpers.SignificantChildren(div)
+		result := diff.SignificantChildren(div)
 		require.Len(t, result, 1)
 		require.Equal(t, div, result[0])
 	})
 
 	t.Run("text node returns itself wrapped", func(t *testing.T) {
 		text := &html.Node{Type: html.TextNode, Data: "hello"}
-		result := helpers.SignificantChildren(text)
+		result := diff.SignificantChildren(text)
 		require.Len(t, result, 1)
 		require.Equal(t, text, result[0])
 	})
@@ -80,7 +80,7 @@ func TestSignificantChildren(t *testing.T) {
 		bodyNode.AppendChild(pNode)
 		pNode.AppendChild(textNode)
 
-		result := helpers.SignificantChildren(root)
+		result := diff.SignificantChildren(root)
 		// When html->body, returns body's children
 		require.True(t, len(result) > 0, "should have children")
 		require.Equal(t, "p", result[0].Data)
@@ -91,7 +91,7 @@ func TestSignificantChildren(t *testing.T) {
 		doc, err := html.Parse(bytes.NewReader([]byte("<html><body><p>test</p></body></html>")))
 		require.NoError(t, err)
 
-		result := helpers.SignificantChildren(doc)
+		result := diff.SignificantChildren(doc)
 		// When html->head+body, returns htmlChildren (head and body)
 		require.True(t, len(result) > 0, "should have children")
 	})
@@ -104,7 +104,7 @@ func TestSignificantChildren(t *testing.T) {
 		n.AppendChild(comment)
 		n.AppendChild(div)
 
-		result := helpers.SignificantChildren(n)
+		result := diff.SignificantChildren(n)
 		require.Len(t, result, 2) // comment and div both included in doc children
 	})
 }
@@ -113,31 +113,31 @@ func TestCompareHTML(t *testing.T) {
 	t.Run("identical simple HTML matches", func(t *testing.T) {
 		html := []byte("<div><p>text</p></div>")
 		tb := &testing.T{}
-		result := helpers.EqualHTML(tb, html, html, nil, nil)
+		result := diff.EqualHTML(tb, html, html, nil, nil)
 		require.True(t, result)
 	})
 
 	t.Run("different tag names don't match", func(t *testing.T) {
 		tb := &testing.T{}
-		result := helpers.EqualHTML(tb, []byte("<div></div>"), []byte("<span></span>"), nil, nil)
+		result := diff.EqualHTML(tb, []byte("<div></div>"), []byte("<span></span>"), nil, nil)
 		require.False(t, result)
 	})
 
 	t.Run("different text content doesn't match", func(t *testing.T) {
 		tb := &testing.T{}
-		result := helpers.EqualHTML(tb, []byte("<p>hello</p>"), []byte("<p>world</p>"), nil, nil)
+		result := diff.EqualHTML(tb, []byte("<p>hello</p>"), []byte("<p>world</p>"), nil, nil)
 		require.False(t, result)
 	})
 
 	t.Run("whitespace in text nodes is ignored", func(t *testing.T) {
 		tb := &testing.T{}
-		result := helpers.EqualHTML(tb, []byte("<p>hello</p>"), []byte("<p>  hello  </p>"), nil, nil)
+		result := diff.EqualHTML(tb, []byte("<p>hello</p>"), []byte("<p>  hello  </p>"), nil, nil)
 		require.True(t, result)
 	})
 
 	t.Run("attribute order doesn't matter", func(t *testing.T) {
 		tb := &testing.T{}
-		result := helpers.EqualHTML(
+		result := diff.EqualHTML(
 			tb,
 			[]byte(`<div class="a" id="x"></div>`),
 			[]byte(`<div id="x" class="a"></div>`),
@@ -149,33 +149,33 @@ func TestCompareHTML(t *testing.T) {
 
 	t.Run("different attribute values don't match", func(t *testing.T) {
 		tb := &testing.T{}
-		result := helpers.EqualHTML(tb, []byte(`<div class="a"></div>`), []byte(`<div class="b"></div>`), nil, nil)
+		result := diff.EqualHTML(tb, []byte(`<div class="a"></div>`), []byte(`<div class="b"></div>`), nil, nil)
 		require.False(t, result)
 	})
 
 	t.Run("nested structures match recursively", func(t *testing.T) {
 		tb := &testing.T{}
 		html := []byte("<div><p><span>text</span></p></div>")
-		result := helpers.EqualHTML(tb, html, html, nil, nil)
+		result := diff.EqualHTML(tb, html, html, nil, nil)
 		require.True(t, result)
 	})
 
 	t.Run("different child count doesn't match", func(t *testing.T) {
 		tb := &testing.T{}
-		result := helpers.EqualHTML(tb, []byte("<div><p></p><p></p></div>"), []byte("<div><p></p></div>"), nil, nil)
+		result := diff.EqualHTML(tb, []byte("<div><p></p><p></p></div>"), []byte("<div><p></p></div>"), nil, nil)
 		require.False(t, result)
 	})
 
 	t.Run("empty text nodes are ignored", func(t *testing.T) {
 		tb := &testing.T{}
-		result := helpers.EqualHTML(tb, []byte("<div></div>"), []byte("<div>   </div>"), nil, nil)
+		result := diff.EqualHTML(tb, []byte("<div></div>"), []byte("<div>   </div>"), nil, nil)
 		require.True(t, result)
 	})
 
 	t.Run("matching HTML with different comments", func(t *testing.T) {
 		tb := &testing.T{}
 		// Both have same structure, just different comment content
-		result := helpers.EqualHTML(
+		result := diff.EqualHTML(
 			tb,
 			[]byte("<div><!-- comment1 --><p>text</p></div>"),
 			[]byte("<div><!-- comment2 --><p>text</p></div>"),
@@ -190,7 +190,7 @@ func TestCompareHTML(t *testing.T) {
 		tb := &testing.T{}
 		html1 := []byte(`<div data-test="1" class="c"><p>content</p></div>`)
 		html2 := []byte(`<div class="c" data-test="1"><p>content</p></div>`)
-		result := helpers.EqualHTML(tb, html1, html2, nil, nil)
+		result := diff.EqualHTML(tb, html1, html2, nil, nil)
 		require.True(t, result)
 	})
 
@@ -204,7 +204,7 @@ func TestCompareHTML(t *testing.T) {
 				</p>
 			</div>
 		`)
-		result := helpers.EqualHTML(tb, html, html, nil, nil)
+		result := diff.EqualHTML(tb, html, html, nil, nil)
 		require.True(t, result)
 	})
 }

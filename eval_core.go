@@ -7,12 +7,13 @@ import (
 
 	"golang.org/x/net/html"
 
+	"github.com/titpetric/vuego/diff"
 	"github.com/titpetric/vuego/internal/helpers"
 )
 
 // evaluateChildren evaluates the children of a node without allocating a temporary slice.
 func (v *Vue) evaluateChildren(ctx VueContext, node *html.Node, depth int) ([]*html.Node, error) {
-	childList := make([]*html.Node, 0, helpers.CountChildren(node))
+	childList := make([]*html.Node, 0, diff.CountChildren(node))
 	for c := node.FirstChild; c != nil; c = c.NextSibling {
 		childList = append(childList, c)
 	}

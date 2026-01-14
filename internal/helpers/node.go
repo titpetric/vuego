@@ -176,16 +176,3 @@ func GetBodyNode() *html.Node {
 	})
 	return bodyNodeCache
 }
-
-// CountChildren counts the number of child nodes of the given node.
-// This is useful for preallocating slices with the correct capacity.
-func CountChildren(n *html.Node) int {
-	if n == nil {
-		return 0
-	}
-	count := 0
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		count++
-	}
-	return count
-}

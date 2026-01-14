@@ -12,7 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 
-	"github.com/titpetric/vuego/server/tour"
+	"github.com/titpetric/vuego/cmd/vuego/server/tour"
 )
 
 func testFS() fstest.MapFS {

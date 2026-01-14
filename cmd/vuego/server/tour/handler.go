@@ -11,8 +11,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/titpetric/platform"
+
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/server"
+	"github.com/titpetric/vuego/cmd/vuego/server"
 )
 
 //go:embed content
@@ -34,11 +35,11 @@ func EmbeddedContentFS() fs.FS {
 type Module struct {
 	platform.UnimplementedModule
 
-	tour         *Tour
-	tourFS       fs.FS
-	indexTmpl    string
-	readmeHTML   string
-	doneHTML     string
+	tour       *Tour
+	tourFS     fs.FS
+	indexTmpl  string
+	readmeHTML string
+	doneHTML   string
 }
 
 // NewModule creates a new tour module using embedded content.
@@ -216,5 +217,3 @@ func (m *Module) renderTourPage(w http.ResponseWriter, lesson *Lesson, markdown 
 	_ = tmpl.Fill(data).RenderString(context.Background(), &buf, m.indexTmpl)
 	_, _ = buf.WriteTo(w)
 }
-
-

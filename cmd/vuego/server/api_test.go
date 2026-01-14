@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/titpetric/vuego/server"
+	"github.com/titpetric/vuego/cmd/vuego/server"
 )
 
 func TestRender_JSONData(t *testing.T) {

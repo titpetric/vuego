@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/internal/helpers"
+	"github.com/titpetric/vuego/diff"
 )
 
 func TestVue_Render(t *testing.T) {
@@ -51,7 +51,7 @@ func TestFixtures(t *testing.T) {
 			var got bytes.Buffer
 			loaded := tpl.Load(template).Fill(data)
 			require.NoError(t, loaded.Render(t.Context(), &got))
-			if !helpers.EqualHTML(t, want, got.Bytes(), templateBytes, dataBytes) {
+			if !diff.EqualHTML(t, want, got.Bytes(), templateBytes, dataBytes) {
 				t.Logf("HTML mismatch in %s", template)
 				t.Logf("Expected:\n%s", string(want))
 				t.Logf("Got:\n%s", got.String())
@@ -78,7 +78,7 @@ func TestVue_Escaping(t *testing.T) {
 	t.Run(template, func(t *testing.T) {
 		var got bytes.Buffer
 		require.NoError(t, vue.RenderFragment(&got, template, data))
-		require.True(t, helpers.EqualHTML(t, want, got.Bytes(), nil, nil))
+		require.True(t, diff.EqualHTML(t, want, got.Bytes(), nil, nil))
 
 		t.Logf("-- Escape result: %s", got.String())
 	})
