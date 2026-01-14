@@ -9,17 +9,15 @@ import (
 )
 
 func TestRun_WrongNumberOfArguments(t *testing.T) {
+	// No arguments
 	err := render.Run([]string{})
 	require.Error(t, err)
-	require.Equal(t, "render: requires exactly 2 arguments", err.Error())
+	require.Equal(t, "render: requires 1 or 2 arguments", err.Error())
 
-	err = render.Run([]string{"file.vuego"})
-	require.Error(t, err)
-	require.Equal(t, "render: requires exactly 2 arguments", err.Error())
-
+	// Too many arguments
 	err = render.Run([]string{"a", "b", "c"})
 	require.Error(t, err)
-	require.Equal(t, "render: requires exactly 2 arguments", err.Error())
+	require.Equal(t, "render: requires 1 or 2 arguments", err.Error())
 }
 
 func TestUsage(t *testing.T) {

@@ -610,10 +610,10 @@ func TestParseTour_EmbeddedContent(t *testing.T) {
 		title       string
 		lessonCount int
 	}{
-		{"Variable Interpolation", 3}, // 01-interpolation.md has 3 ## headings
+		{"Variable Interpolation", 4}, // 01-interpolation.md has 4 ## headings (added Expressions & Operators)
 		{"Filters", 3},                // 02-filters.md has 3 ## headings
-		{"Directives", 4},             // 03-directives.md has 4 ## headings
-		{"Components", 5},             // 04-components.md has 5 ## headings
+		{"Directives", 7},             // 03-directives.md has 7 ## headings (added v-for empty, binding-objects, more-directives)
+		{"Components", 6},             // 04-components.md has 6 ## headings (added component shorthands)
 	}
 
 	for i, expected := range expectedChapters {

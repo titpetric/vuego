@@ -1,0 +1,11 @@
+vars:
+  status: "active"
+  priority: "high"
+  score: 92
+  count: 5
+  age: 25
+  isAdmin: true
+  hasPermission: false
+  isOwner: true
+  disabled: false
+  role: "admin"

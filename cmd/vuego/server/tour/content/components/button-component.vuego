@@ -1,0 +1,3 @@
+<button class="btn btn-{{ style }}">
+  <slot>Click me</slot>
+</button>

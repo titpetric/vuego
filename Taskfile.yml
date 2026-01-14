@@ -27,11 +27,10 @@ tasks:
       - task: mdox:fmt
 
   default:
-    desc: "Run the playground server"
+    desc: "Run the dev server"
     cmds:
       - go install ./cmd/vuego
-      - go install ./cmd/...
-      - vuego-playground
+      - vuego tour
 
   lint:
     desc: "Lint codebase"

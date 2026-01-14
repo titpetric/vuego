@@ -1,0 +1,2 @@
+# This file is not used for the shorthand examples as they rely on component files directly
+example: "Component shorthands work with the WithComponents() option in Go"

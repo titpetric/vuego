@@ -1,0 +1,13 @@
+isPrimary: true
+isLarge: false
+isActive: true
+isDisabled: false
+hasError: false
+isSuccess: true
+isHidden: false
+textColor: "#0066cc"
+fontSize: "18px"
+bgColor: "#f0f0f0"
+paddingSize: "20px"
+progressPercent: 65
+progressColor: "#4CAF50"

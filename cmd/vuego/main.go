@@ -37,7 +37,8 @@ func run() error {
 		return printHelp()
 	default:
 		// Backward compatibility: treat first arg as template file
-		if len(os.Args) == 3 {
+		// Supports: vuego file.vuego [data.yaml]
+		if len(os.Args) >= 2 && len(os.Args) <= 3 {
 			return render.Run(os.Args[1:])
 		}
 		return printUsage()
@@ -63,6 +64,7 @@ Commands:
 
 Examples:
   vuego fmt layout.vuego
+  vuego render index.vuego                  (auto-loads index.yaml if it exists)
   vuego render index.vuego data.json
   vuego diff before.html after.html
   vuego tour ./tour

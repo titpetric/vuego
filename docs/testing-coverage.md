@@ -12,12 +12,12 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                                   | Coverage | Cognitive | Lines |
 |--------|-------------------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                           | 84.94%   | 1113      | 3657  |
-| ❌     | titpetric/vuego/cmd/vuego                 | 0.00%    | 5         | 58    |
+| ✅     | titpetric/vuego                           | 84.94%   | 1112      | 3659  |
+| ❌     | titpetric/vuego/cmd/vuego                 | 0.00%    | 6         | 60    |
 | ❌     | titpetric/vuego/cmd/vuego-playground      | 0.00%    | 114       | 594   |
 | ❌     | titpetric/vuego/cmd/vuego/commands/diff   | 26.36%   | 14        | 123   |
 | ❌     | titpetric/vuego/cmd/vuego/commands/fmt    | 79.55%   | 11        | 47    |
-| ❌     | titpetric/vuego/cmd/vuego/commands/render | 65.40%   | 6         | 57    |
+| ❌     | titpetric/vuego/cmd/vuego/commands/render | 41.67%   | 16        | 105   |
 | ✅     | titpetric/vuego/cmd/vuego/commands/tour   | 60.00%   | 2         | 41    |
 | ❌     | titpetric/vuego/cmd/vuego/server          | 70.08%   | 29        | 189   |
 | ✅     | titpetric/vuego/cmd/vuego/server/tour     | 81.76%   | 98        | 458   |
@@ -159,7 +159,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                           | lowerFunc                         | 66.70%   | 1         |
 | ✅     | titpetric/vuego                           | parseArgs                         | 100.00%  | 11        |
 | ✅     | titpetric/vuego                           | parseFor                          | 86.70%   | 8         |
-| ✅     | titpetric/vuego                           | parsePipeExpr                     | 92.90%   | 7         |
+| ✅     | titpetric/vuego                           | parsePipeExpr                     | 92.90%   | 6         |
 | ✅     | titpetric/vuego                           | parseStyleMap                     | 92.90%   | 6         |
 | ✅     | titpetric/vuego                           | parseStyleString                  | 100.00%  | 6         |
 | ✅     | titpetric/vuego                           | parseVSlotDirective               | 50.00%   | 4         |
@@ -194,7 +194,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego/cmd/vuego                 | main                              | 0.00%    | 1         |
 | ✅     | titpetric/vuego/cmd/vuego                 | printHelp                         | 0.00%    | 0         |
 | ✅     | titpetric/vuego/cmd/vuego                 | printUsage                        | 0.00%    | 0         |
-| ❌     | titpetric/vuego/cmd/vuego                 | run                               | 0.00%    | 4         |
+| ❌     | titpetric/vuego/cmd/vuego                 | run                               | 0.00%    | 5         |
 | ❌     | titpetric/vuego/cmd/vuego-playground      | NewIndexPageData                  | 0.00%    | 21        |
 | ❌     | titpetric/vuego/cmd/vuego-playground      | buildComponentName                | 0.00%    | 3         |
 | ❌     | titpetric/vuego/cmd/vuego-playground      | combinedFilesystem.Open           | 0.00%    | 1         |
@@ -214,8 +214,9 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/vuego/cmd/vuego/commands/diff   | runYAML                           | 0.00%    | 5         |
 | ❌     | titpetric/vuego/cmd/vuego/commands/fmt    | Run                               | 59.10%   | 11        |
 | ✅     | titpetric/vuego/cmd/vuego/commands/fmt    | Usage                             | 100.00%  | 0         |
-| ❌     | titpetric/vuego/cmd/vuego/commands/render | Run                               | 30.80%   | 6         |
+| ❌     | titpetric/vuego/cmd/vuego/commands/render | Run                               | 25.00%   | 13        |
 | ✅     | titpetric/vuego/cmd/vuego/commands/render | Usage                             | 100.00%  | 0         |
+| ❌     | titpetric/vuego/cmd/vuego/commands/render | findDataFile                      | 0.00%    | 3         |
 | ✅     | titpetric/vuego/cmd/vuego/commands/tour   | Run                               | 80.00%   | 1         |
 | ❌     | titpetric/vuego/cmd/vuego/commands/tour   | Serve                             | 0.00%    | 1         |
 | ✅     | titpetric/vuego/cmd/vuego/commands/tour   | Usage                             | 100.00%  | 0         |

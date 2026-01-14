@@ -1,0 +1,29 @@
+<div class="expressions-demo">
+  <h3>Equality & Inequality</h3>
+  <p>Status: {{ vars.status }} → {{ vars.status == "active" ? "Online" : "Offline" }}</p>
+  <p>Priority: {{ vars.priority }} → {{ vars.priority != "low" ? "Important" : "Normal" }}</p>
+
+  <h3>Numeric Comparisons</h3>
+  <p>Score: {{ vars.score }} → {{ vars.score >= 90 ? "Grade: A" : "Grade: B+" }}</p>
+  <p>Count: {{ vars.count }} → {{ vars.count > 0 ? "Has items" : "Empty" }}</p>
+  <p>Age: {{ vars.age }} → {{ vars.age < 18 ? "Minor" : "Adult" }}</p>
+
+  <h3>Logical AND</h3>
+  <p>Admin: {{ vars.isAdmin }}, Has Permission: {{ vars.hasPermission }}</p>
+  <p>Result: {{ vars.isAdmin && vars.hasPermission ? "Allowed" : "Denied" }}</p>
+
+  <h3>Logical OR</h3>
+  <p>Is Owner: {{ vars.isOwner }}, Is Admin: {{ vars.isAdmin }}</p>
+  <p>Result: {{ vars.isOwner || vars.isAdmin ? "Can Edit" : "Read Only" }}</p>
+
+  <h3>Logical NOT</h3>
+  <p>Disabled: {{ vars.disabled }} → {{ !vars.disabled ? "Enabled" : "Disabled" }}</p>
+
+  <h3>Complex Expressions</h3>
+  <p>Score: {{ vars.score }}, Status: {{ vars.status }}</p>
+  <p>{{ (vars.score >= 70) && (vars.status == "passed") ? "Passed with good score" : "Other" }}</p>
+
+  <h3>Multiple OR Conditions</h3>
+  <p>Role: {{ vars.role }}</p>
+  <p>{{ vars.role == "admin" || vars.role == "moderator" || vars.role == "owner" ? "Can Manage" : "View Only" }}</p>
+</div>

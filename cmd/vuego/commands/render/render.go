@@ -13,10 +13,15 @@ import (
 )
 
 // Run executes the render command with the given arguments.
+// Supports the following invocations:
+//
+//   - vuego render file.vuego (loads file.yaml or file.yml if it exists)
+//   - vuego render file.vuego data.yaml (uses explicit data file)
+//   - vuego render file.vuego data.json (uses explicit JSON data file).
 func Run(args []string) error {
 	fs := flag.NewFlagSet("render", flag.ContinueOnError)
 	fs.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: vuego render <file.vuego> <data.json/yml>\n")
+		fmt.Fprintf(os.Stderr, "Usage: vuego render <file.vuego> [data.yaml|data.json]\n")
 	}
 
 	if err := fs.Parse(args); err != nil {
@@ -24,22 +29,39 @@ func Run(args []string) error {
 	}
 
 	positional := fs.Args()
-	if len(positional) != 2 {
+	if len(positional) < 1 || len(positional) > 2 {
 		fs.Usage()
-		return fmt.Errorf("render: requires exactly 2 arguments")
+		return fmt.Errorf("render: requires 1 or 2 arguments")
 	}
 
 	tplFile := positional[0]
-	dataFile := positional[1]
+	var dataFile string
 
-	dataContent, err := os.ReadFile(dataFile)
-	if err != nil {
-		return fmt.Errorf("reading data file: %w", err)
+	// Determine data file
+	if len(positional) == 2 {
+		// Explicitly provided data file
+		dataFile = positional[1]
+	} else {
+		// Auto-discover data file from template name
+		dataFile = findDataFile(tplFile)
 	}
 
+	// Load data
 	var data map[string]any
-	if err := yaml.Unmarshal(dataContent, &data); err != nil {
-		return fmt.Errorf("parsing data file: %w", err)
+	if dataFile != "" {
+		dataContent, err := os.ReadFile(dataFile)
+		if err != nil {
+			return fmt.Errorf("reading data file: %w", err)
+		}
+
+		if err := yaml.Unmarshal(dataContent, &data); err != nil {
+			return fmt.Errorf("parsing data file: %w", err)
+		}
+	}
+
+	// Initialize with empty map if no data
+	if data == nil {
+		data = make(map[string]any)
 	}
 
 	// Open template file for efficient streaming
@@ -60,13 +82,40 @@ func Run(args []string) error {
 	return nil
 }
 
+// findDataFile looks for a data file with the same base name as the template.
+// Returns the path if found (checking .yaml first, then .yml, then .json), or empty string if not found.
+func findDataFile(tplFile string) string {
+	base := tplFile[:len(tplFile)-len(filepath.Ext(tplFile))]
+	dir := filepath.Dir(tplFile)
+
+	// Check for .yaml
+	candidates := []string{
+		filepath.Join(dir, filepath.Base(base)+".yaml"),
+		filepath.Join(dir, filepath.Base(base)+".yml"),
+		filepath.Join(dir, filepath.Base(base)+".json"),
+	}
+
+	for _, candidate := range candidates {
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
+	}
+
+	return ""
+}
+
 // Usage returns the usage string for the render command.
 func Usage() string {
-	return `vuego render <file.vuego> <data.json/yml>
+	return `vuego render <file.vuego> [data.yaml|data.json]
 
-Render a vuego template with data.
+Render a vuego template with optional data.
+
+If no data file is specified, the command looks for a file with the same
+base name as the template (e.g., index.vuego → index.yaml, index.yml, or index.json).
+If no data file is found, the template is rendered with empty data.
 
 Examples:
-  vuego render index.vuego data.json
-  vuego render index.vuego data.yml`
+  vuego render index.vuego                  (auto-loads index.yaml if it exists)
+  vuego render index.vuego data.json        (explicit data file)
+  vuego render index.vuego data.yml         (explicit data file)`
 }

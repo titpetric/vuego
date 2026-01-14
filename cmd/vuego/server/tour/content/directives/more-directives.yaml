@@ -1,0 +1,4 @@
+htmlContent: "<strong>Bold text</strong> and <em>italic</em>"
+richContent: "<h4>Heading</h4><p>This is <strong>rich</strong> HTML content with <a href=\"#\">links</a>.</p>"
+message: "Hello from data"
+timestamp: "2026-01-14T12:00:00Z"

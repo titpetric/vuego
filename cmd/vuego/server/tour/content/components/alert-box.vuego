@@ -1,0 +1,4 @@
+<div class="alert alert-{{ type }}">
+  <strong v-if="title">{{ title }}</strong>
+  <p>{{ message }}</p>
+</div>

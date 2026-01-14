@@ -1,0 +1,39 @@
+<div class="demo">
+  <h3>Fruits List</h3>
+  <ul>
+    <li v-for="fruit in fruits">{{ fruit }}</li>
+    <li v-else class="empty-state">No fruits available</li>
+  </ul>
+
+  <h3>Search Results</h3>
+  <div class="results">
+    <div v-for="result in results" class="result-item">
+      <h4>{{ result.title }}</h4>
+      <p>{{ result.description }}</p>
+    </div>
+    <div v-else class="no-results">
+      <p>No results found. Try a different search.</p>
+    </div>
+  </div>
+
+  <h3>Users Table</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(idx, user) in users">
+        <td>{{ idx + 1 }}</td>
+        <td>{{ user.name }}</td>
+        <td>{{ user.email }}</td>
+      </tr>
+      <tr v-else>
+        <td colspan="3" class="empty">No users found</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -5,6 +5,7 @@
 *.test
 *.txt
 *.log
+/bin
 *.prof
 pkg.cov
 pkg.cov.json

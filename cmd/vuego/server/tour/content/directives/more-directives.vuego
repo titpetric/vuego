@@ -1,0 +1,54 @@
+<div class="directives-demo">
+  <h3>v-html: Render Unescaped HTML</h3>
+  
+  <div class="example">
+    <p>Normal interpolation (HTML escaped):</p>
+    <p>{{ htmlContent }}</p>
+  </div>
+
+  <div class="example">
+    <p>Using v-html (renders as HTML):</p>
+    <div v-html="htmlContent"></div>
+  </div>
+
+  <div class="example">
+    <p>Rich content with v-html:</p>
+    <div v-html="richContent"></div>
+  </div>
+
+  <h3>v-pre: Skip Template Processing</h3>
+  
+  <div class="example">
+    <p>Normal interpolation (processed):</p>
+    <p>{{ message }}</p>
+  </div>
+
+  <div class="example">
+    <p>With v-pre (literal output):</p>
+    <p v-pre>{{ message }}</p>
+  </div>
+
+  <div class="example">
+    <p>Useful for showing template examples:</p>
+    <pre v-pre><code>&lt;div v-if="show"&gt;
+  &lt;p&gt;{{ item.name }}&lt;/p&gt;
+&lt;/div&gt;</code></pre>
+  </div>
+
+  <h3>v-once: Single Render</h3>
+  
+  <div class="example">
+    <p>With v-once (rendered once, never changes):</p>
+    <div v-once>
+      <p>Initial time: {{ timestamp }}</p>
+      <p>This content was set once and stays static</p>
+    </div>
+  </div>
+
+  <div class="example">
+    <p>Without v-once (would update on re-render):</p>
+    <div>
+      <p>Current data: {{ message }}</p>
+    </div>
+  </div>
+</div>

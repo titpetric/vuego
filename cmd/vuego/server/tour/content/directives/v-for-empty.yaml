@@ -1,0 +1,11 @@
+fruits: []
+results:
+  - title: "First Result"
+    description: "This is the first search result"
+  - title: "Second Result"
+    description: "This is the second search result"
+users:
+  - name: "Alice Johnson"
+    email: "alice@example.com"
+  - name: "Bob Smith"
+    email: "bob@example.com"

@@ -1,0 +1,34 @@
+<div class="shorthands-demo">
+  <h3>Component Shorthand Syntax</h3>
+  <p>When component shorthands are enabled, you can use kebab-case tag names instead of &lt;vuego include&gt;.</p>
+
+  <div class="example">
+    <h4>Button Components</h4>
+    <p>Using shorthand syntax (PascalCase filename → kebab-case tag):</p>
+    
+    <button-component style="primary">Save</button-component>
+    <button-component style="secondary">Cancel</button-component>
+    <button-component style="danger">Delete</button-component>
+  </div>
+
+  <div class="example">
+    <h4>Alert Components</h4>
+    <p>Passing attributes to component shorthands:</p>
+    
+    <alert-box type="success" title="Success" message="Operation completed successfully"></alert-box>
+    <alert-box type="info" title="Info" message="This is an informational message"></alert-box>
+    <alert-box type="error" title="Error" message="Something went wrong"></alert-box>
+  </div>
+
+  <div class="example">
+    <h4>Default Slot Content</h4>
+    <button-component style="primary">
+      Custom button text from slot
+    </button-component>
+  </div>
+
+  <h3>Equivalent Full Syntax</h3>
+  <p>These shorthands are equivalent to:</p>
+  <pre v-pre><code>&lt;vuego include="components/ButtonComponent.vuego" style="primary"&gt;Save&lt;/vuego&gt;
+&lt;vuego include="components/AlertBox.vuego" type="success" title="Success" message="..."&gt;&lt;/vuego&gt;</code></pre>
+</div>
