@@ -72,6 +72,24 @@ func TestVue_Interpolate(t *testing.T) {
 			data:     map[string]any{"value": "test"},
 			expected: "<div>test</div>",
 		},
+		{
+			name:     "ternary operator with true condition",
+			template: "<div>{{ flag ? 'yes' : 'no' }}</div>",
+			data:     map[string]any{"flag": true},
+			expected: "<div>yes</div>",
+		},
+		{
+			name:     "ternary operator with false condition",
+			template: "<div>{{ flag ? 'yes' : 'no' }}</div>",
+			data:     map[string]any{"flag": false},
+			expected: "<div>no</div>",
+		},
+		{
+			name:     "ternary operator with comparison",
+			template: "<div>{{ age > 18 ? 'adult' : 'minor' }}</div>",
+			data:     map[string]any{"age": 25},
+			expected: "<div>adult</div>",
+		},
 	}
 
 	for _, tc := range tests {

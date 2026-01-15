@@ -45,6 +45,11 @@ func IsComplexExpr(expr string) bool {
 		}
 	}
 
+	// Ternary operator (conditional expression)
+	if strings.Contains(expr, "?") && strings.Contains(expr, ":") {
+		return true
+	}
+
 	return false
 }
 
