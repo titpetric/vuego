@@ -14,7 +14,6 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 |--------|--------------------------------------------|----------|-----------|-------|
 | ✅     | titpetric/vuego                            | 84.94%   | 1112      | 3659  |
 | ❌     | titpetric/vuego/cmd/vuego                  | 0.00%    | 6         | 70    |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | 0.00%    | 114       | 594   |
 | ❌     | titpetric/vuego/cmd/vuego/commands/diff    | 26.36%   | 14        | 123   |
 | ❌     | titpetric/vuego/cmd/vuego/commands/format  | 79.55%   | 11        | 47    |
 | ❌     | titpetric/vuego/cmd/vuego/commands/render  | 41.67%   | 16        | 105   |
@@ -196,18 +195,6 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego/cmd/vuego                  | printHelp                         | 0.00%    | 0         |
 | ✅     | titpetric/vuego/cmd/vuego                  | printUsage                        | 0.00%    | 0         |
 | ❌     | titpetric/vuego/cmd/vuego                  | run                               | 0.00%    | 5         |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | NewIndexPageData                  | 0.00%    | 21        |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | buildComponentName                | 0.00%    | 3         |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | combinedFilesystem.Open           | 0.00%    | 1         |
-| ✅     | titpetric/vuego/cmd/vuego-playground       | combinedFilesystem.ReadDir        | 0.00%    | 0         |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | convert                           | 0.00%    | 7         |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | handleCheatsheet                  | 0.00%    | 1         |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | handleCreate                      | 0.00%    | 15        |
-| ✅     | titpetric/vuego/cmd/vuego-playground       | handleExamples                    | 0.00%    | 0         |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | handleRender                      | 0.00%    | 4         |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | handleSave                        | 0.00%    | 9         |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | loadExamplesMap                   | 0.00%    | 43        |
-| ❌     | titpetric/vuego/cmd/vuego-playground       | main                              | 0.00%    | 10        |
 | ✅     | titpetric/vuego/cmd/vuego/commands/diff    | Run                               | 31.80%   | 5         |
 | ✅     | titpetric/vuego/cmd/vuego/commands/diff    | Usage                             | 100.00%  | 0         |
 | ❌     | titpetric/vuego/cmd/vuego/commands/diff    | runSimple                         | 0.00%    | 1         |

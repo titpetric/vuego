@@ -10,7 +10,6 @@ require (
 	github.com/titpetric/lessgo v0.1.0
 	github.com/titpetric/platform v0.2.3
 	golang.org/x/net v0.49.0
-	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
