@@ -1,4 +1,4 @@
-package fmt_test
+package format_test
 
 import (
 	"os"

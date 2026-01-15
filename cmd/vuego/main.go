@@ -5,9 +5,10 @@ import (
 	"os"
 
 	"github.com/titpetric/vuego/cmd/vuego/commands/diff"
-	fmtcmd "github.com/titpetric/vuego/cmd/vuego/commands/fmt"
+	"github.com/titpetric/vuego/cmd/vuego/commands/format"
 	"github.com/titpetric/vuego/cmd/vuego/commands/render"
 	"github.com/titpetric/vuego/cmd/vuego/commands/tour"
+	"github.com/titpetric/vuego/cmd/vuego/commands/version"
 )
 
 func main() {
@@ -26,13 +27,21 @@ func run() error {
 
 	switch command {
 	case "fmt":
-		return fmtcmd.Run(os.Args[2:])
+		return format.Run(os.Args[2:])
 	case "render":
 		return render.Run(os.Args[2:])
 	case "diff":
 		return diff.Run(os.Args[2:])
 	case "tour":
 		return tour.Run(os.Args[2:])
+        case "version":
+		return version.Run(version.Info{
+			Version: Version,
+			Commit: Commit,
+			CommitTime: CommitTime,
+			Branch: Branch,
+			Modified: Modified,
+		})
 	case "--help", "-h", "help":
 		return printHelp()
 	default:
