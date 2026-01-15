@@ -7,6 +7,13 @@ vars:
   name: vuego
 
 jobs:
+  default:
+    desc: "Format, lint and test"
+    steps:
+      - task: fmt
+      - task: lint
+      - task: test
+
   fmt:
     desc: "Format the code"
     steps:
@@ -15,13 +22,6 @@ jobs:
       - go fmt ./...
       - go mod tidy
 
-  test:
-    depends_on: fmt
-    steps:
-      - task: lint
-      - task: test:build
-      - task: test:run
-
   lint:
     desc: "Lint the code"
     parallel: true
@@ -29,24 +29,7 @@ jobs:
       - go-fsck lint ./... --exclude imports
       - golangci-lint run --fix ./...
 
-  test:build:
-    desc: "Build tests"
-    steps:
-      - go-fsck test -cover -coverpkg=./... -c -o bin/ ./...
-
-  test:run:
+  test:
     desc: "Run built tests"
     steps:
-      - rm -rf coverage
-      - for: item in $(ls ./bin/*.test | xargs -n1 basename)
-        task: test:detail
-        detach: true
-
-  test:detail:
-    dest: "Collect per-function test runs"
-    requires: [item]
-    steps:
-      - mkdir -p coverage/${{item}}
-      - for: funcName in $(./bin/${{ item }} -test.list ^Test.)
-        summarize: true
-        run: ./bin/${{ item }} -test.coverprofile "./coverage/${{item}}/${{ funcName }}.cov" -test.run "^${{ funcName }}$"
+      - go test -count=1 -cover -coverpkg=./... -coverprofile=pkg.cov ./...
