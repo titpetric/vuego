@@ -34,13 +34,13 @@ func run() error {
 		return diff.Run(os.Args[2:])
 	case "tour":
 		return tour.Run(os.Args[2:])
-        case "version":
+	case "version":
 		return version.Run(version.Info{
-			Version: Version,
-			Commit: Commit,
+			Version:    Version,
+			Commit:     Commit,
 			CommitTime: CommitTime,
-			Branch: Branch,
-			Modified: Modified,
+			Branch:     Branch,
+			Modified:   Modified,
 		})
 	case "--help", "-h", "help":
 		return printHelp()
@@ -69,6 +69,7 @@ Commands:
   render   Render templates with data (supports JSON and YAML)
   diff     Compare two HTML/vuego files using DOM comparison
   tour     Start the vuego tour server
+  version  Show version/build information
   help     Show this help message
 
 Examples:
@@ -77,6 +78,7 @@ Examples:
   vuego render index.vuego data.json
   vuego diff before.html after.html
   vuego tour ./tour
+  vuego version
 
 Run 'vuego <command> --help' for more information on a command.
 `)

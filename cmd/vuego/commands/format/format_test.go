@@ -6,11 +6,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	fmtcmd "github.com/titpetric/vuego/cmd/vuego/commands/fmt"
+	"github.com/titpetric/vuego/cmd/vuego/commands/format"
 )
 
 func TestRun_NoFiles(t *testing.T) {
-	err := fmtcmd.Run([]string{})
+	err := format.Run([]string{})
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "missing file argument")
 }
@@ -24,12 +24,12 @@ func TestRun_FormatsFile(t *testing.T) {
 	require.NoError(t, err)
 	tmpFile.Close()
 
-	err = fmtcmd.Run([]string{tmpFile.Name()})
+	err = format.Run([]string{tmpFile.Name()})
 	require.NoError(t, err)
 }
 
 func TestUsage(t *testing.T) {
-	usage := fmtcmd.Usage()
+	usage := format.Usage()
 	require.NotEmpty(t, usage)
 	require.Contains(t, usage, "vuego fmt")
 }

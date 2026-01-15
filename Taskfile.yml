@@ -11,13 +11,7 @@ vars:
   toolchain: '{{.goversion}}+auto'
 
 tasks:
-  fmt:
-    desc: "Format code and tidy dependencies"
-    cmds:
-      - goimports -w -local $(go list .) .
-      - goimports-reviser -set-alias -format -imports-order "std,blanked,general,company,project" ./...
-      - gofumpt -w .
-      - go mod tidy
+  fmt: atkins fmt
 
   fmt:docs:
     desc: "Format docs"

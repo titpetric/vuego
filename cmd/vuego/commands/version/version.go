@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// Info contains injected build environment information.
 type Info struct {
 	Version    string
 	Commit     string
@@ -14,6 +15,7 @@ type Info struct {
 	Modified   string
 }
 
+// Run will print version information for the build.
 func Run(info Info) error {
 	fmt.Printf("vuego\n")
 	fmt.Printf("  Version:     %s\n", info.Version)
