@@ -6,7 +6,7 @@ The simplest form of variable interpolation uses double curly braces `{{ }}` to 
 
 Variables are replaced with their values from the data context. If a variable doesn't exist, it outputs an empty string.
 
-[Syntax - Variables](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#values)
+- [Syntax - Variables](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#values)
 
 @file: basic.vuego
 
@@ -20,7 +20,7 @@ This works with any depth of nesting, such as `{{ user.address.city }}`.
 
 **Note:** Nesting properties is recommended when using variables that might conflict with built-in function names (like `count`, `len`). Using dot notation like `vars.count` avoids conflicts with expr-lang's built-in functions. See [expr-lang issue 902](https://github.com/expr-lang/expr/issues/902) for details.
 
-[Syntax - Nested Properties](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#nested-properties)
+- [Syntax - Nested Properties](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#nested-properties)
 
 @file: nested.vuego
 
@@ -32,7 +32,7 @@ Access array elements by index using bracket notation: `{{ array[0] }}`.
 
 You can combine this with property access: `{{ users[0].name }}`.
 
-[Syntax - Array Elements](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#values)
+- [Syntax - Array Elements](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#values)
 
 @file: arrays.vuego
 
@@ -46,6 +46,6 @@ Use `==` and `!=` for equality, `<` `>` `<=` `>=` for numeric comparisons, and `
 
 Combine operators with the ternary operator `condition ? truthy : falsy` to show different values.
 
-[Expressions & Operators](https://github.com/titpetric/vuego/blob/main/docs/expressions.md)
+- [Expressions & Operators](https://github.com/titpetric/vuego/blob/main/docs/expressions.md)
 
 @file: expressions.vuego

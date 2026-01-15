@@ -6,7 +6,7 @@ Use `v-for="item in items"` to iterate over arrays and render elements for each 
 
 You can also access the index: `v-for="(index, item) in items"`.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#list-iteration-v-for)
+- [List Iteration - v-for](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#list-iteration-v-for)
 
 @file: v-for.vuego
 
@@ -18,7 +18,7 @@ Use `v-else` after a `v-for` loop to display a message when the list is empty.
 
 The `v-else` must be an immediate sibling element to the `v-for` element. This pattern is common for showing "no results" or "no items" messages.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#empty-list-with-v-for-and-v-else)
+- [Empty List with v-for and v-else](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#empty-list-with-v-for-and-v-else)
 
 @file: v-for-empty.vuego
 
@@ -30,7 +30,8 @@ Use `v-if="condition"` to conditionally render elements based on expressions.
 
 Combine with `v-else-if` and `v-else` for multiple branches.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#conditional-rendering-v-if-v-else-if-v-else)
+- [Conditional Rendering - v-if, v-else-if, v-else](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#conditional-rendering-v-if-v-else-if-v-else)
+- [expr-lang.org: Language definition](https://expr-lang.org/docs/language-definition)
 
 @file: v-if.vuego
 
@@ -42,7 +43,7 @@ Use `v-show="condition"` to toggle element visibility with CSS display property.
 
 Unlike `v-if`, the element is always rendered but hidden when the condition is false.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#visibility-toggle-v-show)
+- [Visibility Toggle - v-show](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#visibility-toggle-v-show)
 
 @file: v-show.vuego
 
@@ -54,7 +55,7 @@ Use `:attr="value"` to dynamically bind attribute values.
 
 This is shorthand for `v-bind:attr="value"`. Common uses include `:href`, `:src`, and `:class`.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#attribute-binding-attr--v-bindattr)
+- [Attribute Binding - :attr / v-bind:attr](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#attribute-binding-attr--v-bindattr)
 
 @file: binding.vuego
 
@@ -68,7 +69,7 @@ For classes, object keys become class names and are applied when their values ar
 
 For styles, use camelCase property names which are automatically converted to kebab-case CSS properties.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#object-binding-for-class-and-style)
+- [Object Binding for class and style](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#object-binding-for-class-and-style)
 
 @file: binding-objects.vuego
 
@@ -84,6 +85,6 @@ Vuego supports additional directives for special rendering scenarios.
 
 `v-once` renders an element once and skips it on subsequent renders.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#directives)
+- [Directives](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#directives)
 
 @file: more-directives.vuego

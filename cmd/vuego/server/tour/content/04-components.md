@@ -6,7 +6,7 @@ Use `<vuego include="file">` to include another template file.
 
 This is the basic way to compose templates from reusable parts.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/components.md#basic-component-composition)
+- [Basic Component Composition](https://github.com/titpetric/vuego/blob/main/docs/components.md#basic-component-composition)
 
 @file: include.vuego
 @file: header.vuego
@@ -19,7 +19,7 @@ Use `<template :required="varName">` to require that specific variables are prov
 
 This helps catch missing data early with clear error messages.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/components.md#required-attributes)
+- [Required Attributes](https://github.com/titpetric/vuego/blob/main/docs/components.md#required-attributes)
 
 @file: require.vuego
 
@@ -31,7 +31,7 @@ Use `<slot>` to create insertion points where parent content can be injected.
 
 Named slots allow multiple content areas: `<slot name="header">`.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/components.md#slots)
+- [Slots](https://github.com/titpetric/vuego/blob/main/docs/components.md#slots)
 
 @file: slots.vuego
 
@@ -43,7 +43,7 @@ Child components can pass data to slots via attribute bindings.
 
 Use `v-slot` or the `#` shorthand to receive slot props.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/components.md#scoped-slots)
+- [Scoped Slots](https://github.com/titpetric/vuego/blob/main/docs/components.md#scoped-slots)
 
 @file: scoped.vuego
 @file: list.vuego
@@ -58,7 +58,7 @@ Component filenames are converted from PascalCase to kebab-case: `ButtonPrimary.
 
 Attributes on shorthand tags are passed as props to the component. Slot content works the same as with `<vuego include>`.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/components.md#component-shorthands)
+- [Component Shorthands](https://github.com/titpetric/vuego/blob/main/docs/components.md#component-shorthands)
 
 @file: shorthands.vuego
 @file: button-component.vuego
@@ -74,7 +74,7 @@ Set `layout: layout.vuego` in the front-matter to wrap the page content.
 
 The layout uses `<slot>` to insert the page content.
 
-[Learn more](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#components)
+- [Components](https://github.com/titpetric/vuego/blob/main/docs/syntax.md#components)
 
 @file: layout.vuego
 @file: base.vuego
