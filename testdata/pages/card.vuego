@@ -1,0 +1,11 @@
+<html>
+<head>
+<title>Card Component</title>
+</head>
+<body>
+<div class="card">
+<h2>Card Title</h2>
+<p>Card content goes here.</p>
+</div>
+</body>
+</html>
