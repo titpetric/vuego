@@ -4,8 +4,6 @@ version: "3"
 includes:
   mdox: ./Taskfile.mdox.yml
   gofsck: ./Taskfile.gofsck.yml
-  docker:
-    taskfile: ./docker/playground/Taskfile.yml
 
 vars:
   goversion:

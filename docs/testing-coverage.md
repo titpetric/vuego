@@ -23,7 +23,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego/cmd/vuego/server/tour     | 81.76%   | 98        | 458   |
 | ❌     | titpetric/vuego/diff                      | 61.37%   | 156       | 467   |
 | ✅     | titpetric/vuego/formatter                 | 92.92%   | 127       | 401   |
-| ✅     | titpetric/vuego/internal/helpers          | 100.00%  | 82        | 308   |
+| ✅     | titpetric/vuego/internal/helpers          | 100.00%  | 84        | 313   |
 | ✅     | titpetric/vuego/internal/parser           | 84.60%   | 6         | 25    |
 | ✅     | titpetric/vuego/internal/reflect          | 94.50%   | 61        | 224   |
 | ✅     | titpetric/vuego/internal/ulid             | 50.00%   | 0         | 20    |
@@ -303,7 +303,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego/internal/helpers          | GetAttr                           | 100.00%  | 3         |
 | ✅     | titpetric/vuego/internal/helpers          | GetBodyNode                       | 100.00%  | 11        |
 | ✅     | titpetric/vuego/internal/helpers          | HasAttr                           | 100.00%  | 3         |
-| ✅     | titpetric/vuego/internal/helpers          | IsComplexExpr                     | 100.00%  | 6         |
+| ✅     | titpetric/vuego/internal/helpers          | IsComplexExpr                     | 100.00%  | 8         |
 | ✅     | titpetric/vuego/internal/helpers          | IsFunctionCall                    | 100.00%  | 5         |
 | ✅     | titpetric/vuego/internal/helpers          | IsIdentifier                      | 100.00%  | 4         |
 | ✅     | titpetric/vuego/internal/helpers          | IsIdentifierChar                  | 100.00%  | 8         |

@@ -3,11 +3,52 @@
 
 name: Vuego CI pipeline
 
+vars:
+  name: vuego
+  path: ./cmd/vuego
+  build:
+    goarch: [arm64, amd64]
+
+env:
+  vars:
+    GIT_COMMIT: $(git rev-parse HEAD)
+    GIT_BRANCH: $(git rev-parse --abbrev-ref HEAD)
+    GIT_TAG: $(git describe --tags --always --dirty 2>/dev/null || echo "no-tag")
+    GIT_TIME: $(git log -1 --format="format:%aI")
+    GIT_STATUS: $(git status --porcelain | wc -l)
+
 jobs:
+  release:
+    desc: "Release vuego"
+    steps:
+      - task: install
+      - ./ci/release.yml build
+      - ./ci/release.yml test
+      - ./ci/release.yml publish
+
+  install:
+    desc: "Install ${{name}}"
+    depends_on: fmt
+    vars:
+      goos: linux
+    steps:
+      - for: goarch in ${{build.goarch}}
+        env:
+          vars:
+            CGO_ENABLED: 0
+            GOOS: ${{ goos }}
+            GOARCH: ${{ goarch }}
+        run: go build -ldflags="-X 'main.Version=${GIT_TAG}' -X 'main.Commit=${GIT_COMMIT}' -X 'main.CommitTime=${GIT_TIME}' -X 'main.Branch=${GIT_BRANCH}' -X 'main.Modified=${GIT_MODIFIED}'" -o bin/${{name}}-${GOOS}-${GOARCH} ${{path}}
+      - cmds:  # This implements a rename based self-update
+          - cp -f ./bin/${{name}}-linux-$(dpkg --print-architecture) /usr/local/bin/${{name}}.new
+          - mv -f /usr/local/bin/${{name}} /usr/local/bin/${{name}}.old
+          - mv -f /usr/local/bin/${{name}}.new /usr/local/bin/${{name}}
+
   fmt:
     desc: "Format the code"
     steps:
-      - goimports -w .
+      - goimports -w -local $(go list .) .
+      - goimports-reviser -set-alias -format -imports-order "std,blanked,general,company,project" ./...
       - go fmt ./...
       - go mod tidy
 

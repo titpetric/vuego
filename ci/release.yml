@@ -1,0 +1,55 @@
+#!/usr/bin/env atkins
+name: Release Vuego binaries
+
+vars:
+  name: vuego
+  semver: $(git tag | tail -n 1)
+  image: titpetric/vuego
+  build:
+    goarch: [arm64, amd64]
+
+jobs:
+  default:
+    steps:
+      - passthru: true
+        run: echo "Latest tag ${{semver}}"
+
+  build:
+    desc: "Build assets required for release"
+    passthru: true
+    steps:
+      - task: build:docker
+
+  build:docker:
+    desc: "Build docker image"
+    passthru: true
+    steps:
+      - docker buildx build --platform linux/amd64 -t ${{image}}:${{semver}} -t ${{image}}:latest -f docker/Dockerfile .
+
+  test:
+    desc: "Run tests required for release"
+    passthru: true
+    steps:
+      - docker run --rm ${{image}} version
+
+  publish:
+    desc: "Publish release assets"
+    steps:
+      - task: publish:github
+      - task: publish:docker
+
+  publish:github:
+    desc: "Create a GitHub release"
+    steps:
+      - run: echo "Last release [${{semver}}]"
+      - gh release create ${{ semver }} --title ${{semver}} --notes "Release ${{semver}}"
+      - for: goarch in ${{build.goarch}}
+        run: gh release upload ${{ semver }} ./bin/${{name}}-linux-${{goarch}}
+
+  publish:docker:
+    desc: "Push the Docker images"
+    passthru: true
+    steps:
+      - docker push ${{image}}:latest
+      - docker push ${{image}}:${{semver}}
+
