@@ -1,8 +1,0 @@
-<div>
-  <p>Parent passes data to child slot:</p>
-  <vuego include="list.vuego" :items="fruits">
-    <template v-slot="{ item, index }">
-      {{ index }}. {{ item }}
-    </template>
-  </vuego>
-</div>

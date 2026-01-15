@@ -1,9 +1,0 @@
-fruits:
-  - Apple
-  - Banana
-  - Cherry
-users:
-  - name: Alice
-    age: 28
-  - name: Bob
-    age: 32

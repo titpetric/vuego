@@ -1,9 +1,0 @@
-colors:
-  - red
-  - green
-  - blue
-users:
-  - name: Bob
-    age: 30
-  - name: Carol
-    age: 25

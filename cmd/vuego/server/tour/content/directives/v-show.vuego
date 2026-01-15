@@ -1,4 +1,0 @@
-<div>
-  <p v-show="showMessage">This message can be toggled!</p>
-  <p v-show="!showMessage">The other message is hidden.</p>
-</div>
