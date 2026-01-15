@@ -29,7 +29,7 @@ func TestCountBuiltinConflict(t *testing.T) {
 
 	// But comparison fails because expr treats "count" as the builtin function
 	// Error happens at compile time, not runtime
-	prog, err = expr.Compile("count > 0", expr.AllowUndefinedVariables())
+	_, err = expr.Compile("count > 0", expr.AllowUndefinedVariables())
 	// This will fail: invalid operation: > (mismatched types func(...) int and int)
 	// because expr interprets "count" as the count() function, not the variable
 	require.Error(t, err)

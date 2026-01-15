@@ -658,13 +658,11 @@ func TestElse_NestedVIfWithVElse(t *testing.T) {
 // Note: Comparison operators (>, <, ==, etc) in conditions are not yet implemented
 // This test documents the expected behavior when they are implemented.
 func TestElse_VElseIfWithComplexConditions(t *testing.T) {
-	t.Skip("Comparison operators in conditions not yet implemented")
-
 	templateFS := &fstest.MapFS{
 		"test.vuego": {Data: []byte(`
-<div v-if="count > 10">Large</div>
-<div v-else-if="count > 5">Medium</div>
-<div v-else-if="count > 0">Small</div>
+<div v-if="$env.count > 10">Large</div>
+<div v-else-if="$env.count > 5">Medium</div>
+<div v-else-if="$env.count > 0">Small</div>
 <div v-else>None</div>
 `)},
 	}

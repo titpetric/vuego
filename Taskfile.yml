@@ -12,6 +12,7 @@ vars:
 
 tasks:
   fmt: atkins fmt
+  lint: atkins lint
 
   fmt:docs:
     desc: "Format docs"
@@ -21,25 +22,16 @@ tasks:
   default:
     desc: "Run the dev server"
     cmds:
-      - go install ./cmd/vuego
-      - vuego tour
-
-  lint:
-    desc: "Lint codebase"
-    cmds:
-      - task: fmt
-      - task: lint:golangci-lint
-
-  lint:golangci-lint:
-    cmd: golangci-lint run --fix ./...
+      - task: test
+      - task: cover
 
   test:
     desc: "Run tests and collect coverage"
-    deps:
-      - fmt
     env:
       GOTOOLCHAIN: '{{.toolchain}}'
     cmds:
+      - task: fmt
+      - task: lint
       - go test -failfast -count=1 -cover -coverpkg=./... -coverprofile=pkg.cov ./...
 
   cover:
@@ -49,7 +41,6 @@ tasks:
       - go-fsck docs > docs/api.md
       - go tool cover -func=pkg.cov | summary coverfunc --json > pkg.cov.json
       - go-fsck extract --pretty-json ./...
-      - go-fsck lint --exclude=imports ./...
       - go-fsck coverage -c pkg.cov.json -o go-fsck.json
       - go-fsck coverage --template=docs/testing-coverage.md.tpl -v > docs/testing-coverage.md
       - perl -pi -e 's/github.com\/titpetric/titpetric/g' docs/testing-coverage.md
@@ -58,11 +49,6 @@ tasks:
   uncover:
     desc: "Show uncovered source"
     cmd: uncover pkg.cov
-
-  render:
-    desc: "Render a vuego template"
-    cmds:
-      - go run ./cmd/vuego testdata/pages/forecast.vuego testdata/json/forecast.json
 
   bench:
     desc: "Run benchmarks with multiple CPU configurations"
