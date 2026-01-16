@@ -1,0 +1,28 @@
+<style type="text/css">
+.card {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 6px;
+  display: inline-block;
+}
+.card h1 {
+  color: #f70;
+}
+</style>
+<script>
+class VuegoApp {
+  constructor(containerId = "container") {
+    this.container = document.getElementById(containerId)
+    if (this.container) {
+      this.container.innerHTML = "Filled from JavaScript"
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => new VuegoApp());
+
+</script>
+<div class="card">
+  <h1>Hello world</h1>
+  <p id="container">Default</p>
+</div>

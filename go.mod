@@ -7,6 +7,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/stretchr/testify v1.11.1
 	github.com/titpetric/lessgo v0.1.0
+	github.com/titpetric/platform v0.2.3
 	golang.org/x/net v0.49.0
 	gopkg.in/yaml.v3 v3.0.1
 )

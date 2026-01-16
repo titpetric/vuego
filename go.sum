@@ -18,6 +18,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/titpetric/lessgo v0.1.0 h1:TrssCXiQPw3zZ4qIzVg7wytZXQz7ir3mGv6LYDzeVj0=
 github.com/titpetric/lessgo v0.1.0/go.mod h1:VKjDECI8RxTqRmbBRi4y1rAyldGAHuiZohAHGGkTo6g=
+github.com/titpetric/platform v0.2.3 h1:Z4UF3CNPKr47YLeImgrAAsYe0cASr3kPPjxtpycC7GE=
+github.com/titpetric/platform v0.2.3/go.mod h1:4dk8yJzQYm8WXu47p3Vt6JZGoXH++Svw3zHNt9b7EE4=
 golang.org/x/net v0.49.0 h1:eeHFmOGUTtaaPSGNmjBKpbng9MulQsJURQUAfUwY++o=
 golang.org/x/net v0.49.0/go.mod h1:/ysNB2EvaqvesRkuLAyjI1ycPZlQHM3q01F02UY/MV8=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=

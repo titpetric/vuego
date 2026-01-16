@@ -141,13 +141,15 @@ func (lp *LessProcessor) replaceWithStyleTag(styleNode *html.Node, css string) {
 	// Change tag name to "style"
 	styleNode.Data = "style"
 
-	// Keep only relevant attributes (remove type="text/css+less")
+	// Keep only relevant attributes (remove type="text/css+less" and replace with type="text/css")
 	newAttrs := []html.Attribute{}
 	for _, attr := range styleNode.Attr {
 		if attr.Key != "type" {
 			newAttrs = append(newAttrs, attr)
 		}
 	}
+	// Add type="text/css" attribute
+	newAttrs = append(newAttrs, html.Attribute{Key: "type", Val: "text/css"})
 	styleNode.Attr = newAttrs
 
 	// Clear children and set CSS content

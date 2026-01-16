@@ -1,0 +1,13 @@
+<style type="text/css+less">
+{{ file("composition.less") }}
+</style>
+
+<script>
+{{ file("composition.js") }}
+</script>
+
+<div class="card">
+	<h1>Hello world</h1>
+
+	<p id="container">Default</p>
+</div>
