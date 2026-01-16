@@ -29,7 +29,7 @@ func TestFixtures(t *testing.T) {
 	fixtures := os.DirFS("testdata/fixtures")
 
 	// Create a template with components loaded recursively
-	tpl := vuego.NewFS(fixtures, vuego.WithComponents())
+	tpl := vuego.NewFS(fixtures, vuego.WithComponents(), vuego.WithLessProcessor())
 
 	templates, err := fs.Glob(fixtures, "*.vuego")
 	require.NoError(t, err)
@@ -51,12 +51,7 @@ func TestFixtures(t *testing.T) {
 			var got bytes.Buffer
 			loaded := tpl.Load(template).Fill(data)
 			require.NoError(t, loaded.Render(t.Context(), &got))
-			if !diff.EqualHTML(t, want, got.Bytes(), templateBytes, dataBytes) {
-				t.Logf("HTML mismatch in %s", template)
-				t.Logf("Expected:\n%s", string(want))
-				t.Logf("Got:\n%s", got.String())
-				t.FailNow()
-			}
+			diff.EqualHTML(t, want, got.Bytes(), templateBytes, dataBytes)
 		})
 	}
 }
@@ -78,7 +73,7 @@ func TestVue_Escaping(t *testing.T) {
 	t.Run(template, func(t *testing.T) {
 		var got bytes.Buffer
 		require.NoError(t, vue.RenderFragment(&got, template, data))
-		require.True(t, diff.EqualHTML(t, want, got.Bytes(), nil, nil))
+		diff.EqualHTML(t, want, got.Bytes(), nil, nil)
 
 		t.Logf("-- Escape result: %s", got.String())
 	})

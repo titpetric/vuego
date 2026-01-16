@@ -29,7 +29,7 @@ func TestLessProcessor_LessCompilation(t *testing.T) {
 	// Verify the output contains compiled CSS instead of LESS
 	output := buf.String()
 	t.Logf("Output:\n%s", output)
-	require.Contains(t, output, "<style>")
+	require.Contains(t, output, `<style type="text/css">`)
 	require.NotContains(t, output, `type="text/css+less"`)
 	require.Contains(t, output, "color: red;")
 }
@@ -46,7 +46,7 @@ func TestLessProcessor_LessVariables(t *testing.T) {
 	require.NoError(t, err)
 
 	output := buf.String()
-	require.Contains(t, output, "<style>")
+	require.Contains(t, output, `<style type="text/css">`)
 	// LESS variables should be compiled to actual values
 	require.Contains(t, output, "#ff0000") // @primary-color: #ff0000 should be compiled
 }
@@ -63,8 +63,9 @@ func TestLessProcessor_NoLessTag(t *testing.T) {
 	require.NoError(t, err)
 
 	output := buf.String()
-	// Normal style tags should remain unchanged
+	// Normal style tags should remain unchanged, LESS tags should be compiled to type="text/css"
 	require.Contains(t, output, `<style type="text/css">`)
-	// LESS tags should be compiled
-	require.Contains(t, output, "<style>")
+	require.NotContains(t, output, `type="text/css+less"`)
+	// Verify LESS compilation worked (LESS variables should be compiled)
+	require.Contains(t, output, "color: #333;")
 }

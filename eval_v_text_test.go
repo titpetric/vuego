@@ -79,7 +79,7 @@ func TestVue_EvalVText(t *testing.T) {
 			var buf bytes.Buffer
 			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
 			require.NoError(t, err)
-			require.True(t, diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
@@ -171,7 +171,7 @@ func TestVue_EvalVText_WithFiltersAndFunctions(t *testing.T) {
 			var buf bytes.Buffer
 			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
 			require.NoError(t, err)
-			require.True(t, diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
@@ -217,7 +217,7 @@ func TestVue_EvalVText_WithComplexVariables(t *testing.T) {
 			var buf bytes.Buffer
 			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
 			require.NoError(t, err)
-			require.True(t, diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
@@ -261,7 +261,7 @@ func TestVue_EvalVText_HTMLEscaping(t *testing.T) {
 			var buf bytes.Buffer
 			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
 			require.NoError(t, err)
-			require.True(t, diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil))
+			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
