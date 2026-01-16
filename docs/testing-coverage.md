@@ -12,8 +12,8 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                          | Coverage | Cognitive | Lines |
 |--------|----------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                  | 84.94%   | 1112      | 3659  |
-| ❌     | titpetric/vuego/diff             | 61.37%   | 156       | 467   |
+| ✅     | titpetric/vuego                  | 84.98%   | 1112      | 3661  |
+| ❌     | titpetric/vuego/diff             | 58.69%   | 155       | 464   |
 | ✅     | titpetric/vuego/formatter        | 92.92%   | 127       | 401   |
 | ✅     | titpetric/vuego/internal/helpers | 100.00%  | 84        | 313   |
 | ✅     | titpetric/vuego/internal/parser  | 84.60%   | 6         | 25    |
@@ -31,10 +31,10 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                  | LessProcessor.New                 | 100.00%  | 0         |
 | ✅     | titpetric/vuego                  | LessProcessor.PostProcess         | 75.00%   | 3         |
 | ✅     | titpetric/vuego                  | LessProcessor.PreProcess          | 100.00%  | 0         |
-| ❌     | titpetric/vuego                  | LessProcessor.compileLessTag      | 77.80%   | 7         |
+| ✅     | titpetric/vuego                  | LessProcessor.compileLessTag      | 83.30%   | 7         |
 | ✅     | titpetric/vuego                  | LessProcessor.isLessStyleTag      | 100.00%  | 4         |
 | ❌     | titpetric/vuego                  | LessProcessor.processNode         | 70.00%   | 11        |
-| ✅     | titpetric/vuego                  | LessProcessor.replaceWithStyleTag | 90.90%   | 3         |
+| ✅     | titpetric/vuego                  | LessProcessor.replaceWithStyleTag | 91.70%   | 3         |
 | ✅     | titpetric/vuego                  | LessProcessorError.Error          | 0.00%    | 0         |
 | ✅     | titpetric/vuego                  | Loader.Load                       | 100.00%  | 0         |
 | ✅     | titpetric/vuego                  | Loader.LoadFragment               | 100.00%  | 1         |
@@ -183,16 +183,16 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                  | trimFunc                          | 66.70%   | 1         |
 | ✅     | titpetric/vuego                  | typeFunc                          | 100.00%  | 0         |
 | ✅     | titpetric/vuego                  | upperFunc                         | 66.70%   | 1         |
-| ❌     | titpetric/vuego/diff             | CompareHTML                       | 78.60%   | 6         |
+| ❌     | titpetric/vuego/diff             | CompareHTML                       | 71.40%   | 6         |
 | ✅     | titpetric/vuego/diff             | CountChildren                     | 83.30%   | 2         |
 | ❌     | titpetric/vuego/diff             | DomToYAML                         | 0.00%    | 2         |
-| ✅     | titpetric/vuego/diff             | EqualHTML                         | 100.00%  | 1         |
+| ✅     | titpetric/vuego/diff             | EqualHTML                         | 100.00%  | 0         |
 | ❌     | titpetric/vuego/diff             | FormatToNormalizedHTML            | 0.00%    | 1         |
 | ❌     | titpetric/vuego/diff             | GenerateUnifiedDiff               | 0.00%    | 15        |
 | ✅     | titpetric/vuego/diff             | SignificantChildren               | 95.80%   | 30        |
-| ❌     | titpetric/vuego/diff             | attrsEqual                        | 80.00%   | 15        |
-| ✅     | titpetric/vuego/diff             | classEqual                        | 87.50%   | 4         |
-| ✅     | titpetric/vuego/diff             | compareNodeRecursive              | 87.50%   | 17        |
+| ❌     | titpetric/vuego/diff             | attrsEqual                        | 75.00%   | 15        |
+| ✅     | titpetric/vuego/diff             | classEqual                        | 75.00%   | 4         |
+| ❌     | titpetric/vuego/diff             | compareNodeRecursive              | 66.70%   | 17        |
 | ✅     | titpetric/vuego/diff             | filteredChildren                  | 100.00%  | 3         |
 | ✅     | titpetric/vuego/diff             | isIgnorable                       | 80.00%   | 3         |
 | ❌     | titpetric/vuego/diff             | nodeToMap                         | 0.00%    | 27        |
