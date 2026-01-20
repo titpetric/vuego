@@ -160,4 +160,25 @@ layout: wrapper
 		assert.Contains(t, output, "<p>Test Title</p>", "title field should be rendered")
 		assert.Contains(t, output, "<p>Test Description</p>", "description field should be rendered")
 	})
+
+	t.Run("layout_chain_depth_exceeded", func(t *testing.T) {
+		// Create a circular layout dependency: circular.vuego references itself
+		inlineFS := fstest.MapFS{
+			"page.vuego": &fstest.MapFile{Data: []byte(`---
+layout: circular
+---
+<p>Page content</p>`)},
+			"layouts/circular.vuego": &fstest.MapFile{Data: []byte(`---
+layout: circular
+---
+<div v-html="content"></div>`)},
+		}
+
+		inlineRenderer := vuego.NewFS(&inlineFS)
+
+		var buf bytes.Buffer
+		err := inlineRenderer.Load("page.vuego").Fill(nil).Render(t.Context(), &buf)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "layout chain depth exceeded maximum of 100")
+	})
 }
