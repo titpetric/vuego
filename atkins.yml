@@ -32,9 +32,9 @@ jobs:
 
   test:
     desc: "Run built tests"
-    passthru: true
+    tty: true
     steps:
-      - go test -count 1 -cover -coverpkg=./... -coverprofile=pkg.cov -json ./... > test.json
+      - go test -cover -coverpkg=./... -coverprofile=pkg.cov -json ./... > test.json
       - cat test.json | gotestsum
 
   cover:

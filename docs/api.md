@@ -155,7 +155,6 @@ type TemplateConstructors interface {
 // TemplateRendering bundles the interface for the render functions.
 type TemplateRendering interface {
 	Render(ctx context.Context, w io.Writer) error
-	Layout(ctx context.Context, w io.Writer) error
 }
 ```
 

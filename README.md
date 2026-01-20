@@ -29,16 +29,16 @@ With this you have a `vuego.Template`. From here you can:
 
 1. Construct new template rendering contexts with renderer.New and renderer.Load
 2. Manage state with `Fill`, `Set` and `Get` functions
-3. Finalize the rendering context with `Render` and `Layout` functions
+3. Finalize the rendering context with `Render` function
 4. Additional renderers are provided to render from non-FS sources
 
 An example of a rendering invocation would be:
 
 ```go
-err = renderer.File(filename).Fill(data).Layout(r.Context(), w)
+err = renderer.File(filename).Fill(data).Render(r.Context(), w)
 ```
 
-Layout will use front-matter `layout` hints to load layouts from `layouts/%s.vuego`. If no hint is provided, `layouts/base.vuego` is passed the contents from the previously rendered template. Use `Render` if you don't want layouts.
+`Render` automatically applies layouts when a front-matter `layout` hint is present. It will load layouts from `layouts/%s.vuego`. If no hint is provided, `layouts/base.vuego` is automatically used and passed the rendered content.
 
 For rendering fragments (from variables or otherwise):
 

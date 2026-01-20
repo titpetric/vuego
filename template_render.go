@@ -12,6 +12,10 @@ import (
 )
 
 // Render processes the loaded template and writes the output to w.
+// If the template contains a "layout" key in its front matter, it will load and render
+// the specified layout. Layouts can be chained, so one layout can trigger another layout.
+// If no layout is specified on the first template, defaults to layouts/base.vuego if available.
+// Layout paths are resolved relative to the current template first, then fall back to layouts/.
 // Requires that Load() has been called first.
 func (t *template) Render(ctx context.Context, w io.Writer) error {
 	// Check if context is already cancelled before starting
@@ -23,6 +27,25 @@ func (t *template) Render(ctx context.Context, w io.Writer) error {
 	}
 	if !t.filenameLoaded {
 		return fmt.Errorf("no template loaded; call Load() first")
+	}
+
+	// Check if layout is specified in front matter
+	layout := t.Get("layout")
+	if layout != "" {
+		// Layout is specified, use layout rendering
+		return t.layout(ctx, w)
+	}
+
+	// No layout specified, render normally
+	return t.renderWithoutLayout(ctx, w)
+}
+
+// renderWithoutLayout renders the template without checking for layouts.
+// Used internally by the layout chain to avoid infinite recursion.
+func (t *template) renderWithoutLayout(ctx context.Context, w io.Writer) error {
+	// Check if context is already cancelled before starting
+	if err := ctx.Err(); err != nil {
+		return err
 	}
 
 	return t.vue.Render(w, t.filename, t.stack.EnvMap())

@@ -26,7 +26,7 @@ func TestRenderLayout(t *testing.T) {
 
 	t.Run("blog.vuego", func(t *testing.T) {
 		var buf bytes.Buffer
-		err := renderer.Load("blog.vuego").Fill(data).Layout(t.Context(), &buf)
+		err := renderer.Load("blog.vuego").Fill(data).Render(t.Context(), &buf)
 		assert.NoError(t, err)
 
 		output := buf.String()
@@ -36,7 +36,7 @@ func TestRenderLayout(t *testing.T) {
 
 	t.Run("index.vuego", func(t *testing.T) {
 		var buf bytes.Buffer
-		err := renderer.Load("index.vuego").Fill(data).Layout(t.Context(), &buf)
+		err := renderer.Load("index.vuego").Fill(data).Render(t.Context(), &buf)
 		assert.NoError(t, err)
 
 		output := buf.String()
@@ -48,7 +48,7 @@ func TestRenderLayout(t *testing.T) {
 	t.Run("no_layout_defaults_to_base", func(t *testing.T) {
 		var buf bytes.Buffer
 		// fixtures/frontmatter-basic.vuego has no layout param
-		err := renderer.Load("fixtures/frontmatter-basic.vuego").Fill(data).Layout(t.Context(), &buf)
+		err := renderer.Load("fixtures/frontmatter-basic.vuego").Fill(data).Render(t.Context(), &buf)
 		assert.NoError(t, err)
 
 		output := buf.String()
@@ -58,7 +58,7 @@ func TestRenderLayout(t *testing.T) {
 
 	t.Run("v_html_on_element_in_first_template", func(t *testing.T) {
 		var buf bytes.Buffer
-		err := renderer.Load("article-test.vuego").Fill(data).Layout(t.Context(), &buf)
+		err := renderer.Load("article-test.vuego").Fill(data).Render(t.Context(), &buf)
 		assert.NoError(t, err)
 
 		output := buf.String()
@@ -69,7 +69,7 @@ func TestRenderLayout(t *testing.T) {
 
 	t.Run("page_with_post_layout_renders_content", func(t *testing.T) {
 		var buf bytes.Buffer
-		err := renderer.Load("blog-post-page.vuego").Fill(data).Layout(t.Context(), &buf)
+		err := renderer.Load("blog-post-page.vuego").Fill(data).Render(t.Context(), &buf)
 		assert.NoError(t, err)
 
 		output := buf.String()
@@ -89,7 +89,7 @@ layout: base.vuego
 		inlineRenderer := vuego.NewFS(inlineFS)
 
 		var buf bytes.Buffer
-		err := inlineRenderer.Load("pages/page.vuego").Fill(nil).Layout(t.Context(), &buf)
+		err := inlineRenderer.Load("pages/page.vuego").Fill(nil).Render(t.Context(), &buf)
 		assert.NoError(t, err)
 
 		output := buf.String()
@@ -108,7 +108,7 @@ layout: main
 		inlineRenderer := vuego.NewFS(inlineFS)
 
 		var buf bytes.Buffer
-		err := inlineRenderer.Load("pages/page.vuego").Fill(nil).Layout(t.Context(), &buf)
+		err := inlineRenderer.Load("pages/page.vuego").Fill(nil).Render(t.Context(), &buf)
 		assert.NoError(t, err)
 
 		output := buf.String()
@@ -127,7 +127,7 @@ layout: wrapper
 		inlineRenderer := vuego.NewFS(inlineFS)
 
 		var buf bytes.Buffer
-		err := inlineRenderer.Load("pages/page.vuego").Fill(nil).Layout(t.Context(), &buf)
+		err := inlineRenderer.Load("pages/page.vuego").Fill(nil).Render(t.Context(), &buf)
 		assert.NoError(t, err)
 
 		output := buf.String()
