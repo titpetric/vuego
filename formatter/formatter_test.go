@@ -5,8 +5,27 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/titpetric/vuego/diff"
 	"github.com/titpetric/vuego/formatter"
 )
+
+const example = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <template include="partials/basecoat.vuego"></template>
+    <template include="partials/hljs.vuego"></template>
+    <!-- comment -->
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  </head>
+  <body>
+    <template v-html="content"></template>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+lucide.createIcons();
+    </script>
+  </body>
+</html>`
 
 func TestNewFormatter(t *testing.T) {
 	f := formatter.NewFormatter()
@@ -16,19 +35,13 @@ func TestNewFormatter(t *testing.T) {
 func TestFormatter_Format_FrontmatterPreserved(t *testing.T) {
 	f := formatter.NewFormatter()
 
-	content := `---
-layout: base
-title: "Test Page"
----
-
-<div class="container">
-  <h1>Hello</h1>
-</div>`
-
-	formatted, err := f.Format(content)
+	formatted, err := f.Format(example)
 	require.NoError(t, err)
-	require.Contains(t, formatted, "layout: base")
-	require.Contains(t, formatted, "title: \"Test Page\"")
+
+	require.Contains(t, formatted, "></template>", "Tags without content need to be one-lined (template tag).")
+	require.Contains(t, formatted, "></script>", "Tags without content need to be one-lined (script tag).")
+
+	diff.EqualHTML(t, []byte(example), []byte(formatted), []byte(example), nil)
 }
 
 func TestFormatter_Format_SimpleHTML(t *testing.T) {

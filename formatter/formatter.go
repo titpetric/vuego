@@ -148,15 +148,7 @@ func (f *Formatter) formatFragment(frontmatter, body string) (string, error) {
 // skipping auto-inserted wrappers (html, head, body, and the wrapper div itself).
 func (f *Formatter) formatFragmentChildren(n *html.Node, depth int, buf *strings.Builder) {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		// Skip the auto-inserted html/body wrappers and pure whitespace
-		if c.Type == html.ElementNode && (c.Data == "html" || c.Data == "body" || c.Data == "head") {
-			f.formatFragmentChildren(c, depth, buf)
-		} else if c.Type == html.ElementNode && c.Data == "div" && isFragmentWrapper(c) {
-			// This is our wrapper div - format its children at the same depth
-			f.formatFragmentChildren(c, depth, buf)
-		} else if c.Type != html.TextNode || !f.isIgnorableWhitespace(c) {
-			f.formatNode(c, depth, buf)
-		}
+		f.formatNode(c, depth, buf)
 	}
 }
 
@@ -245,21 +237,14 @@ func (f *Formatter) formatNode(n *html.Node, depth int, buf *strings.Builder) {
 		// Write opening tag
 		buf.WriteString(indent)
 		buf.WriteString(f.renderOpenTag(n))
-		buf.WriteString("\n")
-
 		// Check if this is a void element (self-closing)
 		if isVoidElement(n.DataAtom) {
+			buf.WriteString("\n")
 			return
 		}
 
 		// Check if element should keep content inline
 		if f.shouldKeepInline(n) {
-			// Remove the newline we just added
-			str := buf.String()
-			str = strings.TrimSuffix(str, "\n")
-			buf.Reset()
-			buf.WriteString(str)
-
 			// Process children inline
 			for c := n.FirstChild; c != nil; c = c.NextSibling {
 				switch c.Type {
@@ -331,20 +316,16 @@ func (f *Formatter) formatNode(n *html.Node, depth int, buf *strings.Builder) {
 func (f *Formatter) shouldKeepInline(n *html.Node) bool {
 	// First, check if element has only text children (no nested elements)
 	hasOnlyText := true
-	hasContent := false
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode {
 			hasOnlyText = false
 			break
 		}
-		if c.Type == html.TextNode && strings.TrimSpace(c.Data) != "" {
-			hasContent = true
-		}
 	}
 
 	// If it only has text content, keep it inline
-	if hasOnlyText && hasContent {
+	if hasOnlyText {
 		return true
 	}
 
