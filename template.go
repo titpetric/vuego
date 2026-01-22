@@ -22,6 +22,12 @@ func New(opts ...LoadOption) Template {
 	return NewFS(nil, opts...)
 }
 
+// View is a type safety shim to bind a template file to a data model type.
+// The returned template should be rendered and discarded.
+func View[V any](renderer Template, filename string, data V) Template {
+	return renderer.Load(filename).Fill(data)
+}
+
 // WithFS returns a LoadOption that sets the filesystem for template loading.
 func WithFS(templateFS fs.FS) LoadOption {
 	return func(vue *Vue) {

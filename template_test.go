@@ -11,11 +11,25 @@ import (
 	"github.com/titpetric/vuego"
 )
 
-func TestLoad(t *testing.T) {
+func TestTemplate(t *testing.T) {
 	templateFS := os.DirFS("testdata/fixtures")
 
 	tmpl := vuego.NewFS(templateFS)
 	require.NotNil(t, tmpl)
+
+	t.Run("type binding view", func(t *testing.T) {
+		type ViewData struct {
+			Tooltip string `json:"tooltip"`
+		}
+		var buf bytes.Buffer
+
+		model := ViewData{"Vuego"}
+		view := vuego.View[ViewData](tmpl, "attribute-bind.vuego", model)
+		err := view.Render(t.Context(), &buf)
+
+		require.NoError(t, err)
+		require.NotEmpty(t, buf.String())
+	})
 }
 
 func TestTemplate_Fill(t *testing.T) {
