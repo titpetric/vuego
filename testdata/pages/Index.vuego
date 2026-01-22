@@ -3,8 +3,8 @@
     <title>Vuego index example</title>
   </head>
   <body>
-    <vuego include="components/Header.vuego"></vuego>
-    <vuego include="IndexContent.vuego"></vuego>
-    <vuego include="components/Footer.vuego"></vuego>
+    <template include="components/Header.vuego"></template>
+    <template include="IndexContent.vuego"></template>
+    <template include="components/Footer.vuego"></template>
   </body>
 </html>

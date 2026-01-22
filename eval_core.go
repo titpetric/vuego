@@ -1,9 +1,7 @@
 package vuego
 
 import (
-	"encoding/json"
 	"fmt"
-	"strings"
 
 	"golang.org/x/net/html"
 
@@ -67,48 +65,6 @@ func (v *Vue) evaluate(ctx VueContext, nodes []*html.Node, depth int) ([]*html.N
 					prev = cloned
 				}
 				result = append(result, newNode)
-				continue
-			}
-
-			if tag == "vuego" {
-				vars, err := v.evalAttributes(ctx, node)
-				if err != nil {
-					return nil, err
-				}
-
-				delete(vars, "include")
-
-				// auto decode params as json, e.g. `data="{...}"` or `[...]`
-				for k, v := range vars {
-					if vs, ok := v.(string); ok {
-						if strings.HasPrefix(vs, "{") || strings.HasPrefix(vs, "[") {
-							var out any
-							if err := json.Unmarshal([]byte(vs), &out); err == nil {
-								vars[k] = out
-							}
-						}
-					}
-				}
-
-				if helpers.HasAttr(node, "include") {
-					evaluated, err := v.evalInclude(ctx, node, vars, depth)
-					if err != nil {
-						return nil, err
-					}
-					result = append(result, evaluated...)
-					continue
-				}
-
-				// set bindings to current stack scope
-				for k, v := range vars {
-					ctx.stack.Set(k, v)
-				}
-
-				// keep vuego tag if v-keep is set.
-				if helpers.HasAttr(node, "v-keep") {
-					result = append(result, helpers.CloneNode(node))
-				}
-
 				continue
 			}
 

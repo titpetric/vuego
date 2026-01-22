@@ -26,7 +26,7 @@ func TestVue_TypedAttributePassthrough(t *testing.T) {
 	}{
 		{
 			name:   "slice of structs preserves type through binding",
-			parent: `<vuego include="child.vuego" :articles="articles"></vuego>`,
+			parent: `<template include="child.vuego" :articles="articles"></template>`,
 			child:  `<template>{{ articles | type }}</template>`,
 			data: map[string]any{
 				"articles": []Article{
@@ -38,7 +38,7 @@ func TestVue_TypedAttributePassthrough(t *testing.T) {
 		},
 		{
 			name:   "map preserves type through binding",
-			parent: `<vuego include="child.vuego" :data="myMap"></vuego>`,
+			parent: `<template include="child.vuego" :data="myMap"></template>`,
 			child:  `<template>{{ data | type }}</template>`,
 			data: map[string]any{
 				"myMap": map[string]string{"key": "value"},
@@ -47,7 +47,7 @@ func TestVue_TypedAttributePassthrough(t *testing.T) {
 		},
 		{
 			name:   "int preserves type through binding",
-			parent: `<vuego include="child.vuego" :count="count"></vuego>`,
+			parent: `<template include="child.vuego" :count="count"></template>`,
 			child:  `<template>{{ count | type }}</template>`,
 			data: map[string]any{
 				"count": 42,
@@ -56,7 +56,7 @@ func TestVue_TypedAttributePassthrough(t *testing.T) {
 		},
 		{
 			name:   "complex object type preservation",
-			parent: `<vuego include="child.vuego" :article="article"></vuego>`,
+			parent: `<template include="child.vuego" :article="article"></template>`,
 			child:  `<template>{{ article | type }}</template>`,
 			data: map[string]any{
 				"article": Article{Title: "Test", Body: "Test body"},

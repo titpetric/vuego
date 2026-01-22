@@ -10,7 +10,7 @@
         {{item.name}}
       </li>
     </ul>
-    <vuego include="components/inline-svg.vuego" src="icons/{{avatar}}.svg">
+    <template include="components/inline-svg.vuego" src="icons/{{avatar}}.svg">
     </template>
   </body>
 </html>

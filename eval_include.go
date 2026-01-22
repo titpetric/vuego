@@ -9,7 +9,7 @@ import (
 	"github.com/titpetric/vuego/internal/parser"
 )
 
-// evalInclude processes a <vuego include="..."> tag with the given vars map.
+// evalInclude processes a <template include="..."> tag with the given vars map.
 // Handles stack push/pop properly using defer to ensure cleanup even on error.
 func (v *Vue) evalInclude(ctx VueContext, node *html.Node, vars map[string]any, depth int) ([]*html.Node, error) {
 	ctx.stack.Push(vars)

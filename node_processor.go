@@ -46,7 +46,7 @@ func (v *Vue) GetComponentFile(tagName string) (string, bool) {
 	return filename, ok
 }
 
-// resolveComponentTags replaces component shorthand tags with vuego include directives.
+// resolveComponentTags replaces component shorthand tags with template include directives.
 // This is called before other node processors to transform component tags.
 func (v *Vue) resolveComponentTags(nodes []*html.Node) error {
 	for _, node := range nodes {
@@ -62,7 +62,7 @@ func (v *Vue) processComponentNode(node *html.Node) error {
 	if node.Type == html.ElementNode {
 		// Check if this node is a registered component tag
 		if filename, ok := v.GetComponentFile(node.Data); ok {
-			// Replace the element with a vuego include
+			// Replace the element with a template include
 			if err := v.replaceWithInclude(node, filename); err != nil {
 				return err
 			}
@@ -81,11 +81,11 @@ func (v *Vue) processComponentNode(node *html.Node) error {
 	return nil
 }
 
-// replaceWithInclude transforms a component tag into a vuego include directive.
+// replaceWithInclude transforms a component tag into a template include directive.
 // It preserves attributes from the original tag as context variables.
 func (v *Vue) replaceWithInclude(node *html.Node, filename string) error {
 	// Set the include attribute on the node itself
-	node.Data = "vuego"
+	node.Data = "template"
 	node.Attr = append(node.Attr, html.Attribute{
 		Key: "include",
 		Val: filename,

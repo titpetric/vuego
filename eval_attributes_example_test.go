@@ -31,7 +31,7 @@ func TestVue_RealWorldTypePreservation(t *testing.T) {
 	}{
 		{
 			name:   "blog post slice with type checking and length filter",
-			parent: `<vuego include="posts.vuego" :posts="posts"></vuego>`,
+			parent: `<template include="posts.vuego" :posts="posts"></template>`,
 			child: `<template>
 Type: {{ posts | type }}
 Count: {{ posts | len }}
@@ -49,7 +49,7 @@ Count: {{ posts | len }}
 		},
 		{
 			name:   "single struct preserves type",
-			parent: `<vuego include="post.vuego" :post="featured"></vuego>`,
+			parent: `<template include="post.vuego" :post="featured"></template>`,
 			child: `<template>
 Post type: {{ post | type }}
 </template>`,
@@ -62,7 +62,7 @@ Post type: {{ post | type }}
 		},
 		{
 			name:   "string slice also preserved",
-			parent: `<vuego include="tags.vuego" :tags="tags"></vuego>`,
+			parent: `<template include="tags.vuego" :tags="tags"></template>`,
 			child: `<template>
 Tags type: {{ tags | type }}
 Tag count: {{ tags | len }}

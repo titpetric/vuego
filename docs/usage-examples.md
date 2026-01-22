@@ -163,9 +163,9 @@ vuego template.vuego data.json > output.html
 ```html
 <html>
   <body>
-    <vuego include="components/Header.vuego"></vuego>
+    <template include="components/Header.vuego"></template>
     <main>{{ content }}</main>
-    <vuego include="components/Footer.vuego"></vuego>
+    <template include="components/Footer.vuego"></template>
   </body>
 </html>
 ```

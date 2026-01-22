@@ -29,7 +29,7 @@ func TestTemplate_NestedIncludesStateIsolation(t *testing.T) {
 	fs := fstest.MapFS{
 		"pages/blog.vuego": &fstest.MapFile{
 			Data: []byte(`<div class="blog">
-  <vuego include="components/article-list.vuego" :articles="articles"></vuego>
+  <template include="components/article-list.vuego" :articles="articles"></template>
 </div>`),
 		},
 		"components/article-list.vuego": &fstest.MapFile{
@@ -85,7 +85,7 @@ func TestTemplate_ConcurrentNestedIncludesRender(t *testing.T) {
 	fs := fstest.MapFS{
 		"pages/blog.vuego": &fstest.MapFile{
 			Data: []byte(`<div class="blog">
-  <vuego include="components/article-list.vuego" :articles="articles"></vuego>
+  <template include="components/article-list.vuego" :articles="articles"></template>
 </div>`),
 		},
 		"components/article-list.vuego": &fstest.MapFile{

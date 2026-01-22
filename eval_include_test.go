@@ -17,7 +17,7 @@ func TestEvalInclude_StackManagement(t *testing.T) {
 		fs := fstest.MapFS{
 			"parent.vuego": &fstest.MapFile{
 				Data: []byte(`<div>
-  <vuego include="child.vuego"></vuego>
+  <template include="child.vuego"></template>
 </div>`),
 			},
 			"child.vuego": &fstest.MapFile{
@@ -39,7 +39,7 @@ func TestEvalInclude_StackManagement(t *testing.T) {
 		fs := fstest.MapFS{
 			"parent.vuego": &fstest.MapFile{
 				Data: []byte(`<div>
-  <vuego include="missing.vuego"></vuego>
+  <template include="missing.vuego"></template>
 </div>`),
 			},
 		}
@@ -60,7 +60,7 @@ func TestEvalInclude_DataPassing(t *testing.T) {
 	t.Run("include data is isolated per render", func(t *testing.T) {
 		fs := fstest.MapFS{
 			"parent.vuego": &fstest.MapFile{
-				Data: []byte(`<vuego include="child.vuego" :msg="message"></vuego>`),
+				Data: []byte(`<template include="child.vuego" :msg="message"></template>`),
 			},
 			"child.vuego": &fstest.MapFile{
 				Data: []byte(`{{ msg }}`),

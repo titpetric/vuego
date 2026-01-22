@@ -1,6 +1,6 @@
 # Components in Vuego
 
-This document covers component composition in Vuego using the `<vuego include>` tag, component shorthands, the `<template>` tag, and the `:required` attribute for validating component props.
+This document covers component composition in Vuego using the `<template include>` tag, component shorthands, and the `:required` attribute for validating component props.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ This document covers component composition in Vuego using the `<vuego include>` 
 
 ## Component Shorthands
 
-Vuego provides a convenient shorthand syntax for using components without needing to write out the full `<vuego include>` tag. This allows you to use custom tags that are automatically mapped to component files.
+Vuego provides a convenient shorthand syntax for using components without needing to write out the full `<template include>` tag. This allows you to use custom tags that are automatically mapped to component files.
 
 ### Enabling Component Shorthands
 
@@ -82,7 +82,7 @@ Component shorthands use custom HTML tags that match your component names (conve
 **Equivalent full syntax:**
 
 ```html
-<vuego include="components/ButtonPrimary.vuego"></vuego>
+<template include="components/ButtonPrimary.vuego"></template>
 ```
 
 ### How It Works
@@ -92,7 +92,7 @@ Component shorthands use custom HTML tags that match your component names (conve
    - `ButtonPrimary.vuego` → `<button-primary>`
    - `AlertBox.vuego` → `<alert-box>`
    - `MyComponent.vuego` → `<my-component>`
-3. When a shorthand tag is encountered, it's replaced with a `<vuego include>` directive
+3. When a shorthand tag is encountered, it's replaced with a `<template include>` directive
 4. Attributes on the tag are passed as context variables to the component
 
 ### Passing Attributes
@@ -139,12 +139,12 @@ With this setup:
 
 ## Basic Component Composition
 
-Vuego allows you to compose reusable components using the `<vuego include>` tag. This tag loads and renders another `.vuego` template file at the specified location.
+Vuego allows you to compose reusable components using the `<template include>` tag. This tag loads and renders another `.vuego` template file at the specified location.
 
 ### Syntax
 
 ```html
-<vuego include="path/to/component.vuego"></vuego>
+<template include="path/to/component.vuego"></template>
 ```
 
 The path is relative to the filesystem root passed to `vuego.NewVue()`.
@@ -169,7 +169,7 @@ The path is relative to the filesystem root passed to `vuego.NewVue()`.
     <title>My Page</title>
   </head>
   <body>
-    <vuego include="components/Header.vuego"></vuego>
+    <template include="components/Header.vuego"></template>
     <main>
       Content goes here
     </main>
@@ -419,9 +419,9 @@ You can specify multiple required attributes:
 **Usage:**
 
 ```html
-<vuego include="components/Button.vuego" 
+<template include="components/Button.vuego" 
        name="submit-btn" 
-       title="Click Me"></vuego>
+       title="Click Me"></template>
 ```
 
 **Rendered output:**
@@ -434,7 +434,7 @@ You can specify multiple required attributes:
 
 ```html
 <!-- This will fail because 'name' is missing -->
-<vuego include="components/Button.vuego" title="Click Me"></vuego>
+<template include="components/Button.vuego" title="Click Me"></template>
 ```
 
 Error: `required attribute 'name' not provided`
@@ -533,7 +533,7 @@ debug: false
 **Usage with conflicting data:**
 
 ```html
-<vuego include="components/Config.vuego" environment="development" debug="true"></vuego>
+<template include="components/Config.vuego" environment="development" debug="true"></template>
 ```
 
 **Output:**
@@ -577,14 +577,14 @@ The front-matter values (`production`, `false`) override the passed attributes (
     <title>Home Page</title>
   </head>
   <body>
-    <vuego include="components/Header.vuego"></vuego>
+    <template include="components/Header.vuego"></template>
     
     <main>
       <h2>Welcome!</h2>
       <p>This is the main content.</p>
     </main>
     
-    <vuego include="components/Footer.vuego"></vuego>
+    <template include="components/Footer.vuego"></template>
   </body>
 </html>
 ```
@@ -604,12 +604,12 @@ The front-matter values (`production`, `false`) override the passed attributes (
 ```html
 <template>
   <div class="button-group">
-    <vuego include="Button.vuego" 
+    <template include="Button.vuego" 
            name="save" 
-           title="Save"></vuego>
-    <vuego include="Button.vuego" 
+           title="Save"></template>
+    <template include="Button.vuego" 
            name="cancel" 
-           title="Cancel"></vuego>
+           title="Cancel"></template>
   </div>
 </template>
 ```
@@ -620,7 +620,7 @@ The front-matter values (`production`, `false`) override the passed attributes (
 <template>
   <div>
     <h2>Form Actions</h2>
-    <vuego include="components/ButtonGroup.vuego"></vuego>
+    <template include="components/ButtonGroup.vuego"></template>
   </div>
 </template>
 ```
@@ -644,9 +644,9 @@ The front-matter values (`production`, `false`) override the passed attributes (
 <template>
   <h1>Weather Forecast</h1>
   
-  <vuego include="components/WeatherCard.vuego" 
+  <template include="components/WeatherCard.vuego" 
          location="{{ city }}" 
-         temperature="{{ current.temp }}"></vuego>
+         temperature="{{ current.temp }}"></template>
 </template>
 ```
 

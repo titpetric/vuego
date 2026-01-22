@@ -492,20 +492,20 @@ Combine named slots with scoped props for maximum flexibility:
 
 ## Components
 
-Vuego supports component composition using `<vuego>` and `<template>` tags. See [Components Guide](components.md) for detailed examples.
+Vuego supports component composition using the `<template>` tag. See [Components Guide](components.md) for detailed examples.
 
-### `<vuego>` Tag (Include/Embed Components)
+### `<template include>` Tag (Include/Embed Components)
 
 Include reusable component files:
 
 ```html
-<vuego include="components/Header.vuego"></vuego>
-<vuego include="components/Button.vuego" name="submit" title="Submit Form"></vuego>
+<template include="components/Header.vuego"></template>
+<template include="components/Button.vuego" name="submit" title="Submit Form"></template>
 ```
 
 The `include` attribute specifies the template file path. Additional attributes are passed as props to the component.
 
-### `<template>` Tag
+### `<template>` Tag (Fragment Wrapper)
 
 Wrap component content or fragments:
 
@@ -577,7 +577,7 @@ Both styles are valid and work identically.
 - ✅ Skip template processing with `v-pre`
 - ✅ Single render deduplication with `v-once`
 - ✅ Slots with `<slot>`, `v-slot`, and `#` (default, named, scoped)
-- ✅ Component composition with `<vuego include>`
+- ✅ Component composition with `<template include>`
 - ✅ Component prop validation with `:required`
 - ✅ Full HTML documents and fragments
 - ✅ Custom template functions and filters
