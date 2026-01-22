@@ -58,7 +58,7 @@ func (e *ExprEvaluator) getProgram(expression string) (*vm.Program, error) {
 	e.mu.RUnlock()
 
 	// Compile the expression
-	prog, err := expr.Compile(expression, expr.AllowUndefinedVariables())
+	prog, err := expr.Compile(expression, expr.AllowUndefinedVariables(), expr.DisableBuiltin("count"))
 	if err != nil {
 		return nil, fmt.Errorf("compile error: %w", err)
 	}

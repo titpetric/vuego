@@ -128,6 +128,23 @@ func TestTemplate_VariableAttribute(t *testing.T) {
 	require.Equal(t, "X=10", buf.String())
 }
 
+// TestTemplateVariableAttribute tests that a bound attribute using a context variable
+// is evaluated and available in the template's children. The json is decoded and each
+// key should then be available under `data.*`.
+func TestTemplate_VariableAttribute_JSON(t *testing.T) {
+	templateFS := &fstest.MapFS{
+		"test.vuego": {Data: []byte(`<template :data="jsonFile('test.json')">X={{ data.x }}</template>`)},
+		"test.json":  {Data: []byte(`{"x": 10}`)},
+	}
+
+	var buf bytes.Buffer
+	vue := vuego.NewVue(templateFS)
+	err := vue.RenderFragment(&buf, "test.vuego", map[string]any{})
+
+	require.NoError(t, err)
+	require.Equal(t, "X=10", buf.String())
+}
+
 // TestTemplateNestedAttribute tests that nested templates each have their own
 // bound attributes and can reference parent attributes.
 func TestTemplate_NestedAttribute(t *testing.T) {

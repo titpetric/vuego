@@ -114,14 +114,22 @@ func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map
 					continue
 				}
 
-				// Use expression evaluator for templates to support literals and expressions
-				result, err := v.exprEval.Eval(val, ctx.stack.EnvMap())
+				// Try evalPipe first to support funcmap functions like jsonFile()
+				pipe := parsePipeExpr(val)
+				result, err := v.evalPipe(ctx, pipe)
 				if err == nil {
 					ctx.stack.Set(boundName, result)
 					continue
 				}
 
-				// Fall back to variable resolution if expression evaluation fails
+				// Fall back to expression evaluator for literals and arithmetic expressions
+				result, err = v.exprEval.Eval(val, ctx.stack.EnvMap())
+				if err == nil {
+					ctx.stack.Set(boundName, result)
+					continue
+				}
+
+				// Final fallback to variable resolution
 				valResolved, ok := ctx.stack.Resolve(val)
 				if ok {
 					ctx.stack.Set(boundName, valResolved)
@@ -132,7 +140,13 @@ func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map
 			}
 			if strings.HasPrefix(key, "v-bind:") {
 				boundName := key[7:]
-				result, err := v.exprEval.Eval(val, ctx.stack.EnvMap())
+				pipe := parsePipeExpr(val)
+				result, err := v.evalPipe(ctx, pipe)
+				if err == nil {
+					ctx.stack.Set(boundName, result)
+					continue
+				}
+				result, err = v.exprEval.Eval(val, ctx.stack.EnvMap())
 				if err == nil {
 					ctx.stack.Set(boundName, result)
 					continue
