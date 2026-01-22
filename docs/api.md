@@ -254,6 +254,7 @@ type VueContextOptions struct {
 - `func NewStackWithData (root map[string]any, originalData any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
 - `func NewVueContext (fromFilename string, options *VueContextOptions) VueContext`
+- `func View (renderer Template, filename string, data V) Template`
 - `func WithComponents () LoadOption`
 - `func WithFS (templateFS fs.FS) LoadOption`
 - `func WithFuncs (funcMap FuncMap) LoadOption`
@@ -391,6 +392,14 @@ NewVueContext returns a VueContext initialized for the given template filename w
 
 ```go
 func NewVueContext(fromFilename string, options *VueContextOptions) VueContext
+```
+
+### View
+
+View is a type safety shim to bind a template file to a data model type. The returned template should be rendered and discarded.
+
+```go
+func View(renderer Template, filename string, data V) Template
 ```
 
 ### WithComponents

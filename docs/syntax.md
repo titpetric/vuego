@@ -599,6 +599,8 @@ Both styles are valid and work identically.
 
 Vuego accepts `map[string]any` as data input. For strongly-typed data structures, convert them to maps before rendering.
 
+A convenience function of `vuego.View[V any](renderer Template, filename string, data V) Template` is provided.
+
 ### Whitespace
 
 - Empty text nodes (whitespace-only) are omitted from output
@@ -607,7 +609,6 @@ Vuego accepts `map[string]any` as data input. For strongly-typed data structures
 
 ## See Also
 
-- [CLI Documentation](cli.md) - Command-line usage
 - [Components](components.md) - Detailed component composition guide
 - [FuncMap & Filters](funcmap.md) - Template functions and custom filters
 - [Main README](../README.md) - Overview and quick start

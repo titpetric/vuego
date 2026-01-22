@@ -152,15 +152,6 @@ func (f *Formatter) formatFragmentChildren(n *html.Node, depth int, buf *strings
 	}
 }
 
-// isFragmentWrapper checks if a div is the auto-inserted wrapper div for fragments.
-// It checks if this div has no attributes (since we insert a bare <div>).
-func isFragmentWrapper(n *html.Node) bool {
-	if n.Data != "div" || len(n.Attr) > 0 {
-		return false
-	}
-	return true
-}
-
 // formatNodeChildren formats only the children of a node (skips the node itself).
 func (f *Formatter) formatNodeChildren(n *html.Node, depth int, buf *strings.Builder) {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {

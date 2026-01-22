@@ -27,7 +27,7 @@ jobs:
     desc: "Lint the code"
     parallel: true
     steps:
-      - go-fsck lint ./... --exclude imports
+      - go-fsck lint ./... --exclude imports,func-args
       - golangci-lint run --fix ./...
 
   test:

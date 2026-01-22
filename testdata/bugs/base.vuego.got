@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+
+    <template include="partials/basecoat.vuego"></template>
+
+    <template include="partials/hljs.vuego"></template>
+
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  </head>
+
+  <body>
+    <template v-html="content"></template>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+lucide.createIcons();
+    </script>
+  </body>
+</html>

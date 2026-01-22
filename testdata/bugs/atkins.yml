@@ -1,0 +1,9 @@
+jobs:
+  default:
+    passthru: true
+    tty: true
+    steps:
+      - cp base.vuego base.vuego.got
+      - cp base.vuego base.vuego.want
+      - vuego-cli fmt base.vuego.got
+      - vuego-cli diff base.vuego.want base.vuego.got | colordiff

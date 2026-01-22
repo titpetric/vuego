@@ -23,7 +23,7 @@ tasks:
     desc: "Run vale to lint language"
     cmds:
       - mdox fmt --check --no-soft-wraps $(find {{.folder}} -name '*.md') {{.files}}
-      - docker run --rm -v $(pwd):/docs -w /docs jdkato/vale .
+      - docker run --net=host --rm -v $(pwd):/docs -w /docs jdkato/vale .
 
   setup:
     cmds:

@@ -13,10 +13,7 @@ The Vuego CLI is also available as a docker image and runs the tour.
 
 ## About
 
-Vuego is a server-side template rendering engine. It provides a template
-runtime that allows you to modify templates as the application is
-running. It allows for composition, supports layouts and aims to be an
-exclusive runtime where Go is used for front and back-end development.
+Vuego is a server-side template rendering engine. It provides a template runtime that allows you to modify templates as the application is running. It allows for composition, supports layouts and aims to be an exclusive runtime where Go is used for front and back-end development.
 
 The choices Vuego makes:
 
@@ -25,16 +22,13 @@ The choices Vuego makes:
 - DOM driven templating, type safety based on generics and reflection
 - YAML/JSON as the default way to provide template view rendering
 
-Especially with using a machine readable data format, vuego aims to support
-the development lifecycle with the [vuego-cli](https://github.com/titpetric/vuego-cli) tool.
-The tool allows you to run a development playground. The process is simple:
+Especially with using a machine readable data format, vuego aims to support the development lifecycle with the [vuego-cli](https://github.com/titpetric/vuego-cli) tool. The tool allows you to run a development playground. The process is simple:
 
 - start `vuego-cli serve ./templates`
 - edit .json and .vuego files
 - refresh to view changes
 
-Project it in active development. Some changes in API surface are still
-expected based on feedback and observations. Releases are tagged.
+Project it in active development. Some changes in API surface are still expected based on feedback and observations. Releases are tagged.
 
 ## Quick start
 
@@ -95,8 +89,7 @@ With [titpetric/vuego-cli](https://github.com/titpetric/vuego-cli) you can do th
 - `vuego-cli tour <folder>` - load a learning tour of vuego,
 - `vuego-cli docs <folder>` - load a documentation server.
 
-In addition to those learning tools, separate commands are provided to
-`fmt`, `lint` and `render` files.
+In addition to those learning tools, separate commands are provided to `fmt`, `lint` and `render` files.
 
 ## Documentation
 
