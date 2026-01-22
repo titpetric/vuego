@@ -1,55 +1,84 @@
-# vuego
+# Vuego
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/vuego.svg)](https://pkg.go.dev/github.com/titpetric/vuego) [![Coverage](https://img.shields.io/badge/coverage-81.20%25-brightgreen.svg)](https://github.com/titpetric/vuego)
 
 Vuego is a [Vue.js](https://vuejs.org/)-inspired template engine for Go. Render HTML templates with familiar Vue syntax - no JavaScript runtime required.
 
-## Status
+You can try Vuego:
 
-Project it in active development. Some changes in API surface are still expected based on feedback and observations.
+- In your browser: The Vuego Tour [vuego.incubator.to](https://vuego.incubator.to/)
+- In your terminal: The Vuego CLI [titpetric/vuego-cli](https://github.com/titpetric/vuego-cli)
+
+The Vuego CLI is also available as a docker image and runs the tour.
+
+## About
+
+Vuego is a server-side template rendering engine. It provides a template
+runtime that allows you to modify templates as the application is
+running. It allows for composition, supports layouts and aims to be an
+exclusive runtime where Go is used for front and back-end development.
+
+The choices Vuego makes:
+
+- A largely VueJS compatible syntax with `v-if`, `v-for` and interpolation
+- Composition with the usage of the html `<template>` tag (unique syntax)
+- DOM driven templating, type safety based on generics and reflection
+- YAML/JSON as the default way to provide template view rendering
+
+Especially with using a machine readable data format, vuego aims to support
+the development lifecycle with the [vuego-cli](https://github.com/titpetric/vuego-cli) tool.
+The tool allows you to run a development playground. The process is simple:
+
+- start `vuego-cli serve ./templates`
+- edit .json and .vuego files
+- refresh to view changes
+
+Project it in active development. Some changes in API surface are still
+expected based on feedback and observations. Releases are tagged.
 
 ## Quick start
 
 You can use vuego by importing it in your project:
 
-```
+```go
 import "github.com/titpetric/vuego"
 ```
 
 In your service you create a new vuego renderer.
 
 ```go
-renderer := vuego.New(
-	vuego.WithFS(os.DirFS("templates")),
-	vuego.WithFuncs(funcMap),
-)
+// load your templates from a folder.
+// the argument can be swapped for an embed.FS value.
+renderer := vuego.NewFS(os.DirFS("templates"))
+
+if err := renderer.File(filename).Fill(data).Render(r.Context(), w); err != nil {
+	return err
+}
 ```
 
-With this you have a `vuego.Template`. From here you can:
-
-1. Construct new template rendering contexts with renderer.New and renderer.Load
-2. Manage state with `Fill`, `Set` and `Get` functions
-3. Finalize the rendering context with `Render` function
-4. Additional renderers are provided to render from non-FS sources
-
-An example of a rendering invocation would be:
+You can provide your own type safe wrappers:
 
 ```go
-err = renderer.File(filename).Fill(data).Render(r.Context(), w)
+func (v *Views) IndexView(data IndexData) vuego.Template {
+	return vuego.View[IndexData](v.renderer, "index.vuego", data)
+}
 ```
 
-`Render` automatically applies layouts when a front-matter `layout` hint is present. It will load layouts from `layouts/%s.vuego`. If no hint is provided, `layouts/base.vuego` is automatically used and passed the rendered content.
-
-For rendering fragments (from variables or otherwise):
-
-- `RenderFile(ctx context.Context, w io.Writer, filename string) error`
-- `RenderString(ctx context.Context, w io.Writer, templateStr string) error`
-- `RenderByte(ctx context.Context, w io.Writer, templateData []byte) error`
-- `RenderReader(ctx context.Context, w io.Writer, r io.Reader) error`
-
-An example of a rendering invocation is:
+And you don't need to chain the functions:
 
 ```go
+renderer := vuego.NewFS(embedFS)
+
+tpl := renderer.New()
+tpl.Fill(data)
+tpl.Assign("meta", meta)
+err := tpl.Render(ctx, out)
+```
+
+If you want to render from a string and not a filesystem:
+
+```go
+renderer := vuego.New()
 err = renderer.New().Fill(data).RenderString(r.Context(), w, `<li v-for="item in items">{{ item.title }}</li>`)
 ```
 
@@ -58,36 +87,16 @@ There's more detail around authoring vuego templates, check documentation:
 - [API Reference - docs/api.md](./docs/api.md)
 - [Go Reference - pkg.go.dev](https://pkg.go.dev/github.com/titpetric/vuego)
 
-## Features
+## Vuego CLI
 
-Vuego supports the following template features:
+With [titpetric/vuego-cli](https://github.com/titpetric/vuego-cli) you can do the following:
 
-- **Variable interpolation** - `{{ variable }}` with nested property access
-- **Template functions** - Pipe-based filter chaining `{{ value | upper | trim }}`
-- **Custom functions** - Define custom template functions (FuncMap)
-- **Built-in filters** - String manipulation, formatting, type conversion
-- **Attribute binding** - `:attr="value"` or `v-bind:attr="value"`
-- **Conditional rendering** - `v-if` for showing/hiding elements with function support
-- **List rendering** - `v-for` to iterate over arrays with optional index
-- **Raw HTML** - `v-html` for unescaped HTML content
-- **Component composition** - `<vuego include>` for reusable components
-- **Required props** - `:required` attribute for component validation
-- **Template wrapping** - `<template>` tag for component boundaries
-- **Full documents** - Support for complete HTML documents or fragments
-- **Automatic escaping** - Built-in XSS protection for interpolated values
+- `vuego-cli serve <folder>` - load a development server for templates,
+- `vuego-cli tour <folder>` - load a learning tour of vuego,
+- `vuego-cli docs <folder>` - load a documentation server.
 
-## Playground
-
-Try Vuego in your browser! The interactive playground lets you experiment with templates and see results instantly.
-
-- [vuego.incubator.to](https://vuego.incubator.to/)
-
-You can run the playground locally, and if you pass a folder as the first parameter, you have a workspace.
-
-```bash
-# go run github.com/titpetric/vuego/cmd/vuego-playground
-2025/11/14 20:07:31 Vuego Playground starting on http://localhost:3000
-```
+In addition to those learning tools, separate commands are provided to
+`fmt`, `lint` and `render` files.
 
 ## Documentation
 
@@ -95,7 +104,7 @@ The Template Syntax reference covers four main areas:
 
 - **[Values](docs/syntax.md#values)** - Variable interpolation, expressions, and filters
 - **[Directives](docs/syntax.md#directives)** - Complete reference of all `v-` directives
-- **[Components](docs/syntax.md#components)** - `<vuego>` and `<template>` tags
+- **[Components](docs/syntax.md#components)** - `<template include>` and `<template>` tags
 - **[Advanced](docs/syntax.md#advanced)** - Template functions, custom filters, and full documents
 
 Additional resources:
@@ -103,5 +112,4 @@ Additional resources:
 - **[FuncMap & Filters](docs/funcmap.md)** - Custom template functions and built-in filters
 - **[Components Guide](docs/components.md)** - Detailed component composition examples
 - **[Testing](docs/testing.md)** - Running tests and interpreting results
-- **[CLI Usage](docs/cli.md)** - Command-line tool reference
 - **[Concurrency](docs/concurrency.md)** - Thread-safety and concurrent rendering
