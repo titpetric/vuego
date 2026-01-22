@@ -83,14 +83,14 @@ func TestVue_EvalAttributes_BoundAndInterpolated(t *testing.T) {
 		},
 		{
 			name:     "zero is falsey",
-			template: `<span :data-count="count"></span>`,
-			data:     map[string]any{"count": 0},
+			template: `<span :data-count="counter"></span>`,
+			data:     map[string]any{"counter": 0},
 			expected: `<span></span>`,
 		},
 		{
 			name:     "non-zero is truthy",
-			template: `<span :data-count="count"></span>`,
-			data:     map[string]any{"count": 5},
+			template: `<span :data-count="counter"></span>`,
+			data:     map[string]any{"counter": 5},
 			expected: `<span data-count="5"></span>`,
 		},
 	}
@@ -121,6 +121,12 @@ func TestVue_ObjectBinding_Class(t *testing.T) {
 		{
 			name:     "object binding with truthy values",
 			template: `<div :class="{active: true, disabled: false}"></div>`,
+			data:     map[string]any{},
+			expected: `<div class="active"></div>`,
+		},
+		{
+			name:     "object binding with truthy values, quoted",
+			template: `<div :class="{'active': true, 'disabled': false}"></div>`,
 			data:     map[string]any{},
 			expected: `<div class="active"></div>`,
 		},
@@ -159,6 +165,24 @@ func TestVue_ObjectBinding_Class(t *testing.T) {
 			template: `<div :class="{active: count}"></div>`,
 			data:     map[string]any{"count": 1},
 			expected: `<div class="active"></div>`,
+		},
+		{
+			name:     "true is true",
+			template: `<div :class="{active: status, inactive: !status}"></div>`,
+			data:     map[string]any{"status": true},
+			expected: `<div class="active"></div>`,
+		},
+		{
+			name:     "!true is false",
+			template: `<div :class="{active: status, inactive: !status}"></div>`,
+			data:     map[string]any{"status": false},
+			expected: `<div class="inactive"></div>`,
+		},
+		{
+			name:     "!nil is true",
+			template: `<div :class="{active: status?, inactive: !(type(status) == 'bool' && status)}"></div>`,
+			data:     map[string]any{},
+			expected: `<div class="inactive"></div>`,
 		},
 	}
 

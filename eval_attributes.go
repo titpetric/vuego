@@ -200,6 +200,7 @@ func (v *Vue) parseObjectPairs(ctx VueContext, content string) []string {
 		}
 
 		key := strings.TrimSpace(item[:colonIdx])
+		key = strings.Trim(key, "'")
 		valueExpr := strings.TrimSpace(item[colonIdx+1:])
 
 		// Try to resolve as expression first (handles literals and expressions)

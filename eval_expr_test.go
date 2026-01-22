@@ -47,6 +47,8 @@ func TestExprEvaluator_SimpleExpressions(t *testing.T) {
 		{"logical OR", "x || y", map[string]any{"x": false, "y": true}, true},
 		{"logical NOT", "!x", map[string]any{"x": false}, true},
 		{"logical NOT true", "!x", map[string]any{"x": true}, false},
+		{"logical NOT nil", "!(type(x) == 'bool' && x)", map[string]any{}, true},
+		{"logical NOT type nil", "!(type(x) != 'nil')", map[string]any{}, true},
 
 		// String comparisons
 		{"string equality", "name === 'Alice'", map[string]any{"name": "Alice"}, true},

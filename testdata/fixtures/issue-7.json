@@ -1,0 +1,17 @@
+{
+  "branch": false,
+  "query": "google me",
+  "limit": 20,
+  "items": [
+    {
+      "page": 1,
+      "is_current": true
+    },
+    {
+      "page": 2
+    },
+    {
+      "page": 3
+    }
+  ]
+}
