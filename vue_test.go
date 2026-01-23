@@ -9,6 +9,7 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/titpetric/vuego"
@@ -45,7 +46,9 @@ func TestFixtures(t *testing.T) {
 		require.NoError(t, err)
 
 		data := map[string]any{}
-		require.NoError(t, json.NewDecoder(bytes.NewReader(dataBytes)).Decode(&data))
+		err = json.NewDecoder(bytes.NewReader(dataBytes)).Decode(&data)
+		assert.True(t, err == nil, "error decoding template json: %s", template)
+		assert.NoError(t, err)
 
 		t.Run(template, func(t *testing.T) {
 			var got bytes.Buffer

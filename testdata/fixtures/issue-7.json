@@ -5,13 +5,16 @@
   "items": [
     {
       "page": 1,
-      "is_current": true
+      "is_current": true,
+      "is_admin": false
     },
     {
-      "page": 2
+      "page": 2,
+      "is_admin": true
     },
     {
-      "page": 3
+      "page": 3,
+      "is_admin": false
     }
   ]
 }

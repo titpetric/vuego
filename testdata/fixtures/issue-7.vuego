@@ -1,11 +1,8 @@
-<template v-for="item in items">
-  <a :href="item.link"
-	class="w-10 h-10 flex items-center justify-center border select-none"
-		:class="{
-			'bg-[#141414] border-[#2a2a2a] font-semibold cursor-default': type(item.is_current) == 'bool' && item.is_current,
-			'bg-[#1b1b1b] border-[#2a2a2a] text-gray-300 hover:bg-[#2a2a2a]': type(item.is_current) == 'bool' && !item.is_current
-		}">
+<li v-for="item in items" :class="{
+       'class-a': item.is_current != nil && item.is_current,
+       'class-b': item.is_current == nil || item.is_current == false
+}">{{ item.page }}</li>
 
-	{{ item.page }}
-  </a>
-</template>
+<li v-for="item in items" :class="item.is_current != nil && item.is_current ? 'class-a' : 'class-b'">{{ item.page }}</li>
+
+<li v-for="item in items" :class="item.is_admin ? 'class-admin' : 'class-pleb'">{{ item.page }}</li>
