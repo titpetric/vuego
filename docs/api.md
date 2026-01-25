@@ -95,6 +95,16 @@ type NodeProcessor interface {
 ```
 
 ```go
+// OverlayFS overlays two filesystems.
+// This allows extension of the lower filesystem with modified files,
+// new files and encourages composition of the contents of a `fs.FS`.
+type OverlayFS struct {
+	Upper fs.FS
+	Lower fs.FS
+}
+```
+
+```go
 // Renderer renders parsed HTML nodes to output.
 type Renderer interface {
 	// Render renders HTML nodes to the given writer.
@@ -248,6 +258,7 @@ type VueContextOptions struct {
 - `func NewFS (templateFS fs.FS, opts ...LoadOption) Template`
 - `func NewLessProcessor (fsys ...fs.FS) *LessProcessor`
 - `func NewLoader (fs fs.FS) *Loader`
+- `func NewOverlayFS (upper,lower fs.FS) *OverlayFS`
 - `func NewRenderer () Renderer`
 - `func NewSlotScope () *SlotScope`
 - `func NewStack (root map[string]any) *Stack`
@@ -269,6 +280,9 @@ type VueContextOptions struct {
 - `func (*Loader) Load (filename string) ([]*html.Node, error)`
 - `func (*Loader) LoadFragment (filename string) ([]*html.Node, error)`
 - `func (*Loader) Stat (filename string) error`
+- `func (*OverlayFS) Glob (pattern string) ([]string, error)`
+- `func (*OverlayFS) Open (name string) (fs.File, error)`
+- `func (*OverlayFS) ReadDir (name string) ([]fs.DirEntry, error)`
 - `func (*SlotScope) GetSlot (name string) *SlotContent`
 - `func (*SlotScope) SetSlot (name string, content *SlotContent)`
 - `func (*Stack) Copy () *Stack`
@@ -344,6 +358,14 @@ NewLoader creates a Loader backed by fs.
 
 ```go
 func NewLoader(fs fs.FS) *Loader
+```
+
+### NewOverlayFS
+
+NewOverlayFS will create a new *OverlayFS.
+
+```go
+func NewOverlayFS(upper, lower fs.FS) *OverlayFS
 ```
 
 ### NewRenderer
@@ -517,6 +539,30 @@ Stat checks that filename exists in the loader filesystem.
 
 ```go
 func (*Loader) Stat(filename string) error
+```
+
+### Glob
+
+Glob implements combined FS reading.
+
+```go
+func (*OverlayFS) Glob(pattern string) ([]string, error)
+```
+
+### Open
+
+Open opens a file in the overlaid filesystem.
+
+```go
+func (*OverlayFS) Open(name string) (fs.File, error)
+```
+
+### ReadDir
+
+ReadDir implements combined FS reading.
+
+```go
+func (*OverlayFS) ReadDir(name string) ([]fs.DirEntry, error)
 ```
 
 ### GetSlot
