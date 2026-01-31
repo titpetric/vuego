@@ -9,6 +9,12 @@
 <template :vars="jsonFile('composition.data.json')">
   <div class="card">
     <h1>{{ vars.name }}</h1>
-    <p id="container">Default</p>
   </div>
 </template>
+
+<template :vars="yamlFile('composition.data.yml')">
+  <div class="card">
+    <h1>{{ vars.name }}</h1>
+  </div>
+</template>
+

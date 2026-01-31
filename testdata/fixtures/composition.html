@@ -10,7 +10,7 @@
 }
 </style>
 <script>
-class VuegoApp {
+  class VuegoApp {
   constructor(containerId = "container") {
     this.container = document.getElementById(containerId)
     if (this.container) {
@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => new VuegoApp());
 
 </script>
 <div class="card">
-  <h1>Vuego</h1>
-  <p id="container">Default</p>
+  <h1>Vuego JSON</h1>
+</div>
+<div class="card">
+  <h1>Vuego YAML</h1>
 </div>

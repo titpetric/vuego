@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	yaml "gopkg.in/yaml.v3"
+
 	"github.com/titpetric/vuego/internal/helpers"
 )
 
@@ -471,6 +473,7 @@ func (v *Vue) DefaultFuncMap() FuncMap {
 		"type":       typeFunc,
 		"file":       fileFunc(v),
 		"jsonFile":   jsonFileFunc(v),
+		"yamlFile":   yamlFileFunc(v),
 	}
 }
 
@@ -515,6 +518,31 @@ func jsonFileFunc(v *Vue) func(*VueContext, string) (any, error) {
 
 		var result map[string]any
 		if err := json.Unmarshal(d, &result); err != nil {
+			return "", fmt.Errorf("error decoding json from file %s: %w", filename, err)
+		}
+		return result, nil
+	}
+}
+
+func yamlFileFunc(v *Vue) func(*VueContext, string) (any, error) {
+	return func(ctx *VueContext, filename string) (any, error) {
+		// Resolve filename through the context's stack if it's a variable reference
+		if ctx != nil {
+			if val, ok := ctx.Stack().Resolve(filename); ok {
+				filename = fmt.Sprint(val)
+			}
+		}
+
+		if v.templateFS == nil {
+			return "", fmt.Errorf("error loading file from nil fs: %s", filename)
+		}
+		d, err := fs.ReadFile(v.templateFS, filename)
+		if err != nil {
+			return "", err
+		}
+
+		var result map[string]any
+		if err := yaml.Unmarshal(d, &result); err != nil {
 			return "", fmt.Errorf("error decoding json from file %s: %w", filename, err)
 		}
 		return result, nil

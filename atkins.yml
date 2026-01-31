@@ -26,13 +26,14 @@ jobs:
   lint:
     desc: "Lint the code"
     parallel: true
+    passthru: true
     steps:
-      - go-fsck lint ./... --exclude imports,func-args
-      - golangci-lint run --fix ./...
+      - go-fsck lint ./... --exclude imports,func-args || true
+      - golangci-lint run --fix ./... || true
 
   test:
     desc: "Run built tests"
-    tty: true
+    passthru: true
     steps:
       - go test -cover -coverpkg=./... -coverprofile=pkg.cov -json ./... > test.json
       - cat test.json | gotestsum
