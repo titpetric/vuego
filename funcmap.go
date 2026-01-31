@@ -28,6 +28,29 @@ import (
 // This allows access to the execution context.
 type FuncMap map[string]any
 
+// DefaultFuncMap returns a FuncMap with built-in utility functions.
+func (v *Vue) DefaultFuncMap() FuncMap {
+	return FuncMap{
+		"upper":      upperFunc,
+		"lower":      lowerFunc,
+		"title":      titleFunc,
+		"formatTime": formatTimeFunc,
+		"formatDate": formatDateFunc,
+		"default":    defaultFunc,
+		"len":        lenFunc,
+		"trim":       trimFunc,
+		"escape":     escapeFunc,
+		"int":        intFunc,
+		"string":     stringFunc,
+		"json":       jsonFunc,
+		"jsonPretty": jsonPrettyFunc,
+		"type":       typeFunc,
+		"file":       fileFunc(v),
+		"jsonFile":   jsonFileFunc(v),
+		"yamlFile":   yamlFileFunc(v),
+	}
+}
+
 // pipeExpr represents a parsed pipe expression like "value | fn1 | . > 5 | fn2(arg)"
 type pipeExpr struct {
 	initial  string
@@ -453,30 +476,6 @@ func convertValue(val reflect.Value, targetType reflect.Type) (reflect.Value, bo
 
 	return reflect.Value{}, false
 }
-
-// DefaultFuncMap returns a FuncMap with built-in utility functions.
-func (v *Vue) DefaultFuncMap() FuncMap {
-	return FuncMap{
-		"upper":      upperFunc,
-		"lower":      lowerFunc,
-		"title":      titleFunc,
-		"formatTime": formatTimeFunc,
-		"formatDate": formatDateFunc,
-		"default":    defaultFunc,
-		"len":        lenFunc,
-		"trim":       trimFunc,
-		"escape":     escapeFunc,
-		"int":        intFunc,
-		"string":     stringFunc,
-		"json":       jsonFunc,
-		"jsonPretty": jsonPrettyFunc,
-		"type":       typeFunc,
-		"file":       fileFunc(v),
-		"jsonFile":   jsonFileFunc(v),
-		"yamlFile":   yamlFileFunc(v),
-	}
-}
-
 // Built-in filter functions
 
 func fileFunc(v *Vue) func(*VueContext, string) (any, error) {
