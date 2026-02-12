@@ -1,4 +1,4 @@
-# Vuego
+# Vuego - A Go based VueJS syntax template engine
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/vuego.svg)](https://pkg.go.dev/github.com/titpetric/vuego) [![Coverage](https://img.shields.io/badge/coverage-81.20%25-brightgreen.svg)](https://github.com/titpetric/vuego)
 

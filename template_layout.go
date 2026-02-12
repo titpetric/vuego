@@ -7,7 +7,63 @@ import (
 	"io"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/net/html"
+
+	"github.com/titpetric/vuego/internal/parser"
 )
+
+// extractSlotsFromDOM extracts named slot definitions from a DOM tree before rendering.
+// Looks for <template #slotname> or <template v-slot:slotname> elements and returns
+// a SlotScope with their content ready for use.
+// This is called during template parsing to preserve slot structure before rendering.
+func extractSlotsFromDOM(nodes []*html.Node) *SlotScope {
+	slotScope := NewSlotScope()
+
+	var walk func(*html.Node)
+	walk = func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "template" {
+			// Check for named slot markers
+			slotName := ""
+			for _, attr := range n.Attr {
+				// Handle #slotname shorthand
+				if len(attr.Key) > 0 && attr.Key[0] == '#' {
+					slotName = attr.Key[1:]
+					break
+				}
+				// Handle v-slot:slotname
+				if strings.HasPrefix(attr.Key, "v-slot:") {
+					slotName = strings.TrimPrefix(attr.Key, "v-slot:")
+					break
+				}
+			}
+
+			if slotName != "" {
+				// Collect the children of the template node as slot content
+				var childNodes []*html.Node
+				for c := n.FirstChild; c != nil; c = c.NextSibling {
+					childNodes = append(childNodes, c)
+				}
+
+				slotScope.SetSlot(slotName, &SlotContent{
+					Nodes:        childNodes,
+					TemplateNode: n,
+				})
+			}
+		}
+
+		// Traverse children
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			walk(c)
+		}
+	}
+
+	for _, node := range nodes {
+		walk(node)
+	}
+
+	return slotScope
+}
 
 // resolveLayoutPath resolves a layout name to a file path.
 // It first checks if the layout exists relative to the current template's directory,
@@ -50,6 +106,7 @@ func (t *template) layout(ctx context.Context, w io.Writer) error {
 	isFirstTemplate := true
 	maxDepth := 100
 	depth := 0
+	var inheritedSlotScope *SlotScope // Slots defined in child templates (as DOM nodes)
 
 	// Build layout chain and render intermediate templates
 	for {
@@ -58,14 +115,32 @@ func (t *template) layout(ctx context.Context, w io.Writer) error {
 		}
 		depth++
 
-		var buf bytes.Buffer
+		// Create a fresh buffer for each iteration
+		buf := new(bytes.Buffer)
 		tplInterface := t.Load(filename).Fill(data)
 		tpl := tplInterface.(*template)
-		if err := tpl.renderWithoutLayout(ctx, &buf); err != nil {
+
+		// Extract slot definitions from the template DOM before rendering (only for first template)
+		if isFirstTemplate {
+			// Parse the template bytes to get DOM nodes
+			templateNodes, err := parser.ParseTemplateBytes(tpl.templateBytes)
+			if err == nil {
+				inheritedSlotScope = extractSlotsFromDOM(templateNodes)
+			}
+		}
+
+		if err := tpl.renderWithoutLayout(ctx, buf); err != nil {
 			return err
 		}
 
-		data["content"] = buf.String()
+		contentHTML := buf.String()
+
+		data["content"] = contentHTML
+		// Pass inherited slots to the layout via the SlotScope so they can be used by <slot> elements
+		if inheritedSlotScope != nil && len(inheritedSlotScope.Slots) > 0 {
+			data["__slotScope__"] = inheritedSlotScope
+		}
+
 		layout := tpl.Get("layout")
 
 		if layout == "" {
@@ -78,7 +153,7 @@ func (t *template) layout(ctx context.Context, w io.Writer) error {
 				continue
 			}
 			// No more layouts, render final template
-			_, err := io.Copy(w, &buf)
+			_, err := io.Copy(w, buf)
 			return err
 		}
 

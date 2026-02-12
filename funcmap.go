@@ -476,6 +476,7 @@ func convertValue(val reflect.Value, targetType reflect.Type) (reflect.Value, bo
 
 	return reflect.Value{}, false
 }
+
 // Built-in filter functions
 
 func fileFunc(v *Vue) func(*VueContext, string) (any, error) {

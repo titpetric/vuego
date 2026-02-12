@@ -20,6 +20,19 @@ func (v *Vue) evalInclude(ctx VueContext, node *html.Node, vars map[string]any, 
 		ctx.SlotScope = extractSlotContent(node)
 	}
 
+	// Merge inherited slots from parent template (passed via __slotScope__ in data)
+	if inheritedSlotScopeData, ok := ctx.stack.EnvMap()["__slotScope__"]; ok {
+		if inheritedSlotScope, ok := inheritedSlotScopeData.(*SlotScope); ok {
+			for slotName, slotContent := range inheritedSlotScope.Slots {
+				if ctx.SlotScope.GetSlot(slotName) == nil {
+					// Only add if not already defined in the include tag
+					// Use the slot content directly (already parsed as DOM nodes)
+					ctx.SlotScope.SetSlot(slotName, slotContent)
+				}
+			}
+		}
+	}
+
 	name := helpers.GetAttr(node, "include")
 	frontMatter, templateBytes, err := v.loader.loadFragment(name)
 	if err != nil {

@@ -68,7 +68,7 @@ func (v *Vue) evalSlot(ctx VueContext, node *html.Node, slotScope *SlotScope) ([
 		}
 	}
 
-	// Try to get provided slot content
+	// Try to get provided slot content (from explicit include or inherited from layout)
 	if slotScope != nil {
 		if slotContent := slotScope.GetSlot(slotName); slotContent != nil {
 			// Found explicit slot content - evaluate it with the scoped props
@@ -113,6 +113,16 @@ func (v *Vue) evalSlot(ctx VueContext, node *html.Node, slotScope *SlotScope) ([
 			}
 
 			return result, nil
+		}
+	}
+
+	// Check for inherited slots from layout (passed via __slotScope__ in context data)
+	if inheritedSlotScopeData, ok := ctx.stack.EnvMap()["__slotScope__"]; ok {
+		if inheritedSlotScope, ok := inheritedSlotScopeData.(*SlotScope); ok {
+			if slotContent := inheritedSlotScope.GetSlot(slotName); slotContent != nil {
+				// Use the inherited slot content directly (already parsed as DOM nodes)
+				return slotContent.Nodes, nil
+			}
 		}
 	}
 
