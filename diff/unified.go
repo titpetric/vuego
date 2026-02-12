@@ -15,12 +15,12 @@ func FormatToNormalizedHTML(content []byte) (string, error) {
 	}
 
 	var buf strings.Builder
-	renderNodeForDiff(doc, 0, &buf)
+	renderNodeForDiff(doc, &buf, 0)
 	return buf.String(), nil
 }
 
 // renderNodeForDiff renders an HTML node tree in a readable format for diffs.
-func renderNodeForDiff(n *html.Node, depth int, buf *strings.Builder) {
+func renderNodeForDiff(n *html.Node, buf *strings.Builder, depth int) {
 	if n == nil {
 		return
 	}
@@ -30,7 +30,7 @@ func renderNodeForDiff(n *html.Node, depth int, buf *strings.Builder) {
 	switch n.Type {
 	case html.DocumentNode:
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			renderNodeForDiff(c, depth, buf)
+			renderNodeForDiff(c, buf, depth)
 		}
 
 	case html.ElementNode:
@@ -52,7 +52,7 @@ func renderNodeForDiff(n *html.Node, depth int, buf *strings.Builder) {
 
 		// Write children
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			renderNodeForDiff(c, depth+1, buf)
+			renderNodeForDiff(c, buf, depth+1)
 		}
 
 		buf.WriteString(indent)

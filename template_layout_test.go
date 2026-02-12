@@ -161,6 +161,72 @@ layout: wrapper
 		assert.Contains(t, output, "<p>Test Description</p>", "description field should be rendered")
 	})
 
+	t.Run("layout_with_named_slots", func(t *testing.T) {
+		inlineFS := &fstest.MapFS{
+			"page.vuego": &fstest.MapFile{Data: []byte(`---
+layout: main
+---
+<template #sidebar><p>Sidebar content</p></template>
+<p>Main content</p>`)},
+			"layouts/main.vuego": &fstest.MapFile{Data: []byte(`<div class="sidebar"><slot name="sidebar"><p>Default sidebar</p></slot></div>
+<div class="content" v-html="content"></div>`)},
+		}
+		inlineRenderer := vuego.NewFS(inlineFS)
+
+		var buf bytes.Buffer
+		err := inlineRenderer.Load("page.vuego").Fill(nil).Render(t.Context(), &buf)
+		assert.NoError(t, err)
+
+		output := buf.String()
+		t.Logf("Output:\n%s", output)
+		assert.Contains(t, output, "Sidebar content", "named slot content should be rendered")
+		assert.Contains(t, output, "Main content", "main content should be rendered")
+		assert.NotContains(t, output, "Default sidebar", "default slot fallback should not appear when slot is provided")
+	})
+
+	t.Run("layout_slot_fallback", func(t *testing.T) {
+		inlineFS := &fstest.MapFS{
+			"page.vuego": &fstest.MapFile{Data: []byte(`---
+layout: main
+---
+<p>Just content</p>`)},
+			"layouts/main.vuego": &fstest.MapFile{Data: []byte(`<div class="sidebar"><slot name="sidebar"><p>Default sidebar</p></slot></div>
+<div class="content" v-html="content"></div>`)},
+		}
+		inlineRenderer := vuego.NewFS(inlineFS)
+
+		var buf bytes.Buffer
+		err := inlineRenderer.Load("page.vuego").Fill(nil).Render(t.Context(), &buf)
+		assert.NoError(t, err)
+
+		output := buf.String()
+		t.Logf("Output:\n%s", output)
+		assert.Contains(t, output, "Default sidebar", "default slot fallback should appear when no slot content is provided")
+		assert.Contains(t, output, "Just content", "page content should be rendered")
+	})
+
+	t.Run("layout_slot_with_v_slot_syntax", func(t *testing.T) {
+		inlineFS := &fstest.MapFS{
+			"page.vuego": &fstest.MapFile{Data: []byte(`---
+layout: main
+---
+<template v-slot:footer><p>Footer content</p></template>
+<p>Body</p>`)},
+			"layouts/main.vuego": &fstest.MapFile{Data: []byte(`<footer><slot name="footer"><p>Default footer</p></slot></footer>
+<div v-html="content"></div>`)},
+		}
+		inlineRenderer := vuego.NewFS(inlineFS)
+
+		var buf bytes.Buffer
+		err := inlineRenderer.Load("page.vuego").Fill(nil).Render(t.Context(), &buf)
+		assert.NoError(t, err)
+
+		output := buf.String()
+		t.Logf("Output:\n%s", output)
+		assert.Contains(t, output, "Footer content", "v-slot:footer content should be rendered")
+		assert.NotContains(t, output, "Default footer", "default slot fallback should not appear when v-slot content is provided")
+	})
+
 	t.Run("layout_chain_depth_exceeded", func(t *testing.T) {
 		// Create a circular layout dependency: circular.vuego references itself
 		inlineFS := fstest.MapFS{

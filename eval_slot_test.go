@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"testing"
+	"testing/fstest"
 
 	"github.com/stretchr/testify/require"
 
@@ -103,4 +104,26 @@ func TestSlot_SimpleScoped(t *testing.T) {
 
 	result := buf.String()
 	require.Contains(t, result, "Message: Hello")
+}
+
+func TestSlot_InheritedFromLayout(t *testing.T) {
+	inlineFS := &fstest.MapFS{
+		"page.vuego": &fstest.MapFile{Data: []byte(`---
+layout: slotted
+---
+<template #sidebar><nav>Side Nav</nav></template>`)},
+		"layouts/slotted.vuego": &fstest.MapFile{Data: []byte(`<div class="sidebar"><slot name="sidebar"><p>Default sidebar</p></slot></div>
+<div class="main" v-html="content"></div>`)},
+	}
+
+	renderer := vuego.NewFS(inlineFS)
+
+	var buf bytes.Buffer
+	err := renderer.Load("page.vuego").Fill(nil).Render(t.Context(), &buf)
+	require.NoError(t, err)
+
+	result := buf.String()
+	require.Contains(t, result, "Side Nav", "inherited slot content should be rendered")
+	require.NotContains(t, result, "Default sidebar", "fallback slot content should not be used")
+	require.Contains(t, result, "sidebar", "layout structure with sidebar class should be present")
 }

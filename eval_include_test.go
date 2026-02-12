@@ -6,6 +6,7 @@ import (
 	"testing/fstest"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/html"
 
 	"github.com/titpetric/vuego"
 )
@@ -51,6 +52,70 @@ func TestEvalInclude_StackManagement(t *testing.T) {
 		// Should error but leave stack in consistent state
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "error loading missing.vuego")
+	})
+}
+
+// TestEvalInclude_InheritedSlots verifies that an included component receives
+// slots from __slotScope__ in the parent data, and that explicitly defined slots
+// in the include tag take priority over inherited ones.
+func TestEvalInclude_InheritedSlots(t *testing.T) {
+	t.Run("inherited slot is used when include has no explicit slot", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"page.vuego": &fstest.MapFile{
+				Data: []byte(`<template include="component.vuego"></template>`),
+			},
+			"component.vuego": &fstest.MapFile{
+				Data: []byte(`<div><slot name="extra"><p>default extra</p></slot></div>`),
+			},
+		}
+
+		slotScope := vuego.NewSlotScope()
+		slotScope.SetSlot("extra", &vuego.SlotContent{
+			Nodes: []*html.Node{
+				{Type: html.TextNode, Data: "injected content"},
+			},
+		})
+
+		tpl := vuego.NewFS(fs)
+		var buf bytes.Buffer
+		err := tpl.Load("page.vuego").Fill(map[string]any{
+			"__slotScope__": slotScope,
+		}).Render(t.Context(), &buf)
+		require.NoError(t, err)
+
+		output := buf.String()
+		require.Contains(t, output, "injected content")
+		require.NotContains(t, output, "default extra")
+	})
+
+	t.Run("explicit slot in include takes priority over inherited slot", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"page.vuego": &fstest.MapFile{
+				Data: []byte(`<template include="component.vuego"><template #extra>explicit content</template></template>`),
+			},
+			"component.vuego": &fstest.MapFile{
+				Data: []byte(`<div><slot name="extra"><p>default extra</p></slot></div>`),
+			},
+		}
+
+		slotScope := vuego.NewSlotScope()
+		slotScope.SetSlot("extra", &vuego.SlotContent{
+			Nodes: []*html.Node{
+				{Type: html.TextNode, Data: "inherited content"},
+			},
+		})
+
+		tpl := vuego.NewFS(fs)
+		var buf bytes.Buffer
+		err := tpl.Load("page.vuego").Fill(map[string]any{
+			"__slotScope__": slotScope,
+		}).Render(t.Context(), &buf)
+		require.NoError(t, err)
+
+		output := buf.String()
+		require.Contains(t, output, "explicit content")
+		require.NotContains(t, output, "inherited content")
+		require.NotContains(t, output, "default extra")
 	})
 }
 

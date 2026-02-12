@@ -87,7 +87,7 @@ func (f *Formatter) formatFullDocument(frontmatter, body string) (string, error)
 
 	// Format the parsed HTML - skip auto-inserted html/head/body elements
 	var result strings.Builder
-	f.formatNodeChildren(doc, 0, &result)
+	f.formatNodeChildren(doc, &result, 0)
 
 	output := result.String()
 
@@ -123,7 +123,7 @@ func (f *Formatter) formatFragment(frontmatter, body string) (string, error) {
 
 	// Find the wrapping div and format its children
 	var result strings.Builder
-	f.formatFragmentChildren(doc, 0, &result)
+	f.formatFragmentChildren(doc, &result, 0)
 
 	output := result.String()
 
@@ -146,16 +146,16 @@ func (f *Formatter) formatFragment(frontmatter, body string) (string, error) {
 
 // formatFragmentChildren formats children of a fragment's wrapper element,
 // skipping auto-inserted wrappers (html, head, body, and the wrapper div itself).
-func (f *Formatter) formatFragmentChildren(n *html.Node, depth int, buf *strings.Builder) {
+func (f *Formatter) formatFragmentChildren(n *html.Node, buf *strings.Builder, depth int) {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		f.formatNode(c, depth, buf)
+		f.formatNode(c, buf, depth)
 	}
 }
 
 // formatNodeChildren formats only the children of a node (skips the node itself).
-func (f *Formatter) formatNodeChildren(n *html.Node, depth int, buf *strings.Builder) {
+func (f *Formatter) formatNodeChildren(n *html.Node, buf *strings.Builder, depth int) {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		f.formatNode(c, depth, buf)
+		f.formatNode(c, buf, depth)
 	}
 }
 
@@ -182,14 +182,14 @@ func (f *Formatter) splitFrontmatter(content string) (string, string) {
 }
 
 // formatNode recursively formats an HTML node tree.
-func (f *Formatter) formatNode(n *html.Node, depth int, buf *strings.Builder) {
+func (f *Formatter) formatNode(n *html.Node, buf *strings.Builder, depth int) {
 	indent := strings.Repeat(" ", depth*f.opts.IndentWidth)
 
 	switch n.Type {
 	case html.DocumentNode:
 		// Process children of document node
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			f.formatNode(c, depth, buf)
+			f.formatNode(c, buf, depth)
 		}
 
 	case html.ElementNode:
@@ -279,7 +279,7 @@ func (f *Formatter) formatNode(n *html.Node, depth int, buf *strings.Builder) {
 			}
 			isFirst = false
 
-			f.formatNode(c, depth+1, buf)
+			f.formatNode(c, buf, depth+1)
 		}
 
 		// Write closing tag
