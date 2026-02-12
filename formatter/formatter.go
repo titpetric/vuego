@@ -3,6 +3,7 @@ package formatter
 import (
 	"fmt"
 	"strings"
+	"unicode"
 
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
@@ -85,14 +86,11 @@ func (f *Formatter) formatFullDocument(frontmatter, body string) (string, error)
 		return "", fmt.Errorf("parsing HTML: %w", err)
 	}
 
-	// Format the parsed HTML - skip auto-inserted html/head/body elements
+	// Format the parsed HTML
 	var result strings.Builder
 	f.formatNodeChildren(doc, &result, 0)
 
-	output := result.String()
-
-	// Remove trailing newline if present (formatNode adds one)
-	output = strings.TrimRight(output, "\n")
+	output := strings.TrimRight(result.String(), "\n")
 
 	// Reconstruct with frontmatter and DOCTYPE
 	result.Reset()
@@ -112,44 +110,33 @@ func (f *Formatter) formatFullDocument(frontmatter, body string) (string, error)
 	return finalResult, nil
 }
 
-// formatFragment formats a partial HTML fragment (e.g., single element or list of elements).
+// formatFragment formats a partial HTML fragment using html.ParseFragment
+// to avoid injecting html/head/body wrappers.
 func (f *Formatter) formatFragment(frontmatter, body string) (string, error) {
-	// Wrap fragment in a root div to parse it
-	wrapped := "<div>" + body + "</div>"
-	doc, err := html.Parse(strings.NewReader(wrapped))
+	ctx := &html.Node{Type: html.ElementNode, DataAtom: atom.Body, Data: "body"}
+	nodes, err := html.ParseFragment(strings.NewReader(body), ctx)
 	if err != nil {
 		return "", fmt.Errorf("parsing HTML fragment: %w", err)
 	}
 
-	// Find the wrapping div and format its children
 	var result strings.Builder
-	f.formatFragmentChildren(doc, &result, 0)
+	for _, n := range nodes {
+		f.formatNode(n, &result, 0)
+	}
 
-	output := result.String()
+	output := strings.TrimRight(result.String(), "\n")
 
-	// Remove trailing newline if present
-	output = strings.TrimRight(output, "\n")
+	var out strings.Builder
+	out.WriteString(frontmatter)
+	out.WriteString(output)
 
-	// Reconstruct with frontmatter
-	result.Reset()
-	result.WriteString(frontmatter)
-	result.WriteString(output)
-
-	finalResult := result.String()
+	finalResult := out.String()
 
 	if f.opts.InsertFinal {
 		finalResult += "\n"
 	}
 
 	return finalResult, nil
-}
-
-// formatFragmentChildren formats children of a fragment's wrapper element,
-// skipping auto-inserted wrappers (html, head, body, and the wrapper div itself).
-func (f *Formatter) formatFragmentChildren(n *html.Node, buf *strings.Builder, depth int) {
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		f.formatNode(c, buf, depth)
-	}
 }
 
 // formatNodeChildren formats only the children of a node (skips the node itself).
@@ -181,115 +168,73 @@ func (f *Formatter) splitFrontmatter(content string) (string, string) {
 	return "", content
 }
 
+// collectChildren returns non-ignorable children of a node.
+func (f *Formatter) collectChildren(n *html.Node) []*html.Node {
+	var children []*html.Node
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		if c.Type == html.TextNode && f.isIgnorableWhitespace(c) {
+			continue
+		}
+		children = append(children, c)
+	}
+	return children
+}
+
 // formatNode recursively formats an HTML node tree.
 func (f *Formatter) formatNode(n *html.Node, buf *strings.Builder, depth int) {
 	indent := strings.Repeat(" ", depth*f.opts.IndentWidth)
 
 	switch n.Type {
 	case html.DocumentNode:
-		// Process children of document node
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
 			f.formatNode(c, buf, depth)
 		}
 
 	case html.ElementNode:
-		// Check if this is a style or script block - preserve as-is
+		// Style/script blocks - preserve content as-is
 		if n.Data == "style" || n.Data == "script" {
-			buf.WriteString(indent)
-			buf.WriteString(f.renderOpenTag(n))
-
-			// Collect content
-			var content strings.Builder
-			for c := n.FirstChild; c != nil; c = c.NextSibling {
-				if c.Type == html.TextNode {
-					content.WriteString(c.Data)
-				}
-			}
-
-			contentStr := content.String()
-			trimmedContent := strings.TrimSpace(contentStr)
-
-			// If content is empty or only whitespace, output inline
-			if trimmedContent == "" {
-				buf.WriteString(f.renderCloseTag(n))
-				buf.WriteString("\n")
-			} else {
-				// Content exists: newline + trimmed content + newline + closing tag
-				buf.WriteString("\n")
-				buf.WriteString(trimmedContent)
-				buf.WriteString("\n")
-				buf.WriteString(indent)
-				buf.WriteString(f.renderCloseTag(n))
-				buf.WriteString("\n")
-			}
+			f.formatRawTextElement(n, buf, indent)
 			return
 		}
 
-		// Write opening tag
 		buf.WriteString(indent)
 		buf.WriteString(f.renderOpenTag(n))
-		// Check if this is a void element (self-closing)
+
+		// Void elements (self-closing)
 		if isVoidElement(n.DataAtom) {
 			buf.WriteString("\n")
 			return
 		}
 
-		// Check if element should keep content inline
-		if f.shouldKeepInline(n) {
-			// Process children inline
-			for c := n.FirstChild; c != nil; c = c.NextSibling {
-				switch c.Type {
-				case html.TextNode:
-					text := strings.TrimSpace(c.Data)
-					if text != "" {
-						buf.WriteString(text)
-					}
-				case html.ElementNode:
-					// Inline child elements
-					buf.WriteString(f.renderOpenTag(c))
-					if !isVoidElement(c.DataAtom) {
-						for cc := c.FirstChild; cc != nil; cc = cc.NextSibling {
-							if cc.Type == html.TextNode {
-								text := strings.TrimSpace(cc.Data)
-								if text != "" {
-									buf.WriteString(text)
-								}
-							}
-						}
-						buf.WriteString(f.renderCloseTag(c))
-					}
-				}
-			}
+		children := f.collectChildren(n)
+
+		// Empty element - keep on one line
+		if len(children) == 0 {
 			buf.WriteString(f.renderCloseTag(n))
 			buf.WriteString("\n")
 			return
 		}
 
-		// Process children normally
-		isFirst := true
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			// Skip ignorable whitespace nodes
-			if c.Type == html.TextNode && f.isIgnorableWhitespace(c) {
-				continue
-			}
-
-			// Add newline before each child except the first
-			if !isFirst {
-				buf.WriteString("\n")
-			}
-			isFirst = false
-
-			f.formatNode(c, buf, depth+1)
+		// Inline content - render on one line
+		if f.shouldKeepInline(n) {
+			buf.WriteString(f.renderInlineChildren(n))
+			buf.WriteString(f.renderCloseTag(n))
+			buf.WriteString("\n")
+			return
 		}
 
-		// Write closing tag
+		// Block mode - newline after opening tag, indent children
+		buf.WriteString("\n")
+		for _, c := range children {
+			f.formatNode(c, buf, depth+1)
+		}
 		buf.WriteString(indent)
 		buf.WriteString(f.renderCloseTag(n))
 		buf.WriteString("\n")
 
 	case html.TextNode:
 		text := strings.TrimSpace(n.Data)
-		if text != "" && !f.isIgnorableWhitespace(n) {
+		if text != "" {
 			buf.WriteString(indent)
 			buf.WriteString(text)
 			buf.WriteString("\n")
@@ -303,43 +248,163 @@ func (f *Formatter) formatNode(n *html.Node, buf *strings.Builder, depth int) {
 	}
 }
 
-// shouldKeepInline determines if element content should be kept inline.
-func (f *Formatter) shouldKeepInline(n *html.Node) bool {
-	// First, check if element has only text children (no nested elements)
-	hasOnlyText := true
+// formatRawTextElement formats script/style elements preserving their content.
+func (f *Formatter) formatRawTextElement(n *html.Node, buf *strings.Builder, indent string) {
+	buf.WriteString(indent)
+	buf.WriteString(f.renderOpenTag(n))
 
+	// Collect content
+	var content strings.Builder
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		if c.Type == html.TextNode {
+			content.WriteString(c.Data)
+		}
+	}
+
+	contentStr := content.String()
+	trimmedContent := strings.TrimSpace(contentStr)
+
+	if trimmedContent == "" {
+		buf.WriteString(f.renderCloseTag(n))
+		buf.WriteString("\n")
+	} else {
+		buf.WriteString("\n")
+		buf.WriteString(trimmedContent)
+		buf.WriteString("\n")
+		buf.WriteString(indent)
+		buf.WriteString(f.renderCloseTag(n))
+		buf.WriteString("\n")
+	}
+}
+
+// shouldKeepInline determines if element content should be kept on one line.
+//
+// Rules:
+//  1. Elements with only text children (no element children) are always inline.
+//  2. Inline elements (span, strong, em, etc.) stay inline if all their
+//     children are also inline-compatible (text, inline elements, void elements).
+//  3. Phrasing containers (p, h1-h6, li, td, th, dt, dd, label, button, caption)
+//     stay inline if all their children are inline-compatible.
+//  4. All other block elements (div, nav, section, etc.) are never inlined
+//     when they contain element children.
+func (f *Formatter) shouldKeepInline(n *html.Node) bool {
+	// Check if there are any element children at all
+	hasElementChildren := false
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode {
-			hasOnlyText = false
+			hasElementChildren = true
 			break
 		}
 	}
 
-	// If it only has text content, keep it inline
-	if hasOnlyText {
+	// Text-only content: always inline
+	if !hasElementChildren {
 		return true
 	}
 
-	// Also check against list of inline elements
-	inlineElements := []atom.Atom{
-		atom.A, atom.Abbr, atom.B, atom.Bdi, atom.Bdo, atom.Br, atom.Button,
-		atom.Cite, atom.Code, atom.Data, atom.Dfn, atom.Em, atom.I, atom.Kbd,
-		atom.Label, atom.Mark, atom.Q, atom.S, atom.Samp, atom.Small, atom.Span,
-		atom.Strong, atom.Sub, atom.Sup, atom.Time, atom.U, atom.Var, atom.Wbr,
+	// For elements with child elements, only allow inline rendering
+	// for inline elements and phrasing containers
+	if isInlineAtom(n.DataAtom) || isPhrasingContainer(n.DataAtom) {
+		return f.allChildrenAreInline(n)
 	}
 
-	for _, elem := range inlineElements {
-		if n.DataAtom == elem {
-			// Check if it only contains text children (no nested elements)
-			for c := n.FirstChild; c != nil; c = c.NextSibling {
-				if c.Type == html.ElementNode {
-					return false // Has nested elements, use block formatting
-				}
+	return false
+}
+
+// allChildrenAreInline checks if all children of a node are inline-compatible
+// (text nodes, comment nodes, or inline element nodes).
+func (f *Formatter) allChildrenAreInline(n *html.Node) bool {
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		switch c.Type {
+		case html.TextNode:
+			// text is always inline
+		case html.CommentNode:
+			// comments are inline-compatible
+		case html.ElementNode:
+			if isVoidElement(c.DataAtom) {
+				continue
 			}
-			return true // Only text, keep inline
+			if !isInlineAtom(c.DataAtom) {
+				return false
+			}
+			// Recursively check that inline children also only have inline content
+			if !f.allChildrenAreInline(c) {
+				return false
+			}
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+// isPhrasingContainer checks if an atom is a block element that typically
+// contains phrasing (inline) content and should be rendered inline when
+// all its children are inline-compatible.
+func isPhrasingContainer(a atom.Atom) bool {
+	phrasingContainers := []atom.Atom{
+		atom.P, atom.H1, atom.H2, atom.H3, atom.H4, atom.H5, atom.H6,
+		atom.Td, atom.Th, atom.Dt, atom.Dd, atom.Caption,
+		atom.Figcaption, atom.Summary, atom.Legend,
+	}
+	for _, elem := range phrasingContainers {
+		if a == elem {
+			return true
 		}
 	}
 	return false
+}
+
+// renderInlineChildren recursively renders children as inline content on one line.
+func (f *Formatter) renderInlineChildren(n *html.Node) string {
+	var b strings.Builder
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		switch c.Type {
+		case html.TextNode:
+			b.WriteString(normalizeInlineText(c.Data))
+		case html.CommentNode:
+			b.WriteString("<!--")
+			b.WriteString(c.Data)
+			b.WriteString("-->")
+		case html.ElementNode:
+			b.WriteString(f.renderOpenTag(c))
+			if !isVoidElement(c.DataAtom) {
+				b.WriteString(f.renderInlineChildren(c))
+				b.WriteString(f.renderCloseTag(c))
+			}
+		}
+	}
+	return b.String()
+}
+
+// normalizeInlineText collapses whitespace in inline text while preserving
+// boundary spaces needed between inline elements and text.
+func normalizeInlineText(s string) string {
+	trimmed := strings.TrimSpace(s)
+	if trimmed == "" {
+		// Whitespace-only text between inline elements: preserve as single space
+		if len(s) > 0 {
+			return " "
+		}
+		return ""
+	}
+
+	// Collapse internal whitespace runs to single spaces
+	fields := strings.Fields(trimmed)
+	out := strings.Join(fields, " ")
+
+	// Preserve leading space if original had one (boundary between elements)
+	runes := []rune(s)
+	if len(runes) > 0 && unicode.IsSpace(runes[0]) {
+		out = " " + out
+	}
+
+	// Preserve trailing space if original had one
+	if len(runes) > 0 && unicode.IsSpace(runes[len(runes)-1]) {
+		out = out + " "
+	}
+
+	return out
 }
 
 // isIgnorableWhitespace checks if a text node is only whitespace between block elements.
@@ -347,7 +412,6 @@ func (f *Formatter) isIgnorableWhitespace(n *html.Node) bool {
 	if n.Type != html.TextNode {
 		return false
 	}
-	// Check if text is only whitespace
 	return strings.TrimSpace(n.Data) == ""
 }
 
@@ -385,6 +449,23 @@ func isVoidElement(a atom.Atom) bool {
 	}
 
 	for _, elem := range voidElements {
+		if a == elem {
+			return true
+		}
+	}
+	return false
+}
+
+// isInlineAtom checks if an atom represents an inline HTML element.
+func isInlineAtom(a atom.Atom) bool {
+	inlineElements := []atom.Atom{
+		atom.A, atom.Abbr, atom.B, atom.Bdi, atom.Bdo, atom.Br, atom.Button,
+		atom.Cite, atom.Code, atom.Data, atom.Dfn, atom.Em, atom.I, atom.Kbd,
+		atom.Label, atom.Mark, atom.Q, atom.S, atom.Samp, atom.Small, atom.Span,
+		atom.Strong, atom.Sub, atom.Sup, atom.Time, atom.U, atom.Var, atom.Wbr,
+	}
+
+	for _, elem := range inlineElements {
 		if a == elem {
 			return true
 		}
