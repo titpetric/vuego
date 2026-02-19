@@ -302,3 +302,50 @@ func TestNew_RenderStringWithoutFilesystem(t *testing.T) {
 	output := buf.String()
 	require.Contains(t, output, "Hello from String")
 }
+
+func TestLoadConfig(t *testing.T) {
+	templateFS := os.DirFS("testdata/LoadConfig")
+
+	tmpl := vuego.NewFS(templateFS)
+	require.NotNil(t, tmpl)
+
+	buf := &bytes.Buffer{}
+	err := tmpl.Load("index.vuego").Render(t.Context(), buf)
+	require.NoError(t, err)
+
+	output := buf.String()
+	// data/theme.yml overrides root theme.yml
+	require.Contains(t, output, "Data Theme")
+	require.Contains(t, output, "From data folder")
+	// data/menu.yml is loaded
+	require.Contains(t, output, "Home")
+	require.Contains(t, output, "About")
+}
+
+func TestLoadConfig_MergesWithFill(t *testing.T) {
+	templateFS := os.DirFS("testdata/LoadConfig")
+
+	tmpl := vuego.NewFS(templateFS)
+
+	// Fill should override LoadConfig values
+	type viewData struct {
+		Theme struct {
+			Header struct {
+				Title    string `json:"title"`
+				Subtitle string `json:"subtitle"`
+			} `json:"header"`
+		} `json:"theme"`
+	}
+
+	data := viewData{}
+	data.Theme.Header.Title = "Override Title"
+	data.Theme.Header.Subtitle = "Override Subtitle"
+
+	buf := &bytes.Buffer{}
+	err := tmpl.Load("index.vuego").Fill(data).Render(t.Context(), buf)
+	require.NoError(t, err)
+
+	output := buf.String()
+	require.Contains(t, output, "Override Title")
+	require.Contains(t, output, "Override Subtitle")
+}

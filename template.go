@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	yaml "gopkg.in/yaml.v3"
+
 	"github.com/titpetric/vuego/internal/helpers"
 )
 
@@ -104,10 +106,20 @@ func NewFS(templateFS fs.FS, opts ...LoadOption) Template {
 		opt(vue)
 	}
 
-	return &template{
+	// Implicitly load config (theme.yml + data/*.yml) from the filesystem
+	loadConfig(vue)
+
+	tpl := &template{
 		vue:   vue,
 		stack: NewStack(nil),
 	}
+
+	// Apply initial data if available (equivalent to Fill before New/Load)
+	if vue.initialData != nil {
+		tpl.Fill(vue.initialData)
+	}
+
+	return tpl
 }
 
 // New will create an empty loaded copy safe for concurrent use.
@@ -180,6 +192,55 @@ func WithComponents() LoadOption {
 
 		// Silently ignore if components directory doesn't exist
 		_ = err
+	}
+}
+
+// loadConfig loads YAML config files from the filesystem into vue.initialData.
+// It loads root-level theme.yml, then all YAML files from the data/ directory.
+// Files in data/ override root-level values with the same keys.
+func loadConfig(vue *Vue) {
+	if vue.templateFS == nil {
+		return
+	}
+
+	if vue.initialData == nil {
+		vue.initialData = make(map[string]any)
+	}
+
+	// Helper to load and merge a YAML file
+	loadYAML := func(path string) {
+		content, err := fs.ReadFile(vue.templateFS, path)
+		if err != nil {
+			return // File doesn't exist or can't be read, skip silently
+		}
+
+		var data map[string]any
+		if err := yaml.Unmarshal(content, &data); err != nil {
+			return // Invalid YAML, skip silently
+		}
+
+		// Merge into initialData
+		for k, v := range data {
+			vue.initialData[k] = v
+		}
+	}
+
+	// Load root-level theme.yml first
+	loadYAML("theme.yml")
+
+	// Load all YAML files from data/ directory (overrides root-level values)
+	entries, err := fs.ReadDir(vue.templateFS, "data")
+	if err != nil {
+		return // data/ directory doesn't exist, skip silently
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if strings.HasSuffix(name, ".yml") || strings.HasSuffix(name, ".yaml") {
+			loadYAML("data/" + name)
+		}
 	}
 }
 

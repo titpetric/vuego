@@ -1,0 +1,5 @@
+<h1>{{ theme.header.title }}</h1>
+<p>{{ theme.header.subtitle }}</p>
+<ul>
+  <li v-for="item in menu"><a :href="item.url">{{ item.label }}</a></li>
+</ul>
