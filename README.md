@@ -104,6 +104,7 @@ Additional resources:
 
 - **[FuncMap & Filters](docs/funcmap.md)** - Custom template functions and built-in filters
 - **[Components Guide](docs/components.md)** - Detailed component composition examples
+- **[Data Loading](docs/data-loading.md)** - Automatic config loading from `theme.yml` and `data/`
 - **[Theme Structuring Guide](docs/themes.md)** - Layout organization, naming conventions, and theme types
 - **[Testing](docs/testing.md)** - Running tests and interpreting results
 - **[Concurrency](docs/concurrency.md)** - Thread-safety and concurrent rendering

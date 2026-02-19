@@ -207,6 +207,10 @@ type Vue struct {
 	// Component shorthand mapping: maps kebab-case tag names to component filenames
 	// e.g., "button-primary" -> "components/ButtonPrimary.vuego"
 	componentMap map[string]string
+
+	// initialData is pre-loaded data from WithData() that seeds the template stack.
+	// This is equivalent to calling Fill() on the base template before any New()/Load().
+	initialData map[string]any
 }
 ```
 

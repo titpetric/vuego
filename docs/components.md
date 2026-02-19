@@ -703,6 +703,7 @@ pages/
 
 ## See Also
 
-- [Template syntax documentation](../README.md)
-- [Interpolation and data binding](../README.md)
-- [Directives (v-if, v-for, v-html)](../README.md)
+- [Data Loading](data-loading.md) - Automatic config loading from `theme.yml` and `data/`
+- [Theme Structuring Guide](themes.md) - Layout organization and directory conventions
+- [Template Syntax](syntax.md) - Variable interpolation and directives
+- [FuncMap & Filters](funcmap.md) - Template functions and custom filters

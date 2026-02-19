@@ -68,14 +68,14 @@ my-theme/
 
 ### Key Directories
 
-| Directory | Purpose |
-|-----------|---------|
-| `layouts/` | Full-page layout templates that wrap content |
-| `partials/` | Reusable template fragments (header, footer, etc.) |
-| `components/` | Self-contained UI components with their own logic |
-| `assets/` | Static assets (CSS, JS, images, fonts) |
-| `data/` | YAML/JSON data files for menus, config, etc. |
-| `content/` | Page content (optional, often separate from theme) |
+| Directory     | Purpose                                                                       |
+|---------------|-------------------------------------------------------------------------------|
+| `layouts/`    | Full-page layout templates that wrap content                                  |
+| `partials/`   | Reusable template fragments (header, footer, etc.)                            |
+| `components/` | Self-contained UI components with their own logic                             |
+| `assets/`     | Static assets (CSS, JS, images, fonts)                                        |
+| `data/`       | YAML/JSON data files for menus, config, etc. ([auto-loaded](data-loading.md)) |
+| `content/`    | Page content (optional, often separate from theme)                            |
 
 ---
 
@@ -102,6 +102,7 @@ docs.vuego          ← Documentation with TOC
 Each layout renders its content and passes it to the parent layout via the `content` variable:
 
 **layouts/base.vuego** (Root layout)
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -118,6 +119,7 @@ Each layout renders its content and passes it to the parent layout via the `cont
 ```
 
 **layouts/default.vuego** (Extends base)
+
 ```html
 ---
 layout: base
@@ -129,6 +131,7 @@ layout: base
 ```
 
 **layouts/page.vuego** (Extends default)
+
 ```html
 ---
 layout: default
@@ -140,6 +143,7 @@ layout: default
 ```
 
 **Content page using page layout:**
+
 ```html
 ---
 layout: page
@@ -175,20 +179,20 @@ layout: post
 
 Follow these conventions for layout files, derived from established SSG practices:
 
-| Layout Name | Purpose | Use Case |
-|-------------|---------|----------|
-| `base.vuego` | Root HTML document shell | All pages (via chaining) |
-| `default.vuego` | Default page wrapper | General pages |
-| `page.vuego` | Static content pages | About, Contact, etc. |
-| `single.vuego` | Single item detail view | Blog post, product detail |
-| `list.vuego` | Collection/index pages | Blog index, category listing |
-| `post.vuego` | Blog post layout | Blog articles |
-| `docs.vuego` | Documentation pages | Technical docs, guides |
-| `home.vuego` | Homepage layout | Landing page |
-| `landing.vuego` | Marketing landing page | Campaign pages |
-| `dashboard.vuego` | Admin/dashboard layout | Data dashboards |
-| `404.vuego` | Error page | Not found |
-| `blank.vuego` | Minimal/empty layout | Embeds, widgets |
+| Layout Name       | Purpose                  | Use Case                     |
+|-------------------|--------------------------|------------------------------|
+| `base.vuego`      | Root HTML document shell | All pages (via chaining)     |
+| `default.vuego`   | Default page wrapper     | General pages                |
+| `page.vuego`      | Static content pages     | About, Contact, etc.         |
+| `single.vuego`    | Single item detail view  | Blog post, product detail    |
+| `list.vuego`      | Collection/index pages   | Blog index, category listing |
+| `post.vuego`      | Blog post layout         | Blog articles                |
+| `docs.vuego`      | Documentation pages      | Technical docs, guides       |
+| `home.vuego`      | Homepage layout          | Landing page                 |
+| `landing.vuego`   | Marketing landing page   | Campaign pages               |
+| `dashboard.vuego` | Admin/dashboard layout   | Data dashboards              |
+| `404.vuego`       | Error page               | Not found                    |
+| `blank.vuego`     | Minimal/empty layout     | Embeds, widgets              |
 
 **Naming Rules:**
 - Use lowercase with hyphens for multi-word names: `blog-post.vuego`, `docs-page.vuego`
@@ -199,11 +203,11 @@ Follow these conventions for layout files, derived from established SSG practice
 
 Components follow PascalCase for filenames, converted to kebab-case for usage:
 
-| File Name | Tag Usage |
-|-----------|-----------|
-| `Button.vuego` | `<button>` |
-| `AlertBox.vuego` | `<alert-box>` |
-| `DataTable.vuego` | `<data-table>` |
+| File Name           | Tag Usage        |
+|---------------------|------------------|
+| `Button.vuego`      | `<button>`       |
+| `AlertBox.vuego`    | `<alert-box>`    |
+| `DataTable.vuego`   | `<data-table>`   |
 | `NavDropdown.vuego` | `<nav-dropdown>` |
 
 **Component Naming Patterns:**
@@ -246,13 +250,13 @@ partials/
 
 ### File Extensions
 
-| Extension | Purpose |
-|-----------|---------|
-| `.vuego` | Template files |
+| Extension        | Purpose                |
+|------------------|------------------------|
+| `.vuego`         | Template files         |
 | `.yml` / `.yaml` | Data and configuration |
-| `.css` | Stylesheets |
-| `.js` | JavaScript |
-| `.svg` | Vector graphics |
+| `.css`           | Stylesheets            |
+| `.js`            | JavaScript             |
+| `.svg`           | Vector graphics        |
 
 ---
 
@@ -444,22 +448,23 @@ Front matter is YAML at the top of a template that defines metadata and the layo
 
 ### Common Front Matter Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `layout` | string | Parent layout to use |
-| `title` | string | Page title |
-| `description` | string | Page description/summary |
-| `date` | string | Publication date |
-| `author` | string | Content author |
-| `tags` | array | Content tags |
-| `category` | string | Content category |
-| `draft` | boolean | Draft status |
-| `weight` | number | Sort order |
-| `menu` | object | Menu configuration |
+| Field         | Type    | Description              |
+|---------------|---------|--------------------------|
+| `layout`      | string  | Parent layout to use     |
+| `title`       | string  | Page title               |
+| `description` | string  | Page description/summary |
+| `date`        | string  | Publication date         |
+| `author`      | string  | Content author           |
+| `tags`        | array   | Content tags             |
+| `category`    | string  | Content category         |
+| `draft`       | boolean | Draft status             |
+| `weight`      | number  | Sort order               |
+| `menu`        | object  | Menu configuration       |
 
 ### Example Front Matter
 
 **Blog post:**
+
 ```yaml
 ---
 layout: post
@@ -475,6 +480,7 @@ category: tutorials
 ```
 
 **Documentation page:**
+
 ```yaml
 ---
 layout: docs
@@ -492,6 +498,7 @@ toc:
 ```
 
 **Dashboard page:**
+
 ```yaml
 ---
 layout: dashboard
@@ -615,19 +622,20 @@ assets/css/
 
 Adopt naming patterns from established SSGs:
 
-| Convention | Source | Vuego Equivalent |
-|------------|--------|------------------|
-| `_layouts/` | Jekyll | `layouts/` |
-| `_includes/` | Jekyll | `partials/` |
-| `layouts/_default/` | Hugo | `layouts/default.vuego` |
-| `layouts/partials/` | Hugo | `partials/` |
-| `_includes/layouts/` | Eleventy | `layouts/` |
-| `src/layouts/` | Astro | `layouts/` |
+| Convention           | Source   | Vuego Equivalent        |
+|----------------------|----------|-------------------------|
+| `_layouts/`          | Jekyll   | `layouts/`              |
+| `_includes/`         | Jekyll   | `partials/`             |
+| `layouts/_default/`  | Hugo     | `layouts/default.vuego` |
+| `layouts/partials/`  | Hugo     | `partials/`             |
+| `_includes/layouts/` | Eleventy | `layouts/`              |
+| `src/layouts/`       | Astro    | `layouts/`              |
 
 ---
 
 ## See Also
 
+- [Data Loading](data-loading.md) - Automatic config loading from `theme.yml` and `data/`
 - [Template Syntax Reference](syntax.md) - Complete syntax documentation
 - [Components Guide](components.md) - Component composition patterns
 - [API Reference](api.md) - Go API documentation
