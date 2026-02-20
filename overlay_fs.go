@@ -10,61 +10,48 @@ import (
 // This allows extension of the lower filesystem with modified files,
 // new files and encourages composition of the contents of a `fs.FS`.
 type OverlayFS struct {
-	Upper fs.FS
-	Lower fs.FS
+	chainFS []fs.FS
 }
 
 // NewOverlayFS will create a new *OverlayFS.
-func NewOverlayFS(upper, lower fs.FS) *OverlayFS {
+func NewOverlayFS(upper fs.FS, lower ...fs.FS) *OverlayFS {
+	chainFS := append([]fs.FS{upper}, lower...)
 	return &OverlayFS{
-		Upper: upper,
-		Lower: lower,
+		chainFS: chainFS,
 	}
 }
 
 // Open opens a file in the overlaid filesystem.
 func (o *OverlayFS) Open(name string) (fs.File, error) {
-	if o.Upper != nil {
-		f, err := o.Upper.Open(name)
+	for _, fs := range o.chainFS {
+		f, err := fs.Open(name)
 		if err == nil {
 			return f, nil
 		}
-	}
-	if o.Lower != nil {
-		return o.Lower.Open(name)
 	}
 	return nil, fs.ErrNotExist
 }
 
 // ReadDir implements combined FS reading.
 func (o *OverlayFS) ReadDir(name string) ([]fs.DirEntry, error) {
-	var upperDir []fs.DirEntry
-	var upperErr error
-	var lowerDir []fs.DirEntry
-	var lowerErr error
-
-	if o.Upper != nil {
-		upperDir, upperErr = fs.ReadDir(o.Upper, name)
-	} else {
-		upperErr = fs.ErrNotExist
-	}
-
-	if o.Lower != nil {
-		lowerDir, lowerErr = fs.ReadDir(o.Lower, name)
-	} else {
-		lowerErr = fs.ErrNotExist
-	}
-
-	if upperErr != nil && lowerErr != nil {
-		return nil, upperErr
-	}
-
 	merged := make(map[string]fs.DirEntry)
-	for _, e := range lowerDir {
-		merged[e.Name()] = e
+	var lastErr error
+
+	// Iterate through chain in reverse (lowest priority first) so upper layers override
+	for i := len(o.chainFS) - 1; i >= 0; i-- {
+		entries, err := fs.ReadDir(o.chainFS[i], name)
+		if err == nil {
+			for _, e := range entries {
+				merged[e.Name()] = e
+			}
+		} else {
+			lastErr = err
+		}
 	}
-	for _, e := range upperDir {
-		merged[e.Name()] = e // upper layer overrides
+
+	// If no filesystem had this directory, return error
+	if len(merged) == 0 && lastErr != nil {
+		return nil, lastErr
 	}
 
 	entries := make([]fs.DirEntry, 0, len(merged))
@@ -81,22 +68,13 @@ func (o *OverlayFS) ReadDir(name string) ([]fs.DirEntry, error) {
 
 // Glob implements combined FS reading.
 func (o *OverlayFS) Glob(pattern string) ([]string, error) {
-	var upperMatches []string
-	if o.Upper != nil {
-		upperMatches, _ = fs.Glob(o.Upper, pattern)
-	}
-
-	var lowerMatches []string
-	if o.Lower != nil {
-		lowerMatches, _ = fs.Glob(o.Lower, pattern)
-	}
-
 	matchMap := make(map[string]struct{})
-	for _, m := range lowerMatches {
-		matchMap[m] = struct{}{}
-	}
-	for _, m := range upperMatches {
-		matchMap[m] = struct{}{}
+
+	for _, fsys := range o.chainFS {
+		matches, _ := fs.Glob(fsys, pattern)
+		for _, m := range matches {
+			matchMap[m] = struct{}{}
+		}
 	}
 
 	results := make([]string, 0, len(matchMap))

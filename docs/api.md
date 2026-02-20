@@ -99,8 +99,7 @@ type NodeProcessor interface {
 // This allows extension of the lower filesystem with modified files,
 // new files and encourages composition of the contents of a `fs.FS`.
 type OverlayFS struct {
-	Upper fs.FS
-	Lower fs.FS
+	chainFS []fs.FS
 }
 ```
 
@@ -262,7 +261,7 @@ type VueContextOptions struct {
 - `func NewFS (templateFS fs.FS, opts ...LoadOption) Template`
 - `func NewLessProcessor (fsys ...fs.FS) *LessProcessor`
 - `func NewLoader (fs fs.FS) *Loader`
-- `func NewOverlayFS (upper,lower fs.FS) *OverlayFS`
+- `func NewOverlayFS (upper fs.FS, lower ...fs.FS) *OverlayFS`
 - `func NewRenderer () Renderer`
 - `func NewSlotScope () *SlotScope`
 - `func NewStack (root map[string]any) *Stack`
@@ -369,7 +368,7 @@ func NewLoader(fs fs.FS) *Loader
 NewOverlayFS will create a new *OverlayFS.
 
 ```go
-func NewOverlayFS(upper, lower fs.FS) *OverlayFS
+func NewOverlayFS(upper fs.FS, lower ...fs.FS) *OverlayFS
 ```
 
 ### NewRenderer
