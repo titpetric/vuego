@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                          | Coverage | Cognitive | Lines |
 |--------|----------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                  | 83.03%   | 1237      | 4017  |
+| ✅     | titpetric/vuego                  | 81.53%   | 1242      | 4036  |
 | ❌     | titpetric/vuego/diff             | 58.69%   | 155       | 464   |
 | ✅     | titpetric/vuego/formatter        | 83.70%   | 90        | 448   |
 | ✅     | titpetric/vuego/internal/helpers | 100.00%  | 84        | 313   |
@@ -171,21 +171,21 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                  | shouldIgnoreAttr                  | 100.00%  | 2         |
 | ✅     | titpetric/vuego                  | splitPathImpl                     | 85.40%   | 31        |
 | ✅     | titpetric/vuego                  | stringFunc                        | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | template.Assign                   | 66.70%   | 0         |
-| ✅     | titpetric/vuego                  | template.Err                      | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | template.Fill                     | 71.40%   | 1         |
-| ✅     | titpetric/vuego                  | template.Get                      | 69.20%   | 4         |
-| ✅     | titpetric/vuego                  | template.Load                     | 41.20%   | 1         |
+| ✅     | titpetric/vuego                  | template.Assign                   | 28.60%   | 0         |
+| ✅     | titpetric/vuego                  | template.Err                      | 16.70%   | 0         |
+| ✅     | titpetric/vuego                  | template.Fill                     | 73.30%   | 5         |
+| ✅     | titpetric/vuego                  | template.Get                      | 100.00%  | 4         |
+| ✅     | titpetric/vuego                  | template.Load                     | 50.00%   | 1         |
 | ✅     | titpetric/vuego                  | template.New                      | 0.00%    | 0         |
-| ✅     | titpetric/vuego                  | template.Render                   | 90.00%   | 4         |
-| ✅     | titpetric/vuego                  | template.RenderByte               | 100.00%  | 0         |
+| ✅     | titpetric/vuego                  | template.Render                   | 73.30%   | 5         |
+| ✅     | titpetric/vuego                  | template.RenderByte               | 33.30%   | 0         |
 | ✅     | titpetric/vuego                  | template.RenderFile               | 0.00%    | 0         |
-| ✅     | titpetric/vuego                  | template.RenderReader             | 71.40%   | 4         |
-| ✅     | titpetric/vuego                  | template.RenderString             | 100.00%  | 0         |
+| ✅     | titpetric/vuego                  | template.RenderReader             | 38.50%   | 4         |
+| ✅     | titpetric/vuego                  | template.RenderString             | 50.00%   | 0         |
 | ✅     | titpetric/vuego                  | template.SetErr                   | 0.00%    | 0         |
-| ✅     | titpetric/vuego                  | template.layout                   | 83.80%   | 19        |
+| ✅     | titpetric/vuego                  | template.layout                   | 94.60%   | 19        |
 | ✅     | titpetric/vuego                  | template.new                      | 50.00%   | 0         |
-| ✅     | titpetric/vuego                  | template.renderWithoutLayout      | 66.70%   | 1         |
+| ✅     | titpetric/vuego                  | template.renderWithoutLayout      | 50.00%   | 1         |
 | ✅     | titpetric/vuego                  | template.resolveLayoutPath        | 100.00%  | 4         |
 | ✅     | titpetric/vuego                  | titleFunc                         | 85.70%   | 6         |
 | ✅     | titpetric/vuego                  | toMapData                         | 85.70%   | 3         |
