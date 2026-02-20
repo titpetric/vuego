@@ -23,8 +23,12 @@ func NewOverlayFS(upper fs.FS, lower ...fs.FS) *OverlayFS {
 
 // Open opens a file in the overlaid filesystem.
 func (o *OverlayFS) Open(name string) (fs.File, error) {
-	for _, fs := range o.chainFS {
-		f, err := fs.Open(name)
+	for _, chainfs := range o.chainFS {
+		if chainfs == nil {
+			continue
+		}
+
+		f, err := chainfs.Open(name)
 		if err == nil {
 			return f, nil
 		}
@@ -38,8 +42,12 @@ func (o *OverlayFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	var lastErr error
 
 	// Iterate through chain in reverse (lowest priority first) so upper layers override
-	for i := len(o.chainFS) - 1; i >= 0; i-- {
-		entries, err := fs.ReadDir(o.chainFS[i], name)
+	for _, chainfs := range o.chainFS {
+		if chainfs == nil {
+			continue
+		}
+
+		entries, err := fs.ReadDir(chainfs, name)
 		if err == nil {
 			for _, e := range entries {
 				merged[e.Name()] = e
@@ -70,8 +78,12 @@ func (o *OverlayFS) ReadDir(name string) ([]fs.DirEntry, error) {
 func (o *OverlayFS) Glob(pattern string) ([]string, error) {
 	matchMap := make(map[string]struct{})
 
-	for _, fsys := range o.chainFS {
-		matches, _ := fs.Glob(fsys, pattern)
+	for _, chainfs := range o.chainFS {
+		if chainfs == nil {
+			continue
+		}
+
+		matches, _ := fs.Glob(chainfs, pattern)
 		for _, m := range matches {
 			matchMap[m] = struct{}{}
 		}

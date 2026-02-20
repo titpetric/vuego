@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                          | Coverage | Cognitive | Lines |
 |--------|----------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                  | 80.56%   | 1241      | 4015  |
+| ✅     | titpetric/vuego                  | 80.43%   | 1247      | 4027  |
 | ❌     | titpetric/vuego/diff             | 58.69%   | 155       | 464   |
 | ✅     | titpetric/vuego/formatter        | 83.70%   | 90        | 448   |
 | ✅     | titpetric/vuego/internal/helpers | 100.00%  | 84        | 313   |
@@ -52,9 +52,9 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                  | NewStackWithData                  | 100.00%  | 1         |
 | ✅     | titpetric/vuego                  | NewVue                            | 100.00%  | 0         |
 | ✅     | titpetric/vuego                  | NewVueContext                     | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | OverlayFS.Glob                    | 52.60%   | 4         |
-| ✅     | titpetric/vuego                  | OverlayFS.Open                    | 55.60%   | 3         |
-| ❌     | titpetric/vuego                  | OverlayFS.ReadDir                 | 38.10%   | 10        |
+| ❌     | titpetric/vuego                  | OverlayFS.Glob                    | 45.80%   | 6         |
+| ✅     | titpetric/vuego                  | OverlayFS.Open                    | 46.20%   | 5         |
+| ❌     | titpetric/vuego                  | OverlayFS.ReadDir                 | 31.50%   | 12        |
 | ✅     | titpetric/vuego                  | SlotScope.GetSlot                 | 100.00%  | 0         |
 | ✅     | titpetric/vuego                  | SlotScope.SetSlot                 | 100.00%  | 0         |
 | ✅     | titpetric/vuego                  | Stack.Copy                        | 100.00%  | 0         |
