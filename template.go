@@ -246,7 +246,18 @@ func loadConfig(vue *Vue) {
 
 // Fill sets all variables from the map, preserving any front-matter that was loaded.
 func (t *template) Fill(vars any) Template {
-	dataMap := toMapData(vars)
+	// Start with auto-loaded config (lowest precedence)
+	dataMap := map[string]any{}
+	if t.vue.initialData != nil {
+		for k, v := range t.vue.initialData {
+			dataMap[k] = v
+		}
+	}
+	// Merge passed data (overrides config)
+	passedData := toMapData(vars)
+	for k, v := range passedData {
+		dataMap[k] = v
+	}
 	// Merge loaded front-matter into data (front-matter takes precedence)
 	for k, v := range t.frontMatter {
 		dataMap[k] = v

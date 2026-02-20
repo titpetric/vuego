@@ -36,7 +36,15 @@ func (t *template) Render(ctx context.Context, w io.Writer) error {
 		return t.layout(ctx, w)
 	}
 
-	// No layout specified, render normally
+	// No layout specified, check if default layouts/base.vuego exists
+	// If it exists, use layout rendering (which will apply the default layout)
+	// Otherwise, render without layout
+	if t.vue.loader.Stat("layouts/base.vuego") == nil {
+		// layouts/base.vuego exists, use layout rendering
+		return t.layout(ctx, w)
+	}
+
+	// No layout specified and no default layout, render normally
 	return t.renderWithoutLayout(ctx, w)
 }
 
