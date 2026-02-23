@@ -41,7 +41,7 @@ func (o *OverlayFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	merged := make(map[string]fs.DirEntry)
 	var lastErr error
 
-	// Iterate through chain in reverse (lowest priority first) so upper layers override
+	// Iterate through chain (upper layers first) so upper layers override lower
 	for _, chainfs := range o.chainFS {
 		if chainfs == nil {
 			continue
@@ -50,7 +50,10 @@ func (o *OverlayFS) ReadDir(name string) ([]fs.DirEntry, error) {
 		entries, err := fs.ReadDir(chainfs, name)
 		if err == nil {
 			for _, e := range entries {
-				merged[e.Name()] = e
+				// Only add if not already present (upper layers take precedence)
+				if _, exists := merged[e.Name()]; !exists {
+					merged[e.Name()] = e
+				}
 			}
 		} else {
 			lastErr = err
