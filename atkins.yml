@@ -36,7 +36,7 @@ jobs:
     passthru: true
     tty: true
     steps:
-      - go test -cover -coverpkg=./... -coverprofile=pkg.cov -json ./... > test.json
+      - go test -cover -coverpkg github.com/titpetric/vuego/... -coverprofile=pkg.cov -json ./... > test.json
       - cat test.json | gotestsum
 
   cover:
