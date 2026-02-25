@@ -110,10 +110,51 @@ func (f *Formatter) formatFullDocument(frontmatter, body string) (string, error)
 	return finalResult, nil
 }
 
+// fragmentContext returns an appropriate context node for html.ParseFragment
+// based on the leading tag in the body. Table-scoped elements like <td>, <th>,
+// <tr>, <thead>, <tbody>, <tfoot>, <caption>, and <colgroup> require ancestor
+// context nodes to avoid being stripped by the HTML5 parser.
+func fragmentContext(body string) *html.Node {
+	trimmed := strings.TrimSpace(body)
+
+	type contextMapping struct {
+		prefix   string
+		dataAtom atom.Atom
+		data     string
+	}
+
+	// Order matters: check more specific elements first.
+	mappings := []contextMapping{
+		{"<td", atom.Tr, "tr"},
+		{"<th", atom.Tr, "tr"},
+		{"<tr", atom.Tbody, "tbody"},
+		{"<thead", atom.Table, "table"},
+		{"<tbody", atom.Table, "table"},
+		{"<tfoot", atom.Table, "table"},
+		{"<caption", atom.Table, "table"},
+		{"<colgroup", atom.Table, "table"},
+		{"<col", atom.Colgroup, "colgroup"},
+	}
+
+	lower := strings.ToLower(trimmed)
+	for _, m := range mappings {
+		if strings.HasPrefix(lower, m.prefix) {
+			// Ensure the prefix is followed by a space, >, or end-of-string
+			// to avoid false matches (e.g., "<the" matching "<th").
+			rest := lower[len(m.prefix):]
+			if len(rest) == 0 || rest[0] == ' ' || rest[0] == '>' || rest[0] == '\n' || rest[0] == '\t' || rest[0] == '/' {
+				return &html.Node{Type: html.ElementNode, DataAtom: m.dataAtom, Data: m.data}
+			}
+		}
+	}
+
+	return &html.Node{Type: html.ElementNode, DataAtom: atom.Body, Data: "body"}
+}
+
 // formatFragment formats a partial HTML fragment using html.ParseFragment
 // to avoid injecting html/head/body wrappers.
 func (f *Formatter) formatFragment(frontmatter, body string) (string, error) {
-	ctx := &html.Node{Type: html.ElementNode, DataAtom: atom.Body, Data: "body"}
+	ctx := fragmentContext(body)
 	nodes, err := html.ParseFragment(strings.NewReader(body), ctx)
 	if err != nil {
 		return "", fmt.Errorf("parsing HTML fragment: %w", err)
