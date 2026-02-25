@@ -248,15 +248,9 @@ func (f *Formatter) formatNode(n *html.Node, buf *strings.Builder, depth int) {
 			return
 		}
 
-		// Determine if opening tag needs multi-line attributes
 		openTag := f.renderOpenTag(n)
-		multiLine := len(indent)+len(openTag) > 100 && len(n.Attr) > 1
-		if multiLine {
-			buf.WriteString(f.renderOpenTagMultiLine(n, indent))
-		} else {
-			buf.WriteString(indent)
-			buf.WriteString(openTag)
-		}
+		buf.WriteString(indent)
+		buf.WriteString(openTag)
 
 		// Void elements (self-closing)
 		if isVoidElement(n.DataAtom) {
@@ -273,8 +267,8 @@ func (f *Formatter) formatNode(n *html.Node, buf *strings.Builder, depth int) {
 			return
 		}
 
-		// Inline content - render on one line (only when single-line opening tag)
-		if !multiLine && f.shouldKeepInline(n) {
+		// Inline content - render on one line
+		if f.shouldKeepInline(n) {
 			buf.WriteString(f.renderInlineChildren(n))
 			buf.WriteString(f.renderCloseTag(n))
 			buf.WriteString("\n")
@@ -561,32 +555,6 @@ func (f *Formatter) renderOpenTag(n *html.Node) string {
 		}
 	}
 
-	buf.WriteString(">")
-	return buf.String()
-}
-
-// renderOpenTagMultiLine renders an opening tag with each attribute on its own line.
-func (f *Formatter) renderOpenTagMultiLine(n *html.Node, indent string) string {
-	attrIndent := indent + strings.Repeat(" ", f.opts.IndentWidth)
-
-	var buf strings.Builder
-	buf.WriteString(indent)
-	buf.WriteString("<")
-	buf.WriteString(n.Data)
-
-	for _, attr := range n.Attr {
-		buf.WriteString("\n")
-		buf.WriteString(attrIndent)
-		buf.WriteString(attr.Key)
-		if attr.Val != "" {
-			buf.WriteString("=\"")
-			buf.WriteString(helpers.FormatAttr(attr.Val))
-			buf.WriteString("\"")
-		}
-	}
-
-	buf.WriteString("\n")
-	buf.WriteString(indent)
 	buf.WriteString(">")
 	return buf.String()
 }
