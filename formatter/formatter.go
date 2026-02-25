@@ -197,8 +197,25 @@ func (f *Formatter) formatNode(n *html.Node, buf *strings.Builder, depth int) {
 			return
 		}
 
-		buf.WriteString(indent)
-		buf.WriteString(f.renderOpenTag(n))
+		// Pre blocks - preserve content whitespace and escape entities
+		if n.Data == "pre" {
+			buf.WriteString(indent)
+			buf.WriteString(f.renderOpenTag(n))
+			f.renderPreContent(n, buf)
+			buf.WriteString(f.renderCloseTag(n))
+			buf.WriteString("\n")
+			return
+		}
+
+		// Determine if opening tag needs multi-line attributes
+		openTag := f.renderOpenTag(n)
+		multiLine := len(indent)+len(openTag) > 100 && len(n.Attr) > 1
+		if multiLine {
+			buf.WriteString(f.renderOpenTagMultiLine(n, indent))
+		} else {
+			buf.WriteString(indent)
+			buf.WriteString(openTag)
+		}
 
 		// Void elements (self-closing)
 		if isVoidElement(n.DataAtom) {
@@ -215,8 +232,8 @@ func (f *Formatter) formatNode(n *html.Node, buf *strings.Builder, depth int) {
 			return
 		}
 
-		// Inline content - render on one line
-		if f.shouldKeepInline(n) {
+		// Inline content - render on one line (only when single-line opening tag)
+		if !multiLine && f.shouldKeepInline(n) {
 			buf.WriteString(f.renderInlineChildren(n))
 			buf.WriteString(f.renderCloseTag(n))
 			buf.WriteString("\n")
@@ -236,7 +253,7 @@ func (f *Formatter) formatNode(n *html.Node, buf *strings.Builder, depth int) {
 		text := strings.TrimSpace(n.Data)
 		if text != "" {
 			buf.WriteString(indent)
-			buf.WriteString(text)
+			buf.WriteString(escapeText(text))
 			buf.WriteString("\n")
 		}
 
@@ -262,7 +279,7 @@ func (f *Formatter) formatRawTextElement(n *html.Node, buf *strings.Builder, ind
 	}
 
 	contentStr := content.String()
-	trimmedContent := strings.TrimSpace(contentStr)
+	trimmedContent := trimRawContent(contentStr)
 
 	if trimmedContent == "" {
 		buf.WriteString(f.renderCloseTag(n))
@@ -274,6 +291,27 @@ func (f *Formatter) formatRawTextElement(n *html.Node, buf *strings.Builder, ind
 		buf.WriteString(indent)
 		buf.WriteString(f.renderCloseTag(n))
 		buf.WriteString("\n")
+	}
+}
+
+// renderPreContent recursively renders children of a <pre> element,
+// preserving whitespace and escaping text content.
+func (f *Formatter) renderPreContent(n *html.Node, buf *strings.Builder) {
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		switch c.Type {
+		case html.TextNode:
+			buf.WriteString(escapeText(c.Data))
+		case html.ElementNode:
+			buf.WriteString(f.renderOpenTag(c))
+			if !isVoidElement(c.DataAtom) {
+				f.renderPreContent(c, buf)
+				buf.WriteString(f.renderCloseTag(c))
+			}
+		case html.CommentNode:
+			buf.WriteString("<!--")
+			buf.WriteString(c.Data)
+			buf.WriteString("-->")
+		}
 	}
 }
 
@@ -356,12 +394,14 @@ func isPhrasingContainer(a atom.Atom) bool {
 }
 
 // renderInlineChildren recursively renders children as inline content on one line.
+// Leading and trailing whitespace is trimmed so that inline content sits flush
+// against its parent tags (e.g. <span><i>x</i></span> not <span> <i>x</i> </span>).
 func (f *Formatter) renderInlineChildren(n *html.Node) string {
 	var b strings.Builder
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		switch c.Type {
 		case html.TextNode:
-			b.WriteString(normalizeInlineText(c.Data))
+			b.WriteString(escapeText(normalizeInlineText(c.Data)))
 		case html.CommentNode:
 			b.WriteString("<!--")
 			b.WriteString(c.Data)
@@ -374,7 +414,56 @@ func (f *Formatter) renderInlineChildren(n *html.Node) string {
 			}
 		}
 	}
+	return strings.TrimSpace(b.String())
+}
+
+// escapeText escapes HTML-significant characters (&, <, >) in text content.
+// Content inside {{ }} template expressions is preserved as-is to avoid
+// breaking template syntax like {{ a < b }}.
+func escapeText(s string) string {
+	var b strings.Builder
+	b.Grow(len(s))
+	i := 0
+	for i < len(s) {
+		if i+1 < len(s) && s[i] == '{' && s[i+1] == '{' {
+			end := strings.Index(s[i+2:], "}}")
+			if end != -1 {
+				b.WriteString(s[i : i+2+end+2])
+				i += 2 + end + 2
+				continue
+			}
+		}
+		switch s[i] {
+		case '&':
+			b.WriteString("&amp;")
+		case '<':
+			b.WriteString("&lt;")
+		case '>':
+			b.WriteString("&gt;")
+		default:
+			b.WriteByte(s[i])
+		}
+		i++
+	}
 	return b.String()
+}
+
+// trimRawContent trims leading and trailing blank lines from raw content
+// while preserving internal indentation structure.
+func trimRawContent(s string) string {
+	lines := strings.Split(s, "\n")
+	start := 0
+	for start < len(lines) && strings.TrimSpace(lines[start]) == "" {
+		start++
+	}
+	end := len(lines)
+	for end > start && strings.TrimSpace(lines[end-1]) == "" {
+		end--
+	}
+	if start >= end {
+		return ""
+	}
+	return strings.Join(lines[start:end], "\n")
 }
 
 // normalizeInlineText collapses whitespace in inline text while preserving
@@ -431,6 +520,32 @@ func (f *Formatter) renderOpenTag(n *html.Node) string {
 		}
 	}
 
+	buf.WriteString(">")
+	return buf.String()
+}
+
+// renderOpenTagMultiLine renders an opening tag with each attribute on its own line.
+func (f *Formatter) renderOpenTagMultiLine(n *html.Node, indent string) string {
+	attrIndent := indent + strings.Repeat(" ", f.opts.IndentWidth)
+
+	var buf strings.Builder
+	buf.WriteString(indent)
+	buf.WriteString("<")
+	buf.WriteString(n.Data)
+
+	for _, attr := range n.Attr {
+		buf.WriteString("\n")
+		buf.WriteString(attrIndent)
+		buf.WriteString(attr.Key)
+		if attr.Val != "" {
+			buf.WriteString("=\"")
+			buf.WriteString(helpers.FormatAttr(attr.Val))
+			buf.WriteString("\"")
+		}
+	}
+
+	buf.WriteString("\n")
+	buf.WriteString(indent)
 	buf.WriteString(">")
 	return buf.String()
 }

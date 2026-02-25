@@ -122,6 +122,50 @@ func TestIndentString_WithEmptyLines(t *testing.T) {
 	require.Contains(t, indented, "line3")
 }
 
+func TestFormatter_Format_InlineNoExtraSpaces(t *testing.T) {
+	f := formatter.NewFormatter()
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "no space around child element",
+			input:    `<button> <i data-lucide="sun"></i> </button>`,
+			expected: "<button><i data-lucide=\"sun\"></i></button>\n",
+		},
+		{
+			name:     "no space around text content",
+			input:    `<span> hello </span>`,
+			expected: "<span>hello</span>\n",
+		},
+		{
+			name:     "preserve space between siblings",
+			input:    `<p> <span>a</span> <span>b</span> </p>`,
+			expected: "<p><span>a</span> <span>b</span></p>\n",
+		},
+		{
+			name:     "nested inline elements trimmed",
+			input:    `<a href="/"> <i class="icon"></i> <span>Label</span> </a>`,
+			expected: "<a href=\"/\"><i class=\"icon\"></i> <span>Label</span></a>\n",
+		},
+		{
+			name:     "text with inline element no extra space",
+			input:    `<p>Hello <strong>world</strong>!</p>`,
+			expected: "<p>Hello <strong>world</strong>!</p>\n",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			formatted, err := f.Format(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, formatted)
+		})
+	}
+}
+
 // Tests for formatter handling of partial fragments
 func TestFormatter_Format_PartialFragment_SingleElement(t *testing.T) {
 	f := formatter.NewFormatter()
