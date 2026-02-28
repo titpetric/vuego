@@ -1,0 +1,2 @@
+<input type="checkbox" v-if="checked" checked="" disabled="">
+<input type="checkbox" v-else disabled="">

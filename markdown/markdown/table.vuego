@@ -1,0 +1,12 @@
+<table>
+  <thead>
+    <tr>
+      <th v-for="cell in headers" :align="cell.align" v-html="cell.content"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr v-for="row in rows">
+      <td v-for="cell in row" :align="cell.align" v-html="cell.content"></td>
+    </tr>
+  </tbody>
+</table>

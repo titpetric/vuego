@@ -4,6 +4,7 @@ import (
 	"io"
 	"io/fs"
 	"sync"
+	"time"
 
 	"golang.org/x/net/html"
 
@@ -11,6 +12,13 @@ import (
 	"github.com/titpetric/vuego/internal/parser"
 	"github.com/titpetric/vuego/internal/reflect"
 )
+
+// templateCacheEntry stores cached template data with modification tracking.
+type templateCacheEntry struct {
+	dom         []*html.Node
+	frontMatter map[string]any
+	modTime     time.Time
+}
 
 // Vue is the main template renderer for .vuego templates.
 // After initialization, Vue is safe for concurrent use by multiple goroutines.
@@ -22,7 +30,7 @@ type Vue struct {
 	exprEval   *ExprEvaluator
 
 	// Template cache to avoid re-parsing the same template
-	templateCache map[string][]*html.Node
+	templateCache map[string]*templateCacheEntry
 	templateMu    sync.RWMutex
 
 	// Custom node processors for post-processing rendered DOM
@@ -45,7 +53,7 @@ func NewVue(templateFS fs.FS) *Vue {
 		loader:        NewLoader(templateFS),
 		renderer:      NewRenderer(),
 		exprEval:      NewExprEvaluator(),
-		templateCache: make(map[string][]*html.Node),
+		templateCache: make(map[string]*templateCacheEntry),
 		componentMap:  make(map[string]string),
 	}
 	v.funcMap = v.DefaultFuncMap()
@@ -147,20 +155,26 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 }
 
 // loadCachedWithFrontMatter returns cached template nodes and front-matter data, or loads and caches them.
-// The cache stores only the nodes without front-matter data (front-matter is re-extracted on each load).
+// The cache stores DOM nodes, front-matter, and file modification time for invalidation.
 func (v *Vue) loadCachedWithFrontMatter(filename string) (map[string]any, []*html.Node, error) {
-	v.templateMu.RLock()
-	if cached, ok := v.templateCache[filename]; ok {
-		v.templateMu.RUnlock()
-		// Load again to extract front-matter from the file
-		frontMatter, _, err := v.loader.loadFragment(filename)
-		if err != nil {
-			return nil, nil, err
+	// Get current file modification time
+	var currentModTime time.Time
+	if v.templateFS != nil {
+		if info, err := fs.Stat(v.templateFS, filename); err == nil {
+			currentModTime = info.ModTime()
 		}
-		return frontMatter, cached, nil
+	}
+
+	v.templateMu.RLock()
+	cached, ok := v.templateCache[filename]
+	if ok && (currentModTime.IsZero() || cached.modTime.Equal(currentModTime)) {
+		// Cache hit and file hasn't changed (or we can't check mtime)
+		v.templateMu.RUnlock()
+		return cached.frontMatter, cached.dom, nil
 	}
 	v.templateMu.RUnlock()
 
+	// Cache miss or file changed - reload
 	frontMatter, templateBytes, err := v.loader.loadFragment(filename)
 	if err != nil {
 		return nil, nil, err
@@ -172,7 +186,11 @@ func (v *Vue) loadCachedWithFrontMatter(filename string) (map[string]any, []*htm
 	}
 
 	v.templateMu.Lock()
-	v.templateCache[filename] = dom
+	v.templateCache[filename] = &templateCacheEntry{
+		dom:         dom,
+		frontMatter: frontMatter,
+		modTime:     currentModTime,
+	}
 	v.templateMu.Unlock()
 
 	return frontMatter, dom, nil

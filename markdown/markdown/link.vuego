@@ -1,0 +1,1 @@
+<a :href="href" :title="title" v-html="content"></a>

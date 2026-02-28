@@ -1,0 +1,2 @@
+<pre v-if="language"><code :class="'language-' + language">{{ code }}</code></pre>
+<pre v-else><code>{{ code }}</code></pre>

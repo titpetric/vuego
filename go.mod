@@ -3,12 +3,13 @@ module github.com/titpetric/vuego
 go 1.25.5
 
 require (
-	github.com/expr-lang/expr v1.17.7
+	github.com/expr-lang/expr v1.17.8
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/stretchr/testify v1.11.1
 	github.com/titpetric/lessgo v0.1.0
 	github.com/titpetric/platform v0.2.3
-	golang.org/x/net v0.49.0
+	github.com/yuin/goldmark v1.7.16
+	golang.org/x/net v0.51.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

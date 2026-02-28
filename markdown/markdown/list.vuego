@@ -1,0 +1,2 @@
+<ol v-if="ordered" :start="start" v-html="content"></ol>
+<ul v-else v-html="content"></ul>

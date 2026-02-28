@@ -1,0 +1,2 @@
+<strong v-if="level == 2" v-html="content"></strong>
+<em v-else v-html="content"></em>

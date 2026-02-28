@@ -1,0 +1,6 @@
+<h1 v-if="level == 1" :id="id" v-html="content"></h1>
+<h2 v-else-if="level == 2" :id="id" v-html="content"></h2>
+<h3 v-else-if="level == 3" :id="id" v-html="content"></h3>
+<h4 v-else-if="level == 4" :id="id" v-html="content"></h4>
+<h5 v-else-if="level == 5" :id="id" v-html="content"></h5>
+<h6 v-else :id="id" v-html="content"></h6>
