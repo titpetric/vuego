@@ -1,4 +1,4 @@
-<table>
+<table class="table">
   <thead>
     <tr>
       <th v-for="cell in headers" :align="cell.align" v-html="cell.content"></th>
