@@ -23,7 +23,7 @@ func (v *Vue) evalConditionExpr(ctx VueContext, expr string) (bool, error) {
 	expr = helpers.NormalizeComparisonOperators(expr)
 
 	// Try to evaluate as expr expression first (supports ==, !=, &&, ||, !, <, >, <=, >=, and function calls)
-	result, err := v.exprEval.Eval(expr, ctx.stack.EnvMap())
+	result, err := v.exprEval.Eval(expr, ctx.ExprEnv())
 	if err == nil {
 		// Successfully evaluated with expr - convert to boolean
 		return helpers.IsTruthy(result), nil
@@ -35,7 +35,7 @@ func (v *Vue) evalConditionExpr(ctx VueContext, expr string) (bool, error) {
 	if strings.HasPrefix(expr, "!") {
 		innerExpr := strings.TrimSpace(expr[1:])
 		// Try to evaluate inner expression (may return nil)
-		innerResult, innerErr := v.exprEval.Eval(innerExpr, ctx.stack.EnvMap())
+		innerResult, innerErr := v.exprEval.Eval(innerExpr, ctx.ExprEnv())
 		if innerErr == nil {
 			// Successfully evaluated - convert nil to bool and negate
 			return !helpers.IsTruthy(innerResult), nil
@@ -185,7 +185,7 @@ func (v *Vue) evaluateNodeAsElement(ctx VueContext, node *html.Node, depth int) 
 			// Evaluate the bound attribute expression
 			// Use expression evaluator for templates to support literals and expressions
 			expr := strings.TrimSpace(attr.Val)
-			val, err := v.exprEval.Eval(expr, ctx.stack.EnvMap())
+			val, err := v.exprEval.Eval(expr, ctx.ExprEnv())
 			if err == nil {
 				// Expression evaluated successfully
 				ctx.stack.Set(boundName, val)

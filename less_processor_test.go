@@ -23,7 +23,7 @@ func TestLessProcessor_LessCompilation(t *testing.T) {
 
 	// Render the template
 	var buf bytes.Buffer
-	err := v.Render(&buf, "less.html", map[string]any{})
+	err := v.Render(t.Context(), &buf, "less.html", map[string]any{})
 	require.NoError(t, err)
 
 	// Verify the output contains compiled CSS instead of LESS
@@ -42,7 +42,7 @@ func TestLessProcessor_LessVariables(t *testing.T) {
 	v.RegisterNodeProcessor(vuego.NewLessProcessor())
 
 	var buf bytes.Buffer
-	err := v.Render(&buf, "less_variables.html", map[string]any{})
+	err := v.Render(t.Context(), &buf, "less_variables.html", map[string]any{})
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -59,7 +59,7 @@ func TestLessProcessor_NoLessTag(t *testing.T) {
 	v.RegisterNodeProcessor(vuego.NewLessProcessor())
 
 	var buf bytes.Buffer
-	err := v.Render(&buf, "mixed_styles.html", map[string]any{})
+	err := v.Render(t.Context(), &buf, "mixed_styles.html", map[string]any{})
 	require.NoError(t, err)
 
 	output := buf.String()

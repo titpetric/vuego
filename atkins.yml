@@ -38,7 +38,7 @@ jobs:
     steps:
       - run: gotestsum < test.json
         deferred: true
-      - go test -count 1 -cover -coverpkg github.com/titpetric/vuego/... -coverprofile=pkg.cov -json ./... > test.json
+      - go test -count 1 -cover -coverpkg github.com/titpetric/vuego/... -coverprofile=pkg.cov -json ./... > test.json || true
 
   cover:
     desc: "Show source coverage"

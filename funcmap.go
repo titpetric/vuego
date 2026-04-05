@@ -1,6 +1,7 @@
 package vuego
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html"
@@ -20,10 +21,11 @@ import (
 // Functions can have any number of parameters and must return 1 or 2 values.
 // If 2 values are returned, the second must be an error.
 //
-// Functions can optionally take *VueContext as the first parameter:
+// Functions can optionally take *VueContext or context.Context as the first parameter:
 //
-//	func myFunc(ctx *VueContext, arg1 string) (string, error) { ... }
-//	func myFunc(arg1 string) string { ... }  // without context
+// - func myFunc(ctx context.Context) bool { ... }
+// - func myFunc(ctx *VueContext, arg1 string) (string, error) { ... }
+// - func myFunc(arg1 string) string { ... }
 //
 // This allows access to the execution context.
 type FuncMap map[string]any
@@ -240,7 +242,7 @@ func (v *Vue) evalSegment(ctx VueContext, seg pipeSegment, input any, isFirst, f
 		return v.evalFilter(ctx, seg, input, isFirst, fromInitial)
 	case segmentExpr:
 		// Use expr library with . representing the input value
-		env := ctx.stack.EnvMap()
+		env := ctx.ExprEnv()
 		if input != nil {
 			env["."] = input
 			defer delete(env, ".")
@@ -329,19 +331,22 @@ func (v *Vue) callFunc(ctx *VueContext, fn any, args ...any) (any, error) {
 		return nil, fmt.Errorf("not a function")
 	}
 
-	// Check if first parameter is *VueContext
+	// Check if first parameter is *VueContext or context.Context
 	hasContextParam := false
+	hasStdContext := false
 	numIn := fnType.NumIn()
 	if numIn > 0 {
 		firstParamType := fnType.In(0)
 		if firstParamType == reflect.TypeOf((*VueContext)(nil)) {
 			hasContextParam = true
+		} else if firstParamType == reflect.TypeOf((*context.Context)(nil)).Elem() {
+			hasStdContext = true
 		}
 	}
 
 	// Adjust expected argument count based on context parameter
 	expectedArgs := numIn
-	if hasContextParam {
+	if hasContextParam || hasStdContext {
 		expectedArgs = numIn - 1 // Don't count the context parameter
 	}
 
@@ -355,6 +360,9 @@ func (v *Vue) callFunc(ctx *VueContext, fn any, args ...any) (any, error) {
 	var finalArgs []any
 	if hasContextParam {
 		finalArgs = append(finalArgs, ctx)
+		finalArgs = append(finalArgs, args...)
+	} else if hasStdContext {
+		finalArgs = append(finalArgs, ctx.Context())
 		finalArgs = append(finalArgs, args...)
 	} else {
 		finalArgs = args

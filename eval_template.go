@@ -123,7 +123,7 @@ func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map
 				}
 
 				// Fall back to expression evaluator for literals and arithmetic expressions
-				result, err = v.exprEval.Eval(val, ctx.stack.EnvMap())
+				result, err = v.exprEval.Eval(val, ctx.ExprEnv())
 				if err == nil {
 					ctx.stack.Set(boundName, result)
 					continue
@@ -146,7 +146,7 @@ func (v *Vue) evalTemplate(ctx VueContext, nodes []*html.Node, componentData map
 					ctx.stack.Set(boundName, result)
 					continue
 				}
-				result, err = v.exprEval.Eval(val, ctx.stack.EnvMap())
+				result, err = v.exprEval.Eval(val, ctx.ExprEnv())
 				if err == nil {
 					ctx.stack.Set(boundName, result)
 					continue

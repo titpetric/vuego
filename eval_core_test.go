@@ -19,7 +19,7 @@ func TestVue_EvaluateTextNode(t *testing.T) {
 	vue := vuego.NewVue(fs)
 
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "test.vuego", map[string]any{"message": "hello"})
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{"message": "hello"})
 	require.NoError(t, err)
 	diff.EqualHTML(t, []byte("<p>hello</p>"), buf.Bytes(), nil, nil)
 }
@@ -31,7 +31,7 @@ func TestVue_EvaluateElementNode(t *testing.T) {
 	vue := vuego.NewVue(fs)
 
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "test.vuego", nil)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", nil)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "container")
 	require.Contains(t, buf.String(), "content")
@@ -45,7 +45,7 @@ func TestVue_EvaluateChildren(t *testing.T) {
 
 	data := map[string]any{"a": "first", "b": "second"}
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "first")
 	require.Contains(t, buf.String(), "second")
@@ -58,7 +58,7 @@ func TestVue_EvaluateTemplateTag(t *testing.T) {
 	vue := vuego.NewVue(fs)
 
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "test.vuego", nil)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", nil)
 	require.NoError(t, err)
 	// template tag should be omitted, but content should render
 	require.Contains(t, buf.String(), "hidden")
@@ -73,7 +73,7 @@ func TestVue_EvaluateWithVIf(t *testing.T) {
 
 	data := map[string]any{"show": true, "hide": false}
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "visible")
 	require.NotContains(t, buf.String(), "hidden")
@@ -87,7 +87,7 @@ func TestVue_EvaluateWithVFor(t *testing.T) {
 
 	data := map[string]any{"items": []string{"a", "b", "c"}}
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "a")
 	require.Contains(t, buf.String(), "b")
@@ -102,7 +102,7 @@ func TestVue_EvaluateWithVHtml(t *testing.T) {
 
 	data := map[string]any{"html": "<strong>bold</strong>"}
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 	require.Contains(t, buf.String(), "<strong>bold</strong>")
 }
@@ -128,7 +128,7 @@ func TestVue_EvaluateComplexNesting(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 	output := buf.String()
 	require.Contains(t, output, "One")
@@ -144,11 +144,11 @@ func TestVue_EvaluateCloneNode(t *testing.T) {
 	vue := vuego.NewVue(fs)
 
 	var buf1 bytes.Buffer
-	err := vue.RenderFragment(&buf1, "test.vuego", map[string]any{"value": "first"})
+	err := vue.RenderFragment(t.Context(), &buf1, "test.vuego", map[string]any{"value": "first"})
 	require.NoError(t, err)
 
 	var buf2 bytes.Buffer
-	err = vue.RenderFragment(&buf2, "test.vuego", map[string]any{"value": "second"})
+	err = vue.RenderFragment(t.Context(), &buf2, "test.vuego", map[string]any{"value": "second"})
 	require.NoError(t, err)
 
 	require.Contains(t, buf1.String(), "first")

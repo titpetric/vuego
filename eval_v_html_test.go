@@ -71,7 +71,7 @@ func TestVue_EvalVHtml(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
@@ -120,7 +120,7 @@ func TestVue_EvalVHtml_NoReinterpolation(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
@@ -170,7 +170,7 @@ func TestVue_EvalVHtml_PreservesWhitespace(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			// Compare exact output to verify whitespace is preserved
 			require.Equal(t, tc.expected, buf.String())

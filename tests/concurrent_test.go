@@ -38,7 +38,7 @@ func TestVue_ConcurrentRender(t *testing.T) {
 			}
 
 			var buf bytes.Buffer
-			err := vue.Render(&buf, "page.html", data)
+			err := vue.Render(t.Context(), &buf, "page.html", data)
 			if err != nil {
 				errors <- err
 				return
@@ -89,7 +89,7 @@ func TestVue_ConcurrentRenderWithFuncs(t *testing.T) {
 			}
 
 			var buf bytes.Buffer
-			err := vue.Render(&buf, "page.html", data)
+			err := vue.Render(t.Context(), &buf, "page.html", data)
 			require.NoError(t, err)
 			require.Contains(t, buf.String(), "USER")
 		}(i)
@@ -129,7 +129,7 @@ func TestVue_ConcurrentRenderDifferentTemplates(t *testing.T) {
 			}
 
 			var buf bytes.Buffer
-			err := vue.Render(&buf, template, data)
+			err := vue.Render(t.Context(), &buf, template, data)
 			require.NoError(t, err)
 		}(i)
 	}

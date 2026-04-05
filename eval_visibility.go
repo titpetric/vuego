@@ -17,7 +17,7 @@ func (v *Vue) evalVShow(ctx VueContext, n *html.Node) error {
 	}
 
 	// Evaluate the expression using the same approach as v-if
-	val, err := v.exprEval.Eval(vShowExpr, ctx.stack.EnvMap())
+	val, err := v.exprEval.Eval(vShowExpr, ctx.ExprEnv())
 	if err != nil {
 		// Fall back to stack resolution for simple variable references
 		var ok bool

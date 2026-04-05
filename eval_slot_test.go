@@ -17,7 +17,7 @@ func TestSlot_Default(t *testing.T) {
 	vue.RegisterComponent("slot-button", "components/SlotButton.vuego")
 
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "slot-default.vuego", nil)
+	err := vue.RenderFragment(t.Context(), &buf, "slot-default.vuego", nil)
 	require.NoError(t, err)
 
 	result := buf.String()
@@ -32,7 +32,7 @@ func TestSlot_Fallback(t *testing.T) {
 	vue.RegisterComponent("slot-button", "components/SlotButton.vuego")
 
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "slot-fallback.vuego", nil)
+	err := vue.RenderFragment(t.Context(), &buf, "slot-fallback.vuego", nil)
 	require.NoError(t, err)
 
 	result := buf.String()
@@ -46,7 +46,7 @@ func TestSlot_Named(t *testing.T) {
 	vue.RegisterComponent("modal", "components/Modal.vuego")
 
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "slot-named.vuego", nil)
+	err := vue.RenderFragment(t.Context(), &buf, "slot-named.vuego", nil)
 	require.NoError(t, err)
 
 	result := buf.String()
@@ -64,7 +64,7 @@ func TestSlot_Scoped(t *testing.T) {
 	vue.RegisterComponent("list", "components/List.vuego")
 
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "slot-scoped.vuego", map[string]any{
+	err := vue.RenderFragment(t.Context(), &buf, "slot-scoped.vuego", map[string]any{
 		"products": []string{"Apple", "Banana", "Cherry"},
 	})
 	require.NoError(t, err)
@@ -81,7 +81,7 @@ func TestSlot_NamedScoped(t *testing.T) {
 	vue.RegisterComponent("tabs", "components/Tabs.vuego")
 
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "slot-named-scoped.vuego", nil)
+	err := vue.RenderFragment(t.Context(), &buf, "slot-named-scoped.vuego", nil)
 	require.NoError(t, err)
 
 	result := buf.String()
@@ -97,7 +97,7 @@ func TestSlot_SimpleScoped(t *testing.T) {
 	vue.RegisterComponent("simple-slot", "components/SimpleSlot.vuego")
 
 	var buf bytes.Buffer
-	err := vue.RenderFragment(&buf, "simple-scoped.vuego", map[string]any{
+	err := vue.RenderFragment(t.Context(), &buf, "simple-scoped.vuego", map[string]any{
 		"message": "Hello",
 	})
 	require.NoError(t, err)

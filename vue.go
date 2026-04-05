@@ -1,6 +1,7 @@
 package vuego
 
 import (
+	"context"
 	"io"
 	"io/fs"
 	"sync"
@@ -69,19 +70,6 @@ func (v *Vue) Funcs(funcMap FuncMap) *Vue {
 	return v
 }
 
-// RenderNodes evaluates and renders HTML nodes with the given data.
-// This is the core rendering function used by all public render methods.
-func (v *Vue) RenderNodes(w io.Writer, nodes []*html.Node, data any) error {
-	dataMap := toMapData(data)
-
-	ctx := NewVueContext("", &VueContextOptions{
-		Stack:      NewStackWithData(dataMap, data),
-		Processors: v.nodeProcessors,
-	})
-
-	return v.renderNodesWithContext(ctx, w, nodes)
-}
-
 // renderNodesWithContext is an internal method that evaluates and renders nodes with a pre-configured context.
 func (v *Vue) renderNodesWithContext(ctx VueContext, w io.Writer, nodes []*html.Node) error {
 	nodeCopy := make([]*html.Node, 0, len(nodes))
@@ -127,7 +115,7 @@ func toMapData(data any) map[string]any {
 // Render processes a full-page template file and writes the output to w.
 // Front-matter data in the template is authoritative and overrides passed data.
 // Render is safe to call concurrently from multiple goroutines.
-func (v *Vue) Render(w io.Writer, filename string, data any) error {
+func (v *Vue) Render(ctx context.Context, w io.Writer, filename string, data any) error {
 	frontMatter, dom, err := v.loadCachedWithFrontMatter(filename)
 	if err != nil {
 		return err
@@ -140,7 +128,7 @@ func (v *Vue) Render(w io.Writer, filename string, data any) error {
 	}
 
 	// Create context for v-once attribute tracking
-	vueCtx := NewVueContext(filename, &VueContextOptions{
+	vueCtx := NewVueContext(ctx, filename, &VueContextOptions{
 		Stack:      NewStackWithData(dataMap, data),
 		Processors: v.nodeProcessors,
 	})
@@ -212,7 +200,7 @@ func assignSeenAttrs(ctx *VueContext, node *html.Node) {
 // RenderFragment processes a template fragment file and writes the output to w.
 // Front-matter data in the template is authoritative and overrides passed data.
 // RenderFragment is safe to call concurrently from multiple goroutines.
-func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
+func (v *Vue) RenderFragment(ctx context.Context, w io.Writer, filename string, data any) error {
 	frontMatter, templateBytes, err := v.loader.loadFragment(filename)
 	if err != nil {
 		return err
@@ -230,7 +218,7 @@ func (v *Vue) RenderFragment(w io.Writer, filename string, data any) error {
 	}
 
 	// Create context for v-once attribute tracking
-	vueCtx := NewVueContext(filename, &VueContextOptions{
+	vueCtx := NewVueContext(ctx, filename, &VueContextOptions{
 		Stack:      NewStackWithData(dataMap, data),
 		Processors: v.nodeProcessors,
 	})

@@ -78,7 +78,7 @@ func BenchmarkVue_ConcurrentBlogRender(b *testing.B) {
 			"text":   "Simplicity is the ultimate sophistication.",
 			"author": "Leonardo da Vinci",
 		},
-		"codeExample": `vue := vuego.NewVue(templateFS)\nvar buf bytes.Buffer\nerr := vue.Render(&buf, "page.vuego", data)`,
+		"codeExample": `vue := vuego.NewVue(templateFS)\nvar buf bytes.Buffer\nerr := vue.Render(t.Context(), &buf, "page.vuego", data)`,
 		"related": []string{
 			"Understanding Template Directives",
 			"Advanced Filtering Techniques",
@@ -91,7 +91,7 @@ func BenchmarkVue_ConcurrentBlogRender(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			var buf strings.Builder
-			err := vue.Render(&buf, "blog.html", data)
+			err := vue.Render(b.Context(), &buf, "blog.html", data)
 			require.NoError(b, err)
 		}
 	})

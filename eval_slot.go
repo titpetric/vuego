@@ -62,7 +62,7 @@ func (v *Vue) evalSlot(ctx VueContext, node *html.Node, slotScope *SlotScope) ([
 		propName := attr.Key[1:]
 
 		// Evaluate the binding value
-		val, err := v.exprEval.Eval(attr.Val, ctx.stack.EnvMap())
+		val, err := v.exprEval.Eval(attr.Val, ctx.ExprEnv())
 		if err == nil && val != nil {
 			slotProps[propName] = val
 		}

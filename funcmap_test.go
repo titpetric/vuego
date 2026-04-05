@@ -2,6 +2,7 @@ package vuego_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -27,7 +28,7 @@ func TestVue_Funcs_PipeChaining(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "JOHN DOE")
 }
@@ -45,7 +46,7 @@ func TestVue_Funcs_MultiplePipes(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "John Doe")
 }
@@ -63,7 +64,7 @@ func TestVue_Funcs_PipeWithArgs(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "fallback")
 }
@@ -86,7 +87,7 @@ func TestVue_Funcs_CustomFunc(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "Hello, Alice")
 }
@@ -105,7 +106,7 @@ func TestVue_Funcs_FormatTime(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), now.Format("2006-01-02"))
 }
@@ -123,7 +124,7 @@ func TestVue_Funcs_LenFilter(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "3")
 }
@@ -141,7 +142,7 @@ func TestVue_Funcs_TrimFilter(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "hello world")
 	assert.NotContains(t, buf.String(), "  hello world  ")
@@ -160,7 +161,7 @@ func TestVue_Funcs_IntFilter(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "42")
 }
@@ -178,7 +179,7 @@ func TestVue_Funcs_ComplexChain(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "Hello World")
 }
@@ -196,7 +197,7 @@ func TestVue_Funcs_VIfWithFunction(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "Has items")
 }
@@ -214,7 +215,7 @@ func TestVue_Funcs_VIfWithFunctionFalse(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.NotContains(t, buf.String(), "Has items")
 }
@@ -234,7 +235,7 @@ func TestVue_Funcs_NestedData(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "ALICE")
 }
@@ -252,7 +253,7 @@ func TestVue_Funcs_DefaultWithValue(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "Bob")
 	assert.NotContains(t, buf.String(), "Anonymous")
@@ -271,7 +272,7 @@ func TestVue_Funcs_ChainWithDefault(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "GUEST")
 }
@@ -294,7 +295,7 @@ func TestVue_Funcs_CustomFuncWithArgs(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "15")
 }
@@ -312,7 +313,7 @@ func TestVue_Funcs_StringFilter(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "42")
 }
@@ -330,7 +331,7 @@ func TestVue_Funcs_MissingFilter(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.Error(t, err)
 	assert.Equal(t, "in test.vuego: in expression '{{ name | nonexistent }}': function 'nonexistent' not found", err.Error())
 }
@@ -355,7 +356,7 @@ func TestVue_Funcs_VForWithFilters(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "APPLE")
 	assert.Contains(t, buf.String(), "BANANA")
@@ -383,7 +384,7 @@ func TestVue_Funcs_TypedArguments(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), now.Format("2006-01-02"))
 }
@@ -404,7 +405,7 @@ func TestVue_Funcs_TypedMultipleArgs(t *testing.T) {
 	data := map[string]any{}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "8")
 }
@@ -425,7 +426,7 @@ func TestVue_Funcs_StringToIntConversion(t *testing.T) {
 	data := map[string]any{}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "50")
 }
@@ -446,7 +447,7 @@ func TestVue_Funcs_VariadicFunction(t *testing.T) {
 	data := map[string]any{}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.Contains(t, buf.String(), "a,b,c")
 }
@@ -470,7 +471,7 @@ func TestVue_Funcs_ErrorReturn(t *testing.T) {
 	data := map[string]any{}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.Error(t, err)
 	assert.Equal(t, "in test.vuego: in expression '{{ divide(10, 0) }}': divide(): division by zero", err.Error())
 }
@@ -494,7 +495,7 @@ func TestVue_Funcs_NoReturnValue(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.NoError(t, err)
 	assert.True(t, called)
 }
@@ -517,7 +518,7 @@ func TestVue_Funcs_TypeConversionError(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "test.vuego", data)
+	err := vue.Render(t.Context(), &buf, "test.vuego", data)
 	assert.Error(t, err)
 	assert.Equal(t, "in test.vuego: in expression '{{ items | double }}': double(): cannot convert argument 0 from []string to int", err.Error())
 }
@@ -539,7 +540,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "42")
 	})
@@ -560,7 +561,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "1000")
 	})
@@ -581,7 +582,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "100000")
 	})
@@ -602,7 +603,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "9223372036854775806")
 	})
@@ -623,7 +624,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "42")
 	})
@@ -644,7 +645,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "200")
 	})
@@ -665,7 +666,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "50000")
 	})
@@ -686,7 +687,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "4000000000")
 	})
@@ -707,7 +708,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "9223372036854775806")
 	})
@@ -728,7 +729,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "3.14")
 	})
@@ -749,7 +750,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "2.71828")
 	})
@@ -770,7 +771,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "true")
 	})
@@ -791,7 +792,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "42")
 	})
@@ -812,7 +813,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "3.14159")
 	})
@@ -833,7 +834,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "true")
 	})
@@ -854,7 +855,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.Error(t, err)
 		assert.Equal(t, "in test.vuego: in expression '{{ convert(\"not-a-number\") }}': convert(): cannot convert argument 0 from string to int", err.Error())
 	})
@@ -875,7 +876,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.Error(t, err)
 		assert.Equal(t, "in test.vuego: in expression '{{ convert(\"not-a-float\") }}': convert(): cannot convert argument 0 from string to float64", err.Error())
 	})
@@ -896,7 +897,7 @@ func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.Error(t, err)
 		assert.Equal(t, "in test.vuego: in expression '{{ convert(\"maybe\") }}': convert(): cannot convert argument 0 from string to bool", err.Error())
 	})
@@ -919,7 +920,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// JSON is not HTML-escaped inside script tags
@@ -941,7 +942,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		assert.Contains(t, output, `"apple"`)
@@ -963,7 +964,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		assert.Contains(t, output, `"Bob"`)
@@ -983,7 +984,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		// Numbers don't need escaping
 		assert.Contains(t, buf.String(), `42`)
@@ -1008,7 +1009,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// Check unescaped JSON
@@ -1030,7 +1031,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.RenderFragment(&buf, "test.vuego", data)
+		err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// JSON is HTML-escaped in fragments (not in script tags)
@@ -1051,7 +1052,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// JSON should be HTML-escaped inside code tags
@@ -1076,7 +1077,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// JSON should be HTML-escaped inside pre tags
@@ -1102,7 +1103,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// JSON should be HTML-escaped inside pre+code tags
@@ -1128,7 +1129,7 @@ func TestVue_Funcs_JsonFilter(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// JSON should NOT be escaped inside script tags
@@ -1155,7 +1156,7 @@ func TestVue_Funcs_FileWithVueContext(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), `"name": "test"`)
 	})
@@ -1178,7 +1179,7 @@ func TestVue_Funcs_FileWithVueContext(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "file content")
 	})
@@ -1201,7 +1202,7 @@ func TestVue_Funcs_FileWithVueContext(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "<span>html snippet</span>")
 	})
@@ -1222,7 +1223,7 @@ func TestVue_Funcs_FileWithVueContext(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), `data-content="attribute value"`)
 	})
@@ -1244,7 +1245,7 @@ func TestVue_Funcs_LoadSVG(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "svg content")
 	})
@@ -1264,7 +1265,7 @@ func TestVue_Funcs_LoadSVG(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.Error(t, err)
 		assert.Equal(t, "in test.vuego: in expression '{{ loadSVG(\"missing.svg\") }}': loadSVG(): failed to load SVG file 'missing.svg'", err.Error())
 	})
@@ -1286,7 +1287,7 @@ func TestVue_Funcs_LoadSVG(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.Error(t, err)
 		assert.Equal(t, "in test.vuego: in expression '{{ path | loadSVG }}': loadSVG(): failed to load SVG file 'icons/check.svg'", err.Error())
 	})
@@ -1306,7 +1307,7 @@ func TestVue_Funcs_LoadSVG(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.Error(t, err)
 		assert.Equal(t, "in test.vuego: in expression '{{ loadSVG(\"icons/nonexistent.svg\") }}': loadSVG(): failed to load SVG file 'icons/nonexistent.svg'", err.Error())
 	})
@@ -1332,7 +1333,7 @@ func TestVue_Funcs_WithContextParameter(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "has-context")
 	})
@@ -1356,7 +1357,7 @@ func TestVue_Funcs_WithContextParameter(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "Hello, Alice")
 	})
@@ -1380,7 +1381,7 @@ func TestVue_Funcs_WithContextParameter(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "test.vuego")
 	})
@@ -1404,7 +1405,7 @@ func TestVue_Funcs_WithContextParameter(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "success")
 	})
@@ -1424,7 +1425,7 @@ func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// Interpolated values inside script tags should be unescaped
@@ -1444,7 +1445,7 @@ func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// Should NOT be HTML-escaped inside script tags
@@ -1467,7 +1468,7 @@ func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// Should NOT be HTML-escaped inside script tags
@@ -1490,7 +1491,7 @@ func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.RenderFragment(&buf, "test.vuego", data)
+		err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		output := buf.String()
 		// Should still be HTML-escaped outside script tags
@@ -1514,7 +1515,7 @@ func TestFileFunc(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "Hello from file")
 	})
@@ -1535,7 +1536,7 @@ func TestFileFunc(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "Variable file content")
 	})
@@ -1554,7 +1555,7 @@ func TestFileFunc(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "Nested file content")
 	})
@@ -1570,7 +1571,7 @@ func TestFileFunc(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "file")
 	})
@@ -1586,7 +1587,7 @@ func TestFileFunc(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.Error(t, err)
 	})
 
@@ -1604,7 +1605,7 @@ func TestFileFunc(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "important data")
 	})
@@ -1623,9 +1624,56 @@ func TestFileFunc(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		assert.NoError(t, err)
 		// Content from file function is escaped by default
 		assert.Contains(t, buf.String(), "&lt;strong&gt;")
+	})
+}
+
+type showKey struct{}
+
+type testCallFuncContext struct{}
+
+func (c *testCallFuncContext) Show(ctx context.Context) bool {
+	v, _ := ctx.Value(showKey{}).(bool)
+	return v
+}
+
+func TestFuncMap_callFunc(t *testing.T) {
+	tpl := `<div v-if="Show()">visible</div><div v-if="!Show()">hidden</div>`
+
+	t.Run("show set to true", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{Data: []byte(tpl)},
+		}
+
+		obj := &testCallFuncContext{}
+		vue := vuego.NewVue(fs)
+		data := map[string]any{"Show": obj.Show}
+
+		ctx := context.WithValue(t.Context(), showKey{}, true)
+
+		var buf bytes.Buffer
+		err := vue.Render(ctx, &buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "visible")
+		assert.NotContains(t, buf.String(), "hidden")
+	})
+
+	t.Run("show unset", func(t *testing.T) {
+		fs := fstest.MapFS{
+			"test.vuego": &fstest.MapFile{Data: []byte(tpl)},
+		}
+
+		obj := &testCallFuncContext{}
+		vue := vuego.NewVue(fs)
+		data := map[string]any{"Show": obj.Show}
+
+		var buf bytes.Buffer
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
+		assert.NoError(t, err)
+		assert.NotContains(t, buf.String(), "visible")
+		assert.Contains(t, buf.String(), "hidden")
 	})
 }

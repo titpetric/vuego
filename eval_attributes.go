@@ -211,7 +211,7 @@ func (v *Vue) parseObjectPairs(ctx VueContext, content string) []string {
 		valueExpr := strings.TrimSpace(item[colonIdx+1:])
 
 		// Try to resolve as expression first (handles literals and expressions)
-		val, err := v.exprEval.Eval(valueExpr, ctx.stack.EnvMap())
+		val, err := v.exprEval.Eval(valueExpr, ctx.ExprEnv())
 		if err != nil {
 			// Fall back to stack resolution for variable references
 			var ok bool

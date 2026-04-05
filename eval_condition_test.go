@@ -41,7 +41,7 @@ func TestEvalCondition_SimpleBooleanVariables(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			require.Contains(t, buf.String(), tt.expect)
 		})
@@ -79,7 +79,7 @@ func TestEvalCondition_NegatedVariables(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 			if tt.expect != "" {
@@ -104,7 +104,7 @@ func TestEvalCondition_UndefinedVariables(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", map[string]any{"defined": true})
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{"defined": true})
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -133,7 +133,7 @@ func TestEvalCondition_FalsyValues(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -162,7 +162,7 @@ func TestEvalCondition_TruthyValues(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -208,7 +208,7 @@ func TestEvalCondition_ExpressionFallback(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 
 			output := buf.String()
@@ -242,7 +242,7 @@ func TestEvalCondition_WithStructFields(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -272,7 +272,7 @@ func TestEvalCondition_StackLookupPath(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -302,7 +302,7 @@ func TestEvalCondition_ExprCompilationFailureFallback(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -330,7 +330,7 @@ func TestEvalCondition_ResolveFailsFallbackToFalse(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -380,7 +380,7 @@ func TestEvalCondition_SuccessfulResolve(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			require.Contains(t, buf.String(), tt.expect)
 		})
@@ -420,7 +420,7 @@ func TestElse_BasicElseDirective(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -477,7 +477,7 @@ func TestElse_MultipleElseIfDirective(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 			require.Contains(t, output, tt.expect)
@@ -540,7 +540,7 @@ func TestElse_ElseFollowingVFor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -591,7 +591,7 @@ func TestElse_VIfAndVElseIfWithoutVElse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -643,7 +643,7 @@ func TestElse_NestedVIfWithVElse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -698,7 +698,7 @@ func TestElse_VElseIfWithComplexConditions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			require.Contains(t, buf.String(), tt.expect)
 		})
@@ -735,7 +735,7 @@ func TestElse_VElseWithInterpolation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			require.Contains(t, buf.String(), tt.expect)
 		})
@@ -753,7 +753,7 @@ func TestElse_StandaloneVElseIfError(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", map[string]any{"condition": true})
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{"condition": true})
 	require.NoError(t, err)
 	output := buf.String()
 
@@ -773,7 +773,7 @@ func TestElse_StandaloneVElseError(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", map[string]any{})
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{})
 	require.NoError(t, err)
 	output := buf.String()
 
@@ -817,7 +817,7 @@ func TestEvaluateNodeAsElement_WithVFor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -870,7 +870,7 @@ func TestEvaluateNodeAsElement_WithVHtml(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -926,7 +926,7 @@ func TestEvaluateNodeAsElement_ElseIfWithVFor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -969,7 +969,7 @@ func TestEvaluateNodeAsElement_ElseWithVHtml(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -1026,7 +1026,7 @@ func TestEvaluateNodeAsElement_ChainedElseIfWithAttributes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -1080,7 +1080,7 @@ func TestEvaluateNodeAsElement_WithVForAndAttributes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -1131,7 +1131,7 @@ func TestEvaluateNodeAsElement_NestedVIfWithChildren(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			output := buf.String()
 
@@ -1170,7 +1170,7 @@ func TestVIfNegationWithVFor(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	output := buf.String()
@@ -1221,7 +1221,7 @@ func TestVIfNegationSimple(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 
 			output := buf.String()

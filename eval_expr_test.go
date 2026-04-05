@@ -159,7 +159,7 @@ func TestVue_VIfWithExprComparison(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil)
 		})
@@ -203,7 +203,7 @@ func TestVue_VIfWithLogicalOperators(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil)
 		})
@@ -237,7 +237,7 @@ func TestVue_VIfWithNestedProperties(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	expected := "<div>User is Active</div>\n<div>In Stock</div>\n"
@@ -269,7 +269,7 @@ func TestVue_InterpolationWithComparison(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tt.expect), buf.Bytes(), nil, nil)
 		})
@@ -307,7 +307,7 @@ func TestVue_BackwardCompatibility(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	expected := "<div>Visible</div>\n<div>Not Hidden</div>\n<p>Hello</p>\n<p>Alice</p>\n"
@@ -347,7 +347,7 @@ func TestRequestExample_TaskPriority(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
-			err := vue.RenderFragment(&buf, "test.vuego", tt.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
 			require.NoError(t, err)
 			require.Contains(t, buf.String(), tt.expect)
 		})
@@ -380,7 +380,7 @@ func TestRequestExample_BooleanOperations(t *testing.T) {
 
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
-	err := vue.RenderFragment(&buf, "test.vuego", data)
+	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
 	require.NoError(t, err)
 
 	t.Logf("Output: %s", buf.String())
@@ -433,7 +433,7 @@ func TestVue_VIfWithStrictEquality(t *testing.T) {
 
 		vue := vuego.NewVue(fs)
 		var buf bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&buf, "test.vuego", data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &buf, "test.vuego", data))
 		require.Contains(t, buf.String(), "Active")
 		require.NotContains(t, buf.String(), "Inactive")
 	})
@@ -450,7 +450,7 @@ func TestVue_VIfWithStrictEquality(t *testing.T) {
 
 		vue := vuego.NewVue(fs)
 		var buf bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&buf, "test.vuego", data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &buf, "test.vuego", data))
 		require.Contains(t, buf.String(), "Not Inactive")
 	})
 
@@ -463,7 +463,7 @@ func TestVue_VIfWithStrictEquality(t *testing.T) {
 
 		vue := vuego.NewVue(fs)
 		var buf bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&buf, "test.vuego", map[string]any{}))
+		require.NoError(t, vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{}))
 		require.Contains(t, buf.String(), "Match")
 	})
 }

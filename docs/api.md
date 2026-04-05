@@ -30,10 +30,11 @@ type ExprEvaluator struct {
 // Functions can have any number of parameters and must return 1 or 2 values.
 // If 2 values are returned, the second must be an error.
 //
-// Functions can optionally take *VueContext as the first parameter:
+// Functions can optionally take *VueContext or context.Context as the first parameter:
 //
-//	func myFunc(ctx *VueContext, arg1 string) (string, error) { ... }
-//	func myFunc(arg1 string) string { ... }  // without context
+// - func myFunc(ctx context.Context) bool { ... }
+// - func myFunc(ctx *VueContext, arg1 string) (string, error) { ... }
+// - func myFunc(arg1 string) string { ... }
 //
 // This allows access to the execution context.
 type FuncMap map[string]any
@@ -222,6 +223,7 @@ type Vue struct {
 // Each render operation gets its own VueContext, making concurrent rendering safe.
 type VueContext struct {
 	// Variable scope and data resolution
+	ctx   context.Context
 	stack *Stack
 
 	// BaseDir is the root directory for template inclusion chains.
@@ -271,7 +273,7 @@ type VueContextOptions struct {
 - `func NewStack (root map[string]any) *Stack`
 - `func NewStackWithData (root map[string]any, originalData any) *Stack`
 - `func NewVue (templateFS fs.FS) *Vue`
-- `func NewVueContext (fromFilename string, options *VueContextOptions) VueContext`
+- `func NewVueContext (ctx context.Context, fromFilename string, options *VueContextOptions) VueContext`
 - `func View (renderer Template, filename string, data V) Template`
 - `func WithComponents () LoadOption`
 - `func WithFS (templateFS fs.FS) LoadOption`
@@ -309,12 +311,13 @@ type VueContextOptions struct {
 - `func (*Vue) GetComponentFile (tagName string) (string, bool)`
 - `func (*Vue) RegisterComponent (tagName,filename string) *Vue`
 - `func (*Vue) RegisterNodeProcessor (processor NodeProcessor) *Vue`
-- `func (*Vue) Render (w io.Writer, filename string, data any) error`
-- `func (*Vue) RenderFragment (w io.Writer, filename string, data any) error`
-- `func (*Vue) RenderNodes (w io.Writer, nodes []*html.Node, data any) error`
+- `func (*Vue) Render (ctx context.Context, w io.Writer, filename string, data any) error`
+- `func (*Vue) RenderFragment (ctx context.Context, w io.Writer, filename string, data any) error`
 - `func (*VueContext) PopTag ()`
 - `func (*VueContext) PushTag (tag string)`
+- `func (VueContext) Context () context.Context`
 - `func (VueContext) CurrentTag () string`
+- `func (VueContext) ExprEnv () map[string]any`
 - `func (VueContext) FormatTemplateChain () string`
 - `func (VueContext) Stack () *Stack`
 - `func (VueContext) WithTemplate (filename string) VueContext`
@@ -427,7 +430,7 @@ func NewVue(templateFS fs.FS) *Vue
 NewVueContext returns a VueContext initialized for the given template filename with initial data.
 
 ```go
-func NewVueContext(fromFilename string, options *VueContextOptions) VueContext
+func NewVueContext(ctx context.Context, fromFilename string, options *VueContextOptions) VueContext
 ```
 
 ### View
@@ -765,7 +768,7 @@ Front-matter data in the template is authoritative and overrides passed data.
 Render is safe to call concurrently from multiple goroutines.
 
 ```go
-func (*Vue) Render(w io.Writer, filename string, data any) error
+func (*Vue) Render(ctx context.Context, w io.Writer, filename string, data any) error
 ```
 
 ### RenderFragment
@@ -775,16 +778,7 @@ Front-matter data in the template is authoritative and overrides passed data.
 RenderFragment is safe to call concurrently from multiple goroutines.
 
 ```go
-func (*Vue) RenderFragment(w io.Writer, filename string, data any) error
-```
-
-### RenderNodes
-
-RenderNodes evaluates and renders HTML nodes with the given data.
-This is the core rendering function used by all public render methods.
-
-```go
-func (*Vue) RenderNodes(w io.Writer, nodes []*html.Node, data any) error
+func (*Vue) RenderFragment(ctx context.Context, w io.Writer, filename string, data any) error
 ```
 
 ### PopTag
@@ -803,12 +797,29 @@ PushTag adds a tag to the tag stack.
 func (*VueContext) PushTag(tag string)
 ```
 
+### Context
+
+Context returns the context.Context associated with this VueContext.
+
+```go
+func (VueContext) Context() context.Context
+```
+
 ### CurrentTag
 
 CurrentTag returns the current parent tag, or empty string if no tag is on the stack.
 
 ```go
 func (VueContext) CurrentTag() string
+```
+
+### ExprEnv
+
+ExprEnv returns the env map for expr evaluation, wrapping any functions whose
+first parameter is context.Context so the context is injected automatically.
+
+```go
+func (VueContext) ExprEnv() map[string]any
 ```
 
 ### FormatTemplateChain

@@ -34,7 +34,7 @@ func getBlogData() map[string]any {
 			"text":   "Simplicity is the ultimate sophistication.",
 			"author": "Leonardo da Vinci",
 		},
-		"codeExample": `vue := vuego.NewVue(templateFS)\nvar buf bytes.Buffer\nerr := vue.Render(&buf, "page.vuego", data)`,
+		"codeExample": `vue := vuego.NewVue(templateFS)\nvar buf bytes.Buffer\nerr := vue.Render(t.Context(), &buf, "page.vuego", data)`,
 		"related": []string{
 			"Understanding Template Directives",
 			"Advanced Filtering Techniques",
@@ -98,7 +98,7 @@ func BenchmarkVue_Render_Detailed(b *testing.B) {
 
 	// Warm up cache
 	var buf strings.Builder
-	err := vue.Render(&buf, "blog.vuego", data)
+	err := vue.Render(b.Context(), &buf, "blog.vuego", data)
 	require.NoError(b, err)
 
 	// Measure total time
@@ -108,7 +108,7 @@ func BenchmarkVue_Render_Detailed(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		start := time.Now()
 		var buf strings.Builder
-		err := vue.Render(&buf, "blog.vuego", data)
+		err := vue.Render(b.Context(), &buf, "blog.vuego", data)
 		require.NoError(b, err)
 		totalDuration += time.Since(start)
 	}
@@ -135,7 +135,7 @@ func TestDetailedRenderTiming(t *testing.T) {
 	for i := 0; i < iterations; i++ {
 		start := time.Now()
 		var buf strings.Builder
-		err := vue.Render(&buf, "blog.vuego", data)
+		err := vue.Render(t.Context(), &buf, "blog.vuego", data)
 		require.NoError(t, err)
 		totalTime += time.Since(start)
 	}
@@ -156,7 +156,7 @@ func TestDetailedRenderBreakdown(t *testing.T) {
 
 	// Warm up the cache and compile
 	var warmupBuf strings.Builder
-	_ = vue.Render(&warmupBuf, "blog.vuego", data)
+	_ = vue.Render(t.Context(), &warmupBuf, "blog.vuego", data)
 
 	// Now measure component loading (parse step - will be cached after first call)
 	var parseTime time.Duration
@@ -165,7 +165,7 @@ func TestDetailedRenderBreakdown(t *testing.T) {
 		// Create a fresh Vue instance to measure parse time
 		freshVue := vuego.NewVue(fs)
 		start := time.Now()
-		_ = freshVue.Render(&strings.Builder{}, "blog.vuego", data)
+		_ = freshVue.Render(t.Context(), &strings.Builder{}, "blog.vuego", data)
 		parseTime += time.Since(start)
 	}
 	avgParseIncluded := parseTime / time.Duration(parseIterations)
@@ -176,7 +176,7 @@ func TestDetailedRenderBreakdown(t *testing.T) {
 	for i := 0; i < cachedIterations; i++ {
 		start := time.Now()
 		var buf strings.Builder
-		_ = vue.Render(&buf, "blog.vuego", data)
+		_ = vue.Render(t.Context(), &buf, "blog.vuego", data)
 		cachedRenderTime += time.Since(start)
 	}
 	avgCachedRender := cachedRenderTime / time.Duration(cachedIterations)
@@ -237,7 +237,7 @@ func TestHtmlParseVsVueGoRender(t *testing.T) {
 	for i := 0; i < vuegoIterations; i++ {
 		start := time.Now()
 		var buf strings.Builder
-		_ = vue.Render(&buf, "blog.vuego", data)
+		_ = vue.Render(t.Context(), &buf, "blog.vuego", data)
 		vuegoTime += time.Since(start)
 	}
 	avgVuegoRender := vuegoTime / time.Duration(vuegoIterations)

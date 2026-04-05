@@ -1,7 +1,9 @@
 package vuego
 
 import (
+	"context"
 	"path"
+	"reflect"
 	"strings"
 
 	"github.com/titpetric/vuego/internal/ulid"
@@ -11,6 +13,7 @@ import (
 // Each render operation gets its own VueContext, making concurrent rendering safe.
 type VueContext struct {
 	// Variable scope and data resolution
+	ctx   context.Context
 	stack *Stack
 
 	// BaseDir is the root directory for template inclusion chains.
@@ -44,8 +47,9 @@ type VueContextOptions struct {
 }
 
 // NewVueContext returns a VueContext initialized for the given template filename with initial data.
-func NewVueContext(fromFilename string, options *VueContextOptions) VueContext {
+func NewVueContext(ctx context.Context, fromFilename string, options *VueContextOptions) VueContext {
 	result := VueContext{
+		ctx:           ctx,
 		stack:         options.Stack,
 		CurrentDir:    path.Dir(fromFilename),
 		FromFilename:  fromFilename,
@@ -65,6 +69,7 @@ func (ctx VueContext) WithTemplate(filename string) VueContext {
 	copy(newStack, ctx.TemplateStack)
 	newStack[len(ctx.TemplateStack)] = filename
 	return VueContext{
+		ctx:           ctx.ctx,
 		stack:         ctx.stack, // Share the same stack across template chain
 		BaseDir:       ctx.BaseDir,
 		CurrentDir:    path.Dir(filename),
@@ -103,6 +108,61 @@ func (ctx VueContext) CurrentTag() string {
 		return ""
 	}
 	return ctx.TagStack[len(ctx.TagStack)-1]
+}
+
+// Context returns the context.Context associated with this VueContext.
+func (ctx VueContext) Context() context.Context {
+	return ctx.ctx
+}
+
+// ExprEnv returns the env map for expr evaluation, wrapping any functions whose
+// first parameter is context.Context so the context is injected automatically.
+func (ctx VueContext) ExprEnv() map[string]any {
+	env := ctx.stack.EnvMap()
+	ctx.bindContextFuncs(env)
+	return env
+}
+
+// bindContextFuncs wraps function values in env whose first parameter is
+// context.Context, binding ctx.ctx so expr can call them without arguments.
+func (ctx VueContext) bindContextFuncs(env map[string]any) {
+	contextType := reflect.TypeOf((*context.Context)(nil)).Elem()
+	for k, v := range env {
+		rv := reflect.ValueOf(v)
+		if rv.Kind() != reflect.Func {
+			continue
+		}
+		ft := rv.Type()
+		if ft.NumIn() == 0 {
+			continue
+		}
+		if ft.In(0) != contextType {
+			continue
+		}
+		env[k] = ctx.wrapContextFunc(rv, ft)
+	}
+}
+
+// wrapContextFunc returns a new function that prepends ctx.ctx to the call.
+func (ctx VueContext) wrapContextFunc(fn reflect.Value, ft reflect.Type) any {
+	// Build the wrapped function type: same signature minus the first context.Context param.
+	numIn := ft.NumIn()
+	inTypes := make([]reflect.Type, numIn-1)
+	for i := 1; i < numIn; i++ {
+		inTypes[i-1] = ft.In(i)
+	}
+	outTypes := make([]reflect.Type, ft.NumOut())
+	for i := 0; i < ft.NumOut(); i++ {
+		outTypes[i] = ft.Out(i)
+	}
+	wrappedType := reflect.FuncOf(inTypes, outTypes, ft.IsVariadic())
+	wrapped := reflect.MakeFunc(wrappedType, func(args []reflect.Value) []reflect.Value {
+		fullArgs := make([]reflect.Value, 0, len(args)+1)
+		fullArgs = append(fullArgs, reflect.ValueOf(ctx.ctx))
+		fullArgs = append(fullArgs, args...)
+		return fn.Call(fullArgs)
+	})
+	return wrapped.Interface()
 }
 
 // Stack returns the variable resolution stack for this context.

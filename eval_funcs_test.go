@@ -26,7 +26,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "3")
 	})
@@ -45,7 +45,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "15")
 	})
@@ -69,7 +69,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "10")
 	})
@@ -85,7 +85,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.Error(t, err)
 		require.Equal(t, "in test.vuego: in expression '{{ unknownFunc(10) }}': function 'unknownFunc' not found", err.Error())
 	})
@@ -103,7 +103,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "HELLO")
 	})
@@ -119,7 +119,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "fallback")
 	})
@@ -137,7 +137,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "empty")
 	})
@@ -153,7 +153,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "EMPTY")
 	})
@@ -171,7 +171,7 @@ func TestVue_InterpolationWithPipes(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.Error(t, err)
 		require.Equal(t, "in test.vuego: in expression '{{ name | upper | badfilter }}': function 'badfilter' not found", err.Error())
 	})
@@ -193,7 +193,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{"name": "Alice"})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{"name": "Alice"})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "Hello, Alice")
 	})
@@ -212,7 +212,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.Error(t, err)
 		require.Equal(t, "in test.vuego: in expression '{{ needs_one(1, 2) }}': needs_one(): function expects 1 arguments, got 2", err.Error())
 	})
@@ -231,7 +231,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "42")
 	})
@@ -250,7 +250,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "Hello, World")
 	})
@@ -269,7 +269,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "value: 3.14")
 	})
@@ -288,7 +288,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "bool: true")
 	})
@@ -310,7 +310,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{"nil_var": nil})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{"nil_var": nil})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "empty")
 	})
@@ -329,7 +329,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{
 			"complex_obj": map[string]any{"nested": "value"},
 		})
 		require.Error(t, err)
@@ -354,7 +354,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "abcd")
 	})
@@ -373,7 +373,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.Error(t, err)
 		require.Equal(t, "in test.vuego: in expression '{{ needs_two(1) }}': needs_two(): function expects at least 2 arguments, got 1", err.Error())
 	})
@@ -395,7 +395,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "5")
 	})
@@ -414,7 +414,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "6.28")
 	})
@@ -436,7 +436,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "yes")
 	})
@@ -455,7 +455,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "200")
 	})
@@ -474,7 +474,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.Error(t, err)
 	})
 
@@ -492,7 +492,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "5.25")
 	})
@@ -511,7 +511,7 @@ func TestVue_CallFunc(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "5")
 	})
@@ -533,7 +533,7 @@ func TestVue_ResolveArgument(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "hello world")
 	})
@@ -552,7 +552,7 @@ func TestVue_ResolveArgument(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "hello world")
 	})
@@ -571,7 +571,7 @@ func TestVue_ResolveArgument(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "84")
 	})
@@ -590,7 +590,7 @@ func TestVue_ResolveArgument(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "1.57")
 	})
@@ -612,7 +612,7 @@ func TestVue_ResolveArgument(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "yes")
 	})
@@ -634,7 +634,7 @@ func TestVue_ResolveArgument(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "no")
 	})
@@ -650,7 +650,7 @@ func TestVue_ResolveArgument(t *testing.T) {
 		data := map[string]any{"name": "alice"}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "ALICE")
 	})
@@ -668,7 +668,7 @@ func TestVue_ResolveArgument(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "BOB")
 	})
@@ -687,7 +687,7 @@ func TestVue_ResolveArgument(t *testing.T) {
 		})
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", map[string]any{})
+		err := vue.Render(t.Context(), &buf, "test.vuego", map[string]any{})
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "unquoted")
 	})
@@ -706,7 +706,7 @@ func TestVue_EvalAttributes(t *testing.T) {
 		data := map[string]any{"image": "test.jpg"}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), `src="test.jpg"`)
 	})
@@ -722,7 +722,7 @@ func TestVue_EvalAttributes(t *testing.T) {
 		data := map[string]any{"className": "PRIMARY"}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), `class="primary"`)
 	})
@@ -738,7 +738,7 @@ func TestVue_EvalAttributes(t *testing.T) {
 		data := map[string]any{"items": []string{"a", "b"}}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), `data-count="2"`)
 	})
@@ -757,7 +757,7 @@ func TestVue_EvalAttributes(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), `title="Hello: World"`)
 	})
@@ -775,7 +775,7 @@ func TestVue_EvalAttributes(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), `id="john"`)
 	})
@@ -791,7 +791,7 @@ func TestVue_EvalAttributes(t *testing.T) {
 		data := map[string]any{}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), `id="default-id"`)
 	})
@@ -810,7 +810,7 @@ func TestEscapeFunc(t *testing.T) {
 		data := map[string]any{"text": "plain text"}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "plain text")
 	})
@@ -826,7 +826,7 @@ func TestEscapeFunc(t *testing.T) {
 		data := map[string]any{"number": 42}
 
 		var buf bytes.Buffer
-		err := vue.Render(&buf, "test.vuego", data)
+		err := vue.Render(t.Context(), &buf, "test.vuego", data)
 		require.NoError(t, err)
 		require.Contains(t, buf.String(), "42")
 	})

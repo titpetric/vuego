@@ -48,7 +48,7 @@ func (t *template) renderWithoutLayout(ctx context.Context, w io.Writer) error {
 		return err
 	}
 
-	return t.vue.Render(w, t.filename, t.stack.EnvMap())
+	return t.vue.Render(ctx, w, t.filename, t.stack.EnvMap())
 }
 
 // RenderFile processes the template file and writes the output to w.
@@ -89,7 +89,7 @@ func (t *template) RenderReader(ctx context.Context, w io.Writer, r io.Reader) e
 	}
 
 	// Create VueContext with filename from loaded template
-	vueCtx := NewVueContext(t.filename, &VueContextOptions{
+	vueCtx := NewVueContext(ctx, t.filename, &VueContextOptions{
 		Stack:      t.stack.Copy(),
 		Processors: t.vue.nodeProcessors,
 	})

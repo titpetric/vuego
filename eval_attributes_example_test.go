@@ -88,7 +88,7 @@ Tag count: {{ tags | len }}
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "parent.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "parent.vuego", tc.data)
 			require.NoError(t, err)
 
 			output := buf.String()

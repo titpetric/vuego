@@ -20,7 +20,7 @@ func TestVue_Render(t *testing.T) {
 	var buf bytes.Buffer
 
 	vue := vuego.NewVue(os.DirFS("testdata/pages"))
-	err := vue.Render(&buf, "Index.vuego", nil)
+	err := vue.Render(t.Context(), &buf, "Index.vuego", nil)
 	require.NoError(t, err)
 
 	t.Log(buf.String())
@@ -75,7 +75,7 @@ func TestVue_Escaping(t *testing.T) {
 
 	t.Run(template, func(t *testing.T) {
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		diff.EqualHTML(t, want, got.Bytes(), nil, nil)
 
 		t.Logf("-- Escape result: %s", got.String())
@@ -95,7 +95,7 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		// Should not contain "checked" attribute
 		require.NotContains(t, got.String(), "checked")
 	})
@@ -110,7 +110,7 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		// Should contain "checked" attribute
 		require.Contains(t, got.String(), "checked")
 	})
@@ -125,7 +125,7 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		require.NotContains(t, got.String(), "disabled")
 	})
 
@@ -139,7 +139,7 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		require.NotContains(t, got.String(), "disabled")
 	})
 
@@ -153,7 +153,7 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		require.NotContains(t, got.String(), "disabled")
 	})
 
@@ -167,7 +167,7 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		require.NotContains(t, got.String(), "disabled")
 	})
 
@@ -181,7 +181,7 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		require.Contains(t, got.String(), "disabled")
 	})
 
@@ -195,7 +195,7 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		require.NotContains(t, got.String(), "required")
 	})
 }
@@ -216,7 +216,7 @@ func TestVue_StructFieldAccess(t *testing.T) {
 		person := Person{Name: "Alice", Age: 30}
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, person))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, person))
 		require.Contains(t, got.String(), "Name: Alice")
 		require.Contains(t, got.String(), "Age: 30")
 	})
@@ -237,7 +237,7 @@ func TestVue_StructFieldAccess(t *testing.T) {
 		person := Person{Address: Address{City: "New York"}}
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(&got, template, person))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, person))
 		require.Contains(t, got.String(), "New York")
 	})
 
@@ -253,7 +253,7 @@ func TestVue_StructFieldAccess(t *testing.T) {
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
 		// When passing a map, struct fields are not used
-		require.NoError(t, vue.RenderFragment(&got, template, data))
+		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		require.Contains(t, got.String(), "Bob")
 	})
 }

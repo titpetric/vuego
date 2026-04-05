@@ -104,7 +104,7 @@ func TestVue_EvalAttributes_BoundAndInterpolated(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
@@ -195,7 +195,7 @@ func TestVue_ObjectBinding_Class(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
@@ -268,7 +268,7 @@ func TestVue_ObjectBinding_Style(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
@@ -305,7 +305,7 @@ func TestVue_CombinedStyleAttributes(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
@@ -348,7 +348,7 @@ func TestVue_EvalBoundAttribute_WithComplexExpressions(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
@@ -391,7 +391,7 @@ func TestVue_EvalBoundAttribute_WithFunctionCalls(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
@@ -446,7 +446,7 @@ func TestVue_ParseObjectPairs_EdgeCases(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
@@ -507,7 +507,7 @@ func TestVue_EvalAttributes_BoundVsInterpolated(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
@@ -550,7 +550,7 @@ func TestVue_EvalAttributes_MultipleBindings(t *testing.T) {
 			vue := vuego.NewVue(fs)
 
 			var buf bytes.Buffer
-			err := vue.RenderFragment(&buf, "test.vuego", tc.data)
+			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
 			require.NoError(t, err)
 			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})

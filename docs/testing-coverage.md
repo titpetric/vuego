@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                          | Coverage | Cognitive | Lines |
 |--------|----------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                  | 85.30%   | 1257      | 4051  |
+| ✅     | titpetric/vuego                  | 85.44%   | 1269      | 4098  |
 | ❌     | titpetric/vuego/diff             | 58.69%   | 155       | 464   |
 | ✅     | titpetric/vuego/formatter        | 94.46%   | 119       | 568   |
 | ✅     | titpetric/vuego/internal/helpers | 100.00%  | 84        | 313   |
@@ -79,10 +79,9 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                  | Vue.RegisterNodeProcessor         | 100.00%  | 1         |
 | ✅     | titpetric/vuego                  | Vue.Render                        | 90.00%   | 3         |
 | ✅     | titpetric/vuego                  | Vue.RenderFragment                | 76.90%   | 4         |
-| ✅     | titpetric/vuego                  | Vue.RenderNodes                   | 0.00%    | 0         |
 | ✅     | titpetric/vuego                  | Vue.buildClassString              | 92.90%   | 7         |
 | ✅     | titpetric/vuego                  | Vue.buildStyleString              | 87.50%   | 10        |
-| ✅     | titpetric/vuego                  | Vue.callFunc                      | 94.50%   | 31        |
+| ✅     | titpetric/vuego                  | Vue.callFunc                      | 90.20%   | 34        |
 | ✅     | titpetric/vuego                  | Vue.evalAttributes                | 94.50%   | 47        |
 | ❌     | titpetric/vuego                  | Vue.evalBoundAttribute            | 72.20%   | 10        |
 | ✅     | titpetric/vuego                  | Vue.evalCondition                 | 100.00%  | 0         |
@@ -119,13 +118,17 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/vuego                  | Vue.resolveComponentTags          | 75.00%   | 3         |
 | ✅     | titpetric/vuego                  | Vue.setStyleProperty              | 100.00%  | 1         |
 | ✅     | titpetric/vuego                  | Vue.splitObjectItems              | 81.80%   | 10        |
+| ✅     | titpetric/vuego                  | VueContext.Context                | 0.00%    | 0         |
 | ✅     | titpetric/vuego                  | VueContext.CurrentTag             | 100.00%  | 1         |
+| ✅     | titpetric/vuego                  | VueContext.ExprEnv                | 100.00%  | 0         |
 | ✅     | titpetric/vuego                  | VueContext.FormatTemplateChain    | 66.70%   | 1         |
 | ✅     | titpetric/vuego                  | VueContext.PopTag                 | 100.00%  | 1         |
 | ✅     | titpetric/vuego                  | VueContext.PushTag                | 100.00%  | 0         |
 | ✅     | titpetric/vuego                  | VueContext.Stack                  | 100.00%  | 0         |
 | ✅     | titpetric/vuego                  | VueContext.WithTemplate           | 100.00%  | 0         |
+| ✅     | titpetric/vuego                  | VueContext.bindContextFuncs       | 90.90%   | 7         |
 | ✅     | titpetric/vuego                  | VueContext.nextSeenID             | 100.00%  | 0         |
+| ✅     | titpetric/vuego                  | VueContext.wrapContextFunc        | 92.90%   | 2         |
 | ✅     | titpetric/vuego                  | WithComponents                    | 88.20%   | 12        |
 | ✅     | titpetric/vuego                  | WithFS                            | 100.00%  | 0         |
 | ✅     | titpetric/vuego                  | WithFuncs                         | 100.00%  | 0         |
