@@ -5,10 +5,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/diff"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestVue_EvaluateTextNode(t *testing.T) {
@@ -20,8 +18,8 @@ func TestVue_EvaluateTextNode(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{"message": "hello"})
-	require.NoError(t, err)
-	diff.EqualHTML(t, []byte("<p>hello</p>"), buf.Bytes(), nil, nil)
+	assert.NoError(t, err)
+	assert.EqualHTML(t, []byte("<p>hello</p>"), buf.Bytes(), nil, nil)
 }
 
 func TestVue_EvaluateElementNode(t *testing.T) {
@@ -32,9 +30,9 @@ func TestVue_EvaluateElementNode(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", nil)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "container")
-	require.Contains(t, buf.String(), "content")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "container")
+	assert.Contains(t, buf.String(), "content")
 }
 
 func TestVue_EvaluateChildren(t *testing.T) {
@@ -46,9 +44,9 @@ func TestVue_EvaluateChildren(t *testing.T) {
 	data := map[string]any{"a": "first", "b": "second"}
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "first")
-	require.Contains(t, buf.String(), "second")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "first")
+	assert.Contains(t, buf.String(), "second")
 }
 
 func TestVue_EvaluateTemplateTag(t *testing.T) {
@@ -59,10 +57,10 @@ func TestVue_EvaluateTemplateTag(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", nil)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	// template tag should be omitted, but content should render
-	require.Contains(t, buf.String(), "hidden")
-	require.NotContains(t, buf.String(), "template")
+	assert.Contains(t, buf.String(), "hidden")
+	assert.NotContains(t, buf.String(), "template")
 }
 
 func TestVue_EvaluateWithVIf(t *testing.T) {
@@ -74,9 +72,9 @@ func TestVue_EvaluateWithVIf(t *testing.T) {
 	data := map[string]any{"show": true, "hide": false}
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "visible")
-	require.NotContains(t, buf.String(), "hidden")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "visible")
+	assert.NotContains(t, buf.String(), "hidden")
 }
 
 func TestVue_EvaluateWithVFor(t *testing.T) {
@@ -88,10 +86,10 @@ func TestVue_EvaluateWithVFor(t *testing.T) {
 	data := map[string]any{"items": []string{"a", "b", "c"}}
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "a")
-	require.Contains(t, buf.String(), "b")
-	require.Contains(t, buf.String(), "c")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "a")
+	assert.Contains(t, buf.String(), "b")
+	assert.Contains(t, buf.String(), "c")
 }
 
 func TestVue_EvaluateWithVHtml(t *testing.T) {
@@ -103,8 +101,8 @@ func TestVue_EvaluateWithVHtml(t *testing.T) {
 	data := map[string]any{"html": "<strong>bold</strong>"}
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "<strong>bold</strong>")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "<strong>bold</strong>")
 }
 
 func TestVue_EvaluateComplexNesting(t *testing.T) {
@@ -129,11 +127,11 @@ func TestVue_EvaluateComplexNesting(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	output := buf.String()
-	require.Contains(t, output, "One")
-	require.NotContains(t, output, "Two")
-	require.Contains(t, output, "Three")
+	assert.Contains(t, output, "One")
+	assert.NotContains(t, output, "Two")
+	assert.Contains(t, output, "Three")
 }
 
 func TestVue_EvaluateCloneNode(t *testing.T) {
@@ -145,12 +143,12 @@ func TestVue_EvaluateCloneNode(t *testing.T) {
 
 	var buf1 bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf1, "test.vuego", map[string]any{"value": "first"})
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	var buf2 bytes.Buffer
 	err = vue.RenderFragment(t.Context(), &buf2, "test.vuego", map[string]any{"value": "second"})
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
-	require.Contains(t, buf1.String(), "first")
-	require.Contains(t, buf2.String(), "second")
+	assert.Contains(t, buf1.String(), "first")
+	assert.Contains(t, buf2.String(), "second")
 }

@@ -7,9 +7,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 // getTOCData returns a read-only table of contents data structure
@@ -183,40 +182,40 @@ func TestTemplate_RenderOutput_Equivalence(t *testing.T) {
 	tmpl1 := vuego.NewFS(fs).Fill(data)
 	buf1 := &bytes.Buffer{}
 	err := tmpl1.Load("toc.html").Render(context.Background(), buf1)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	output1 := buf1.String()
 
 	// Render using RenderString
 	tmpl2 := vuego.NewFS(fs).Fill(data)
 	buf2 := &bytes.Buffer{}
 	err = tmpl2.RenderString(context.Background(), buf2, string(getTOCTemplate()))
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	output2 := buf2.String()
 
 	// Render using RenderByte
 	tmpl3 := vuego.NewFS(fs).Fill(data)
 	buf3 := &bytes.Buffer{}
 	err = tmpl3.RenderByte(context.Background(), buf3, getTOCTemplate())
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	output3 := buf3.String()
 
 	// Render using RenderReader
 	tmpl4 := vuego.NewFS(fs).Fill(data)
 	buf4 := &bytes.Buffer{}
 	err = tmpl4.RenderReader(context.Background(), buf4, bytes.NewReader(getTOCTemplate()))
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	output4 := buf4.String()
 
 	// Verify all outputs are identical
-	require.Equal(t, output1, output2, "RenderString should produce same output as Render")
-	require.Equal(t, output1, output3, "RenderByte should produce same output as Render")
-	require.Equal(t, output1, output4, "RenderReader should produce same output as Render")
+	assert.Equal(t, output1, output2, "RenderString should produce same output as Render")
+	assert.Equal(t, output1, output3, "RenderByte should produce same output as Render")
+	assert.Equal(t, output1, output4, "RenderReader should produce same output as Render")
 
 	// Verify output is not empty and contains expected content
-	require.Greater(t, len(output1), 0, "output should not be empty")
-	require.Contains(t, output1, "Getting Started", "output should contain chapter title")
-	require.Contains(t, output1, "Installation", "output should contain section")
-	require.Contains(t, output1, "Using Go Modules", "output should contain subsection")
+	assert.Greater(t, len(output1), 0, "output should not be empty")
+	assert.Contains(t, output1, "Getting Started", "output should contain chapter title")
+	assert.Contains(t, output1, "Installation", "output should contain section")
+	assert.Contains(t, output1, "Using Go Modules", "output should contain subsection")
 }
 
 // BenchmarkTemplate_Render benchmarks rendering from a file.

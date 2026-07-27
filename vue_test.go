@@ -9,11 +9,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/diff"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestVue_Render(t *testing.T) {
@@ -21,7 +18,7 @@ func TestVue_Render(t *testing.T) {
 
 	vue := vuego.NewVue(os.DirFS("testdata/pages"))
 	err := vue.Render(t.Context(), &buf, "Index.vuego", nil)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	t.Log(buf.String())
 }
@@ -33,17 +30,17 @@ func TestFixtures(t *testing.T) {
 	tpl := vuego.NewFS(fixtures, vuego.WithComponents(), vuego.WithLessProcessor())
 
 	templates, err := fs.Glob(fixtures, "*.vuego")
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	for _, template := range templates {
 		want, err := fs.ReadFile(fixtures, strings.ReplaceAll(template, ".vuego", ".html"))
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		dataBytes, err := fs.ReadFile(fixtures, strings.ReplaceAll(template, ".vuego", ".json"))
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		templateBytes, err := fs.ReadFile(fixtures, template)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		data := map[string]any{}
 		err = json.NewDecoder(bytes.NewReader(dataBytes)).Decode(&data)
@@ -53,8 +50,8 @@ func TestFixtures(t *testing.T) {
 		t.Run(template, func(t *testing.T) {
 			var got bytes.Buffer
 			loaded := tpl.Load(template).Fill(data)
-			require.NoError(t, loaded.Render(t.Context(), &got))
-			diff.EqualHTML(t, want, got.Bytes(), templateBytes, dataBytes)
+			assert.NoError(t, loaded.Render(t.Context(), &got))
+			assert.EqualHTML(t, want, got.Bytes(), templateBytes, dataBytes)
 		})
 	}
 }
@@ -75,8 +72,8 @@ func TestVue_Escaping(t *testing.T) {
 
 	t.Run(template, func(t *testing.T) {
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
-		diff.EqualHTML(t, want, got.Bytes(), nil, nil)
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+		assert.EqualHTML(t, want, got.Bytes(), nil, nil)
 
 		t.Logf("-- Escape result: %s", got.String())
 	})
@@ -95,9 +92,9 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		// Should not contain "checked" attribute
-		require.NotContains(t, got.String(), "checked")
+		assert.NotContains(t, got.String(), "checked")
 	})
 
 	t.Run("true boolean attribute is rendered", func(t *testing.T) {
@@ -110,9 +107,9 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
 		// Should contain "checked" attribute
-		require.Contains(t, got.String(), "checked")
+		assert.Contains(t, got.String(), "checked")
 	})
 
 	t.Run("empty string is falsey", func(t *testing.T) {
@@ -125,8 +122,8 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
-		require.NotContains(t, got.String(), "disabled")
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+		assert.NotContains(t, got.String(), "disabled")
 	})
 
 	t.Run("string 'false' is falsey", func(t *testing.T) {
@@ -139,8 +136,8 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
-		require.NotContains(t, got.String(), "disabled")
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+		assert.NotContains(t, got.String(), "disabled")
 	})
 
 	t.Run("zero is falsey", func(t *testing.T) {
@@ -153,8 +150,8 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
-		require.NotContains(t, got.String(), "disabled")
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+		assert.NotContains(t, got.String(), "disabled")
 	})
 
 	t.Run("nil is falsey", func(t *testing.T) {
@@ -167,8 +164,8 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
-		require.NotContains(t, got.String(), "disabled")
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+		assert.NotContains(t, got.String(), "disabled")
 	})
 
 	t.Run("truthy string is rendered", func(t *testing.T) {
@@ -181,8 +178,8 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
-		require.Contains(t, got.String(), "disabled")
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+		assert.Contains(t, got.String(), "disabled")
 	})
 
 	t.Run("v-bind: prefix also respects falsey values", func(t *testing.T) {
@@ -195,8 +192,8 @@ func TestVue_BoundAttributesFalsey(t *testing.T) {
 
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
-		require.NotContains(t, got.String(), "required")
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+		assert.NotContains(t, got.String(), "required")
 	})
 }
 
@@ -216,9 +213,9 @@ func TestVue_StructFieldAccess(t *testing.T) {
 		person := Person{Name: "Alice", Age: 30}
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, person))
-		require.Contains(t, got.String(), "Name: Alice")
-		require.Contains(t, got.String(), "Age: 30")
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, person))
+		assert.Contains(t, got.String(), "Name: Alice")
+		assert.Contains(t, got.String(), "Age: 30")
 	})
 
 	t.Run("nested struct fields work", func(t *testing.T) {
@@ -237,8 +234,8 @@ func TestVue_StructFieldAccess(t *testing.T) {
 		person := Person{Address: Address{City: "New York"}}
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, person))
-		require.Contains(t, got.String(), "New York")
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, person))
+		assert.Contains(t, got.String(), "New York")
 	})
 
 	t.Run("map data still takes precedence over struct fields", func(t *testing.T) {
@@ -253,7 +250,7 @@ func TestVue_StructFieldAccess(t *testing.T) {
 		vue := vuego.NewVue(templateFS)
 		var got bytes.Buffer
 		// When passing a map, struct fields are not used
-		require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
-		require.Contains(t, got.String(), "Bob")
+		assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+		assert.Contains(t, got.String(), "Bob")
 	})
 }

@@ -6,9 +6,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 var NewOverlayFS = vuego.NewOverlayFS

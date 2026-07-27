@@ -5,9 +5,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 // Article is a sample model type to test with
@@ -75,10 +74,10 @@ func TestVue_TypedAttributePassthrough(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "parent.vuego", tc.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 
 			output := buf.String()
-			require.Contains(t, output, tc.expected, "expected type %s but got %s", tc.expected, output)
+			assert.Contains(t, output, tc.expected, "expected type %s but got %s", tc.expected, output)
 		})
 	}
 }

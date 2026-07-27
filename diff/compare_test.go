@@ -4,16 +4,16 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 
 	"github.com/titpetric/vuego/diff"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestSignificantChildren(t *testing.T) {
 	t.Run("nil node returns nil", func(t *testing.T) {
 		result := diff.SignificantChildren(nil)
-		require.Nil(t, result)
+		assert.Nil(t, result)
 	})
 
 	t.Run("document node with single element child", func(t *testing.T) {
@@ -21,8 +21,8 @@ func TestSignificantChildren(t *testing.T) {
 		div := &html.Node{Type: html.ElementNode, Data: "div"}
 		n.AppendChild(div)
 		result := diff.SignificantChildren(n)
-		require.Len(t, result, 1)
-		require.Equal(t, div, result[0])
+		assert.Len(t, result, 1)
+		assert.Equal(t, div, result[0])
 	})
 
 	t.Run("document node ignores whitespace-only text nodes", func(t *testing.T) {
@@ -36,8 +36,8 @@ func TestSignificantChildren(t *testing.T) {
 		n.AppendChild(whitespace2)
 
 		result := diff.SignificantChildren(n)
-		require.Len(t, result, 1)
-		require.Equal(t, div, result[0])
+		assert.Len(t, result, 1)
+		assert.Equal(t, div, result[0])
 	})
 
 	t.Run("document with multiple element children", func(t *testing.T) {
@@ -48,23 +48,23 @@ func TestSignificantChildren(t *testing.T) {
 		n.AppendChild(div2)
 
 		result := diff.SignificantChildren(n)
-		require.Len(t, result, 2)
-		require.Equal(t, div1, result[0])
-		require.Equal(t, div2, result[1])
+		assert.Len(t, result, 2)
+		assert.Equal(t, div1, result[0])
+		assert.Equal(t, div2, result[1])
 	})
 
 	t.Run("element node returns itself wrapped", func(t *testing.T) {
 		div := &html.Node{Type: html.ElementNode, Data: "div"}
 		result := diff.SignificantChildren(div)
-		require.Len(t, result, 1)
-		require.Equal(t, div, result[0])
+		assert.Len(t, result, 1)
+		assert.Equal(t, div, result[0])
 	})
 
 	t.Run("text node returns itself wrapped", func(t *testing.T) {
 		text := &html.Node{Type: html.TextNode, Data: "hello"}
 		result := diff.SignificantChildren(text)
-		require.Len(t, result, 1)
-		require.Equal(t, text, result[0])
+		assert.Len(t, result, 1)
+		assert.Equal(t, text, result[0])
 	})
 
 	t.Run("parsed html document with only body", func(t *testing.T) {
@@ -82,18 +82,18 @@ func TestSignificantChildren(t *testing.T) {
 
 		result := diff.SignificantChildren(root)
 		// When html->body, returns body's children
-		require.True(t, len(result) > 0, "should have children")
-		require.Equal(t, "p", result[0].Data)
+		assert.True(t, len(result) > 0, "should have children")
+		assert.Equal(t, "p", result[0].Data)
 	})
 
 	t.Run("parsed html document unwraps body", func(t *testing.T) {
 		// html.Parse creates html/head/body structure
 		doc, err := html.Parse(bytes.NewReader([]byte("<html><body><p>test</p></body></html>")))
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		result := diff.SignificantChildren(doc)
 		// When html->head+body, returns htmlChildren (head and body)
-		require.True(t, len(result) > 0, "should have children")
+		assert.True(t, len(result) > 0, "should have children")
 	})
 
 	t.Run("comment nodes are ignored", func(t *testing.T) {
@@ -105,7 +105,7 @@ func TestSignificantChildren(t *testing.T) {
 		n.AppendChild(div)
 
 		result := diff.SignificantChildren(n)
-		require.Len(t, result, 2) // comment and div both included in doc children
+		assert.Len(t, result, 2) // comment and div both included in doc children
 	})
 }
 
@@ -113,17 +113,17 @@ func TestCompareHTML(t *testing.T) {
 	t.Run("identical simple HTML matches", func(t *testing.T) {
 		html := []byte("<div><p>text</p></div>")
 		tb := &testing.T{}
-		diff.EqualHTML(tb, html, html, nil, nil)
+		assert.EqualHTML(tb, html, html, nil, nil)
 	})
 
 	t.Run("whitespace in text nodes is ignored", func(t *testing.T) {
 		tb := &testing.T{}
-		diff.EqualHTML(tb, []byte("<p>hello</p>"), []byte("<p>  hello  </p>"), nil, nil)
+		assert.EqualHTML(tb, []byte("<p>hello</p>"), []byte("<p>  hello  </p>"), nil, nil)
 	})
 
 	t.Run("attribute order doesn't matter", func(t *testing.T) {
 		tb := &testing.T{}
-		diff.EqualHTML(
+		assert.EqualHTML(
 			tb,
 			[]byte(`<div class="a" id="x"></div>`),
 			[]byte(`<div id="x" class="a"></div>`),
@@ -135,18 +135,18 @@ func TestCompareHTML(t *testing.T) {
 	t.Run("nested structures match recursively", func(t *testing.T) {
 		tb := &testing.T{}
 		html := []byte("<div><p><span>text</span></p></div>")
-		diff.EqualHTML(tb, html, html, nil, nil)
+		assert.EqualHTML(tb, html, html, nil, nil)
 	})
 
 	t.Run("empty text nodes are ignored", func(t *testing.T) {
 		tb := &testing.T{}
-		diff.EqualHTML(tb, []byte("<div></div>"), []byte("<div>   </div>"), nil, nil)
+		assert.EqualHTML(tb, []byte("<div></div>"), []byte("<div>   </div>"), nil, nil)
 	})
 
 	t.Run("matching HTML with different comments", func(t *testing.T) {
 		tb := &testing.T{}
 		// Both have same structure, just different comment content
-		diff.EqualHTML(
+		assert.EqualHTML(
 			tb,
 			[]byte("<div><!-- comment1 --><p>text</p></div>"),
 			[]byte("<div><!-- comment2 --><p>text</p></div>"),
@@ -159,7 +159,7 @@ func TestCompareHTML(t *testing.T) {
 		tb := &testing.T{}
 		html1 := []byte(`<div data-test="1" class="c"><p>content</p></div>`)
 		html2 := []byte(`<div class="c" data-test="1"><p>content</p></div>`)
-		diff.EqualHTML(tb, html1, html2, nil, nil)
+		assert.EqualHTML(tb, html1, html2, nil, nil)
 	})
 
 	t.Run("complex document structures match", func(t *testing.T) {
@@ -172,6 +172,6 @@ func TestCompareHTML(t *testing.T) {
 				</p>
 			</div>
 		`)
-		diff.EqualHTML(tb, html, html, nil, nil)
+		assert.EqualHTML(tb, html, html, nil, nil)
 	})
 }

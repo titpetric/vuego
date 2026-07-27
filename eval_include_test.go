@@ -5,10 +5,10 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 // TestEvalInclude_StackManagement verifies that include stack push/pop is properly balanced
@@ -29,11 +29,11 @@ func TestEvalInclude_StackManagement(t *testing.T) {
 		tpl := vuego.NewFS(fs)
 		var buf bytes.Buffer
 		err := tpl.Load("parent.vuego").Fill(map[string]any{}).Render(t.Context(), &buf)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		// Should render without errors
 		output := buf.String()
-		require.Contains(t, output, "child")
+		assert.Contains(t, output, "child")
 	})
 
 	t.Run("stack is popped even when include file missing", func(t *testing.T) {
@@ -50,8 +50,8 @@ func TestEvalInclude_StackManagement(t *testing.T) {
 		err := tpl.Load("parent.vuego").Fill(map[string]any{}).Render(t.Context(), &buf)
 
 		// Should error but leave stack in consistent state
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "error loading missing.vuego")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "error loading missing.vuego")
 	})
 }
 
@@ -81,11 +81,11 @@ func TestEvalInclude_InheritedSlots(t *testing.T) {
 		err := tpl.Load("page.vuego").Fill(map[string]any{
 			"__slotScope__": slotScope,
 		}).Render(t.Context(), &buf)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		output := buf.String()
-		require.Contains(t, output, "injected content")
-		require.NotContains(t, output, "default extra")
+		assert.Contains(t, output, "injected content")
+		assert.NotContains(t, output, "default extra")
 	})
 
 	t.Run("explicit slot in include takes priority over inherited slot", func(t *testing.T) {
@@ -110,12 +110,12 @@ func TestEvalInclude_InheritedSlots(t *testing.T) {
 		err := tpl.Load("page.vuego").Fill(map[string]any{
 			"__slotScope__": slotScope,
 		}).Render(t.Context(), &buf)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		output := buf.String()
-		require.Contains(t, output, "explicit content")
-		require.NotContains(t, output, "inherited content")
-		require.NotContains(t, output, "default extra")
+		assert.Contains(t, output, "explicit content")
+		assert.NotContains(t, output, "inherited content")
+		assert.NotContains(t, output, "default extra")
 	})
 }
 
@@ -139,16 +139,16 @@ func TestEvalInclude_DataPassing(t *testing.T) {
 		err := tpl.Load("parent.vuego").Fill(map[string]any{
 			"message": "First",
 		}).Render(t.Context(), &buf1)
-		require.NoError(t, err)
-		require.Contains(t, buf1.String(), "First")
+		assert.NoError(t, err)
+		assert.Contains(t, buf1.String(), "First")
 
 		// Second render with different data
 		var buf2 bytes.Buffer
 		err = tpl.Load("parent.vuego").Fill(map[string]any{
 			"message": "Second",
 		}).Render(t.Context(), &buf2)
-		require.NoError(t, err)
-		require.Contains(t, buf2.String(), "Second")
-		require.NotContains(t, buf2.String(), "First")
+		assert.NoError(t, err)
+		assert.Contains(t, buf2.String(), "Second")
+		assert.NotContains(t, buf2.String(), "First")
 	})
 }

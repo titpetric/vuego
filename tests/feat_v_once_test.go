@@ -5,10 +5,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/diff"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestVOnce_SkipsSubsequentRenders(t *testing.T) {
@@ -51,8 +49,8 @@ func TestVOnce_SkipsSubsequentRenders(t *testing.T) {
 
 	vue := vuego.NewVue(templateFS)
 	var got bytes.Buffer
-	require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
-	diff.EqualHTML(t, want, got.Bytes(), nil, nil)
+	assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+	assert.EqualHTML(t, want, got.Bytes(), nil, nil)
 }
 
 func TestVOnce_MultipleVOnceElements(t *testing.T) {
@@ -91,6 +89,6 @@ func TestVOnce_MultipleVOnceElements(t *testing.T) {
 
 	vue := vuego.NewVue(templateFS)
 	var got bytes.Buffer
-	require.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
-	diff.EqualHTML(t, want, got.Bytes(), nil, nil)
+	assert.NoError(t, vue.RenderFragment(t.Context(), &got, template, data))
+	assert.EqualHTML(t, want, got.Bytes(), nil, nil)
 }

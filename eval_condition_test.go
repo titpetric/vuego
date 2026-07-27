@@ -5,9 +5,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 // TestEvalCondition_SimpleBooleanVariables covers the fallback path
@@ -42,8 +41,8 @@ func TestEvalCondition_SimpleBooleanVariables(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
-			require.Contains(t, buf.String(), tt.expect)
+			assert.NoError(t, err)
+			assert.Contains(t, buf.String(), tt.expect)
 		})
 	}
 }
@@ -80,13 +79,13 @@ func TestEvalCondition_NegatedVariables(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 			if tt.expect != "" {
-				require.Contains(t, output, tt.expect)
+				assert.Contains(t, output, tt.expect)
 			} else {
-				require.NotContains(t, output, "Enabled")
-				require.NotContains(t, output, "Hidden")
+				assert.NotContains(t, output, "Enabled")
+				assert.NotContains(t, output, "Hidden")
 			}
 		})
 	}
@@ -105,11 +104,11 @@ func TestEvalCondition_UndefinedVariables(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{"defined": true})
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	output := buf.String()
-	require.NotContains(t, output, "Should not appear")
-	require.Contains(t, output, "Should appear")
+	assert.NotContains(t, output, "Should not appear")
+	assert.Contains(t, output, "Should appear")
 }
 
 // TestEvalCondition_FalsyValues covers different falsy values
@@ -134,14 +133,14 @@ func TestEvalCondition_FalsyValues(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	output := buf.String()
 	// All should be falsy and not rendered
-	require.NotContains(t, output, "bool false")
-	require.NotContains(t, output, "int zero")
-	require.NotContains(t, output, "empty string")
-	require.NotContains(t, output, "nil value")
+	assert.NotContains(t, output, "bool false")
+	assert.NotContains(t, output, "int zero")
+	assert.NotContains(t, output, "empty string")
+	assert.NotContains(t, output, "nil value")
 }
 
 // TestEvalCondition_TruthyValues covers different truthy values
@@ -163,12 +162,12 @@ func TestEvalCondition_TruthyValues(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	output := buf.String()
-	require.Contains(t, output, "bool true")
-	require.Contains(t, output, "int one")
-	require.Contains(t, output, "string text")
+	assert.Contains(t, output, "bool true")
+	assert.Contains(t, output, "int one")
+	assert.Contains(t, output, "string text")
 }
 
 // TestEvalCondition_ExpressionFallback tests the case where expr evaluation
@@ -209,13 +208,13 @@ func TestEvalCondition_ExpressionFallback(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 
 			output := buf.String()
 			if tt.expect {
-				require.Contains(t, output, "Message exists")
+				assert.Contains(t, output, "Message exists")
 			} else {
-				require.NotContains(t, output, "Message exists")
+				assert.NotContains(t, output, "Message exists")
 			}
 		})
 	}
@@ -243,11 +242,11 @@ func TestEvalCondition_WithStructFields(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	output := buf.String()
-	require.Contains(t, output, "User is active")
-	require.Contains(t, output, "User has name")
+	assert.Contains(t, output, "User is active")
+	assert.Contains(t, output, "User has name")
 }
 
 // TestEvalCondition_StackLookupPath tests the stack.Lookup function directly
@@ -273,14 +272,14 @@ func TestEvalCondition_StackLookupPath(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	output := buf.String()
-	require.Contains(t, output, "Item: First")
-	require.Contains(t, output, "Item: Second")
+	assert.Contains(t, output, "Item: First")
+	assert.Contains(t, output, "Item: Second")
 	// Empty string should not render the <li> element
 	lines := bytes.Split([]byte(output), []byte("<li"))
-	require.Len(t, lines, 3) // header + 2 items with <li (empty string item doesn't get <li>)
+	assert.Len(t, lines, 3) // header + 2 items with <li (empty string item doesn't get <li>)
 }
 
 // TestEvalCondition_ExprCompilationFailureFallback tests the fallback path
@@ -303,15 +302,15 @@ func TestEvalCondition_ExprCompilationFailureFallback(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	output := buf.String()
 	// When expr fails, it falls back to simple Resolve which doesn't handle pipes
 	// "show | extra" will fail expr compilation and then "show | extra" won't resolve
 	// So the first div should not render
 	// "hide |" will fail expr compilation and then "hide |" won't resolve as a variable name
-	require.NotContains(t, output, "Should render")
-	require.NotContains(t, output, "Should not render")
+	assert.NotContains(t, output, "Should render")
+	assert.NotContains(t, output, "Should not render")
 }
 
 // TestEvalCondition_ResolveFailsFallbackToFalse tests that when both
@@ -331,12 +330,12 @@ func TestEvalCondition_ResolveFailsFallbackToFalse(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	output := buf.String()
 	// "completely_undefined" is neither in env nor resolvable
-	require.NotContains(t, output, "Should not appear")
-	require.Contains(t, output, "Should appear")
+	assert.NotContains(t, output, "Should not appear")
+	assert.Contains(t, output, "Should appear")
 }
 
 // TestEvalCondition_SuccessfulResolve tests stack.Resolve fallback behavior
@@ -381,8 +380,8 @@ func TestEvalCondition_SuccessfulResolve(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
-			require.Contains(t, buf.String(), tt.expect)
+			assert.NoError(t, err)
+			assert.Contains(t, buf.String(), tt.expect)
 		})
 	}
 }
@@ -421,15 +420,15 @@ func TestElse_BasicElseDirective(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
 			if tt.expectShow {
-				require.Contains(t, output, "Visible")
-				require.NotContains(t, output, "Hidden")
+				assert.Contains(t, output, "Visible")
+				assert.NotContains(t, output, "Hidden")
 			} else {
-				require.NotContains(t, output, "Visible")
-				require.Contains(t, output, "Hidden")
+				assert.NotContains(t, output, "Visible")
+				assert.Contains(t, output, "Hidden")
 			}
 		})
 	}
@@ -478,21 +477,21 @@ func TestElse_MultipleElseIfDirective(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
-			require.Contains(t, output, tt.expect)
+			assert.Contains(t, output, tt.expect)
 			// Verify other conditions don't render
 			if tt.expect != "Active" {
-				require.NotContains(t, output, "Active")
+				assert.NotContains(t, output, "Active")
 			}
 			if tt.expect != "Pending" {
-				require.NotContains(t, output, "Pending")
+				assert.NotContains(t, output, "Pending")
 			}
 			if tt.expect != "Inactive" {
-				require.NotContains(t, output, "Inactive")
+				assert.NotContains(t, output, "Inactive")
 			}
 			if tt.expect != "Unknown" {
-				require.NotContains(t, output, "Unknown")
+				assert.NotContains(t, output, "Unknown")
 			}
 		})
 	}
@@ -541,16 +540,16 @@ func TestElse_ElseFollowingVFor(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
 			if tt.expectItem {
-				require.Contains(t, output, "<li>a</li>")
-				require.Contains(t, output, "<li>b</li>")
-				require.Contains(t, output, "<li>c</li>")
-				require.NotContains(t, output, "No items")
+				assert.Contains(t, output, "<li>a</li>")
+				assert.Contains(t, output, "<li>b</li>")
+				assert.Contains(t, output, "<li>c</li>")
+				assert.NotContains(t, output, "No items")
 			} else {
-				require.Contains(t, output, "No items")
+				assert.Contains(t, output, "No items")
 			}
 		})
 	}
@@ -592,14 +591,14 @@ func TestElse_VIfAndVElseIfWithoutVElse(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
 			if tt.expect == "" {
-				require.NotContains(t, output, "Show")
-				require.NotContains(t, output, "Alternate")
+				assert.NotContains(t, output, "Show")
+				assert.NotContains(t, output, "Alternate")
 			} else {
-				require.Contains(t, output, tt.expect)
+				assert.Contains(t, output, tt.expect)
 			}
 		})
 	}
@@ -644,11 +643,11 @@ func TestElse_NestedVIfWithVElse(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
 			for _, exp := range tt.expect {
-				require.Contains(t, output, exp)
+				assert.Contains(t, output, exp)
 			}
 		})
 	}
@@ -699,8 +698,8 @@ func TestElse_VElseIfWithComplexConditions(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
-			require.Contains(t, buf.String(), tt.expect)
+			assert.NoError(t, err)
+			assert.Contains(t, buf.String(), tt.expect)
 		})
 	}
 }
@@ -736,8 +735,8 @@ func TestElse_VElseWithInterpolation(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
-			require.Contains(t, buf.String(), tt.expect)
+			assert.NoError(t, err)
+			assert.Contains(t, buf.String(), tt.expect)
 		})
 	}
 }
@@ -754,12 +753,12 @@ func TestElse_StandaloneVElseIfError(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{"condition": true})
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	output := buf.String()
 
 	// v-else-if without v-if should be skipped
-	require.NotContains(t, output, "Should not appear")
-	require.Contains(t, output, "Should appear")
+	assert.NotContains(t, output, "Should not appear")
+	assert.Contains(t, output, "Should appear")
 }
 
 // TestElse_StandaloneVElseError tests that v-else without v-if is ignored
@@ -774,12 +773,12 @@ func TestElse_StandaloneVElseError(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{})
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	output := buf.String()
 
 	// v-else without v-if should be skipped
-	require.NotContains(t, output, "Should not appear")
-	require.Contains(t, output, "Should appear")
+	assert.NotContains(t, output, "Should not appear")
+	assert.Contains(t, output, "Should appear")
 }
 
 // TestEvaluateNodeAsElement_WithVFor tests evaluateNodeAsElement with v-for directive
@@ -818,14 +817,14 @@ func TestEvaluateNodeAsElement_WithVFor(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
 			for _, exp := range tt.expect {
-				require.Contains(t, output, exp)
+				assert.Contains(t, output, exp)
 			}
 			if tt.notExp != "" {
-				require.NotContains(t, output, tt.notExp)
+				assert.NotContains(t, output, tt.notExp)
 			}
 		})
 	}
@@ -871,14 +870,14 @@ func TestEvaluateNodeAsElement_WithVHtml(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
 			if tt.expect != "" {
-				require.Contains(t, output, tt.expect)
+				assert.Contains(t, output, tt.expect)
 			}
 			if tt.notExp != "" {
-				require.NotContains(t, output, tt.notExp)
+				assert.NotContains(t, output, tt.notExp)
 			}
 		})
 	}
@@ -927,11 +926,11 @@ func TestEvaluateNodeAsElement_ElseIfWithVFor(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
-			require.Contains(t, output, tt.expect)
-			require.NotContains(t, output, tt.notExp)
+			assert.Contains(t, output, tt.expect)
+			assert.NotContains(t, output, tt.notExp)
 		})
 	}
 }
@@ -970,11 +969,11 @@ func TestEvaluateNodeAsElement_ElseWithVHtml(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
-			require.Contains(t, output, tt.expect)
-			require.NotContains(t, output, tt.notExp)
+			assert.Contains(t, output, tt.expect)
+			assert.NotContains(t, output, tt.notExp)
 		})
 	}
 }
@@ -1027,11 +1026,11 @@ func TestEvaluateNodeAsElement_ChainedElseIfWithAttributes(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
-			require.Contains(t, output, tt.expect)
-			require.NotContains(t, output, tt.notExp)
+			assert.Contains(t, output, tt.expect)
+			assert.NotContains(t, output, tt.notExp)
 		})
 	}
 }
@@ -1081,14 +1080,14 @@ func TestEvaluateNodeAsElement_WithVForAndAttributes(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
 			if tt.expect != "" {
-				require.Contains(t, output, tt.expect)
+				assert.Contains(t, output, tt.expect)
 			}
 			if tt.notExp != "" {
-				require.NotContains(t, output, tt.notExp)
+				assert.NotContains(t, output, tt.notExp)
 			}
 		})
 	}
@@ -1132,14 +1131,14 @@ func TestEvaluateNodeAsElement_NestedVIfWithChildren(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			output := buf.String()
 
 			for _, exp := range tt.expect {
-				require.Contains(t, output, exp)
+				assert.Contains(t, output, exp)
 			}
 			if tt.notExp != "" {
-				require.NotContains(t, output, tt.notExp)
+				assert.NotContains(t, output, tt.notExp)
 			}
 		})
 	}
@@ -1171,18 +1170,18 @@ func TestVIfNegationWithVFor(t *testing.T) {
 	var buf bytes.Buffer
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	output := buf.String()
 	t.Logf("Output:\n%s", output)
 
 	// Count how many times <span>PRIMARY</span> appears
 	primaryCount := bytes.Count(buf.Bytes(), []byte("<span>PRIMARY</span>"))
-	require.Equal(t, 2, primaryCount, "PRIMARY should appear exactly 2 times (for items with primary=true)")
+	assert.Equal(t, 2, primaryCount, "PRIMARY should appear exactly 2 times (for items with primary=true)")
 
 	// Count how many times <span>NOT PRIMARY</span> appears
 	notPrimaryCount := bytes.Count(buf.Bytes(), []byte("<span>NOT PRIMARY</span>"))
-	require.Equal(t, 2, notPrimaryCount, "NOT PRIMARY should appear exactly 2 times (for items without primary or primary=false)")
+	assert.Equal(t, 2, notPrimaryCount, "NOT PRIMARY should appear exactly 2 times (for items without primary or primary=false)")
 }
 
 // TestVIfNegationSimple tests basic negation without v-for (no == true comparison)
@@ -1222,18 +1221,18 @@ func TestVIfNegationSimple(t *testing.T) {
 			var buf bytes.Buffer
 			vue := vuego.NewVue(templateFS)
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tt.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 
 			output := buf.String()
 			if tt.expectPrim {
-				require.Contains(t, output, "<div>PRIMARY</div>", "expected PRIMARY to be rendered")
+				assert.Contains(t, output, "<div>PRIMARY</div>", "expected PRIMARY to be rendered")
 			} else {
-				require.NotContains(t, output, "<div>PRIMARY</div>", "expected PRIMARY to NOT be rendered")
+				assert.NotContains(t, output, "<div>PRIMARY</div>", "expected PRIMARY to NOT be rendered")
 			}
 			if tt.expectNotPr {
-				require.Contains(t, output, "<div>NOT PRIMARY</div>", "expected NOT PRIMARY to be rendered")
+				assert.Contains(t, output, "<div>NOT PRIMARY</div>", "expected NOT PRIMARY to be rendered")
 			} else {
-				require.NotContains(t, output, "<div>NOT PRIMARY</div>", "expected NOT PRIMARY to NOT be rendered")
+				assert.NotContains(t, output, "<div>NOT PRIMARY</div>", "expected NOT PRIMARY to NOT be rendered")
 			}
 		})
 	}

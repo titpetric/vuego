@@ -6,9 +6,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestSlot_Default(t *testing.T) {
@@ -18,12 +17,12 @@ func TestSlot_Default(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "slot-default.vuego", nil)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	result := buf.String()
-	require.Contains(t, result, "btn")
-	require.Contains(t, result, "Click me")
-	require.NotContains(t, result, "Submit") // Should not use fallback
+	assert.Contains(t, result, "btn")
+	assert.Contains(t, result, "Click me")
+	assert.NotContains(t, result, "Submit") // Should not use fallback
 }
 
 func TestSlot_Fallback(t *testing.T) {
@@ -33,11 +32,11 @@ func TestSlot_Fallback(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "slot-fallback.vuego", nil)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	result := buf.String()
-	require.Contains(t, result, "btn")
-	require.Contains(t, result, "Submit") // Should use fallback
+	assert.Contains(t, result, "btn")
+	assert.Contains(t, result, "Submit") // Should use fallback
 }
 
 func TestSlot_Named(t *testing.T) {
@@ -47,15 +46,15 @@ func TestSlot_Named(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "slot-named.vuego", nil)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	result := buf.String()
-	require.Contains(t, result, "modal-header")
-	require.Contains(t, result, "Header Content")
-	require.Contains(t, result, "modal-body")
-	require.Contains(t, result, "Body Content")
-	require.Contains(t, result, "modal-footer")
-	require.Contains(t, result, "Footer Content")
+	assert.Contains(t, result, "modal-header")
+	assert.Contains(t, result, "Header Content")
+	assert.Contains(t, result, "modal-body")
+	assert.Contains(t, result, "Body Content")
+	assert.Contains(t, result, "modal-footer")
+	assert.Contains(t, result, "Footer Content")
 }
 
 func TestSlot_Scoped(t *testing.T) {
@@ -67,12 +66,12 @@ func TestSlot_Scoped(t *testing.T) {
 	err := vue.RenderFragment(t.Context(), &buf, "slot-scoped.vuego", map[string]any{
 		"products": []string{"Apple", "Banana", "Cherry"},
 	})
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	result := buf.String()
-	require.Contains(t, result, "Apple (#0)")
-	require.Contains(t, result, "Banana (#1)")
-	require.Contains(t, result, "Cherry (#2)")
+	assert.Contains(t, result, "Apple (#0)")
+	assert.Contains(t, result, "Banana (#1)")
+	assert.Contains(t, result, "Cherry (#2)")
 }
 
 func TestSlot_NamedScoped(t *testing.T) {
@@ -82,13 +81,13 @@ func TestSlot_NamedScoped(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "slot-named-scoped.vuego", nil)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	result := buf.String()
-	require.Contains(t, result, "tabs-header")
-	require.Contains(t, result, "Header: Welcome")
-	require.Contains(t, result, "tabs-content")
-	require.Contains(t, result, "Items: 3")
+	assert.Contains(t, result, "tabs-header")
+	assert.Contains(t, result, "Header: Welcome")
+	assert.Contains(t, result, "tabs-content")
+	assert.Contains(t, result, "Items: 3")
 }
 
 func TestSlot_SimpleScoped(t *testing.T) {
@@ -100,10 +99,10 @@ func TestSlot_SimpleScoped(t *testing.T) {
 	err := vue.RenderFragment(t.Context(), &buf, "simple-scoped.vuego", map[string]any{
 		"message": "Hello",
 	})
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	result := buf.String()
-	require.Contains(t, result, "Message: Hello")
+	assert.Contains(t, result, "Message: Hello")
 }
 
 func TestSlot_InheritedFromLayout(t *testing.T) {
@@ -120,10 +119,10 @@ layout: slotted
 
 	var buf bytes.Buffer
 	err := renderer.Load("page.vuego").Fill(nil).Render(t.Context(), &buf)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	result := buf.String()
-	require.Contains(t, result, "Side Nav", "inherited slot content should be rendered")
-	require.NotContains(t, result, "Default sidebar", "fallback slot content should not be used")
-	require.Contains(t, result, "sidebar", "layout structure with sidebar class should be present")
+	assert.Contains(t, result, "Side Nav", "inherited slot content should be rendered")
+	assert.NotContains(t, result, "Default sidebar", "fallback slot content should not be used")
+	assert.Contains(t, result, "sidebar", "layout structure with sidebar class should be present")
 }

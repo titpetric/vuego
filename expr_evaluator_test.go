@@ -3,14 +3,13 @@ package vuego_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestNewExprEvaluator(t *testing.T) {
 	eval := vuego.NewExprEvaluator()
-	require.NotNil(t, eval)
+	assert.NotNil(t, eval)
 }
 
 func TestExprEvaluator_Eval(t *testing.T) {
@@ -89,10 +88,10 @@ func TestExprEvaluator_Eval(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := eval.Eval(tc.expression, tc.env)
 			if tc.expectError {
-				require.Error(t, err)
+				assert.Error(t, err)
 			} else {
-				require.NoError(t, err)
-				require.Equal(t, tc.expected, result)
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expected, result)
 			}
 		})
 	}
@@ -105,13 +104,13 @@ func TestExprEvaluator_ClearCache(t *testing.T) {
 	env := map[string]any{"x": 10, "y": 5}
 
 	result1, err := eval.Eval(expr, env)
-	require.NoError(t, err)
-	require.Equal(t, 15, result1)
+	assert.NoError(t, err)
+	assert.Equal(t, 15, result1)
 
 	eval.ClearCache()
 
 	// Should still work after cache clear
 	result2, err := eval.Eval(expr, env)
-	require.NoError(t, err)
-	require.Equal(t, 15, result2)
+	assert.NoError(t, err)
+	assert.Equal(t, 15, result2)
 }

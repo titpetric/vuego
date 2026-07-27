@@ -7,9 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/titpetric/lessgo/dst"
 	"github.com/titpetric/lessgo/renderer"
+
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 // TestAllLessFilesRender verifies all LESS files in the repo can be rendered successfully.
@@ -19,20 +20,20 @@ func TestAllLessFilesRender(t *testing.T) {
 	for _, lessFile := range lessFiles {
 		t.Run(lessFile, func(t *testing.T) {
 			content, err := os.ReadFile(lessFile)
-			require.NoError(t, err, "failed to read file: %s", lessFile)
+			assert.NoError(t, err, "failed to read file: %s", lessFile)
 
 			// Parse LESS
 			parser := dst.NewParser(bytes.NewReader(content))
 			file, err := parser.Parse()
-			require.NoError(t, err, "failed to parse LESS file: %s", lessFile)
+			assert.NoError(t, err, "failed to parse LESS file: %s", lessFile)
 
 			// Render to CSS
 			r := renderer.NewRenderer()
 			css, err := r.Render(file)
-			require.NoError(t, err, "failed to render LESS file: %s", lessFile)
+			assert.NoError(t, err, "failed to render LESS file: %s", lessFile)
 
 			// Basic validation: CSS should not be empty
-			require.NotEmpty(t, css, "rendered CSS is empty for: %s", lessFile)
+			assert.NotEmpty(t, css, "rendered CSS is empty for: %s", lessFile)
 
 			// Check for common syntax errors
 			validateCSS(t, css, lessFile)
@@ -52,7 +53,7 @@ func findLessFiles(t *testing.T, root string) []string {
 		}
 		return nil
 	})
-	require.NoError(t, err, "failed to walk directory")
+	assert.NoError(t, err, "failed to walk directory")
 	return lessFiles
 }
 
@@ -62,7 +63,7 @@ func validateCSS(t *testing.T, css string, filename string) {
 	openBraces := strings.Count(css, "{")
 	closeBraces := strings.Count(css, "}")
 
-	require.Equal(t, openBraces, closeBraces,
+	assert.Equal(t, openBraces, closeBraces,
 		"mismatched braces in %s: %d opening, %d closing\nCSS:\n%s",
 		filename, openBraces, closeBraces, css)
 
@@ -81,7 +82,7 @@ func validateCSS(t *testing.T, css string, filename string) {
 					break
 				}
 			}
-			require.True(t, found, "potential unclosed rule in %s at line %d: %s",
+			assert.True(t, found, "potential unclosed rule in %s at line %d: %s",
 				filename, i+1, trimmed)
 		}
 	}
@@ -96,12 +97,12 @@ func validateCSS(t *testing.T, css string, filename string) {
 func checkBtnPrimaryClass(t *testing.T, css string, filename string) {
 	// Find .btn-primary class
 	idx := strings.Index(css, ".btn-primary")
-	require.Greater(t, idx, -1, "expected to find .btn-primary in %s", filename)
+	assert.Greater(t, idx, -1, "expected to find .btn-primary in %s", filename)
 
 	// Extract the rule (from .btn-primary to the closing brace)
 	startIdx := strings.LastIndex(css[:idx], "\n") + 1
 	endIdx := strings.Index(css[idx:], "}")
-	require.Greater(t, endIdx, -1, "expected closing brace for .btn-primary in %s", filename)
+	assert.Greater(t, endIdx, -1, "expected closing brace for .btn-primary in %s", filename)
 
 	rule := css[startIdx : idx+endIdx+1]
 	t.Logf("btn-primary rule:\n%s", rule)
@@ -109,7 +110,7 @@ func checkBtnPrimaryClass(t *testing.T, css string, filename string) {
 	// Verify the rule has proper braces
 	openCount := strings.Count(rule, "{")
 	closeCount := strings.Count(rule, "}")
-	require.Equal(t, openCount, closeCount,
+	assert.Equal(t, openCount, closeCount,
 		"mismatched braces in .btn-primary rule in %s: %d opening, %d closing",
 		filename, openCount, closeCount)
 
@@ -121,7 +122,7 @@ func checkBtnPrimaryClass(t *testing.T, css string, filename string) {
 	t.Logf("btn-primary properties: %s", props)
 
 	// Check background color
-	require.Contains(t, props, "background-color:", "expected 'background-color:' property in .btn-primary")
+	assert.Contains(t, props, "background-color:", "expected 'background-color:' property in .btn-primary")
 
 	t.Logf("✓ .btn-primary is properly formed with closing brace and correct properties")
 }

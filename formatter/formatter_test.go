@@ -3,10 +3,8 @@ package formatter_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
-	"github.com/titpetric/vuego/diff"
 	"github.com/titpetric/vuego/formatter"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 const example = `<!DOCTYPE html>
@@ -29,19 +27,19 @@ lucide.createIcons();
 
 func TestNewFormatter(t *testing.T) {
 	f := formatter.NewFormatter()
-	require.NotNil(t, f)
+	assert.NotNil(t, f)
 }
 
 func TestFormatter_Format_FrontmatterPreserved(t *testing.T) {
 	f := formatter.NewFormatter()
 
 	formatted, err := f.Format(example)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
-	require.Contains(t, formatted, "></template>", "Tags without content need to be one-lined (template tag).")
-	require.Contains(t, formatted, "></script>", "Tags without content need to be one-lined (script tag).")
+	assert.Contains(t, formatted, "></template>", "Tags without content need to be one-lined (template tag).")
+	assert.Contains(t, formatted, "></script>", "Tags without content need to be one-lined (script tag).")
 
-	diff.EqualHTML(t, []byte(example), []byte(formatted), []byte(example), nil)
+	assert.EqualHTML(t, []byte(example), []byte(formatted), []byte(example), nil)
 }
 
 func TestFormatter_Format_SimpleHTML(t *testing.T) {
@@ -50,8 +48,8 @@ func TestFormatter_Format_SimpleHTML(t *testing.T) {
 	content := `<div><h1>Title</h1></div>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
-	require.NotEmpty(t, formatted)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, formatted)
 }
 
 func TestFormatter_Format_VuegoTemplate(t *testing.T) {
@@ -62,8 +60,8 @@ func TestFormatter_Format_VuegoTemplate(t *testing.T) {
 </template>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
-	require.NotEmpty(t, formatted)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, formatted)
 }
 
 func TestFormatter_Format_InsertsFinalNewline(t *testing.T) {
@@ -72,8 +70,8 @@ func TestFormatter_Format_InsertsFinalNewline(t *testing.T) {
 	content := `<div>Content</div>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
-	require.True(t, len(formatted) > 0 && formatted[len(formatted)-1] == '\n',
+	assert.NoError(t, err)
+	assert.True(t, len(formatted) > 0 && formatted[len(formatted)-1] == '\n',
 		"formatted content should end with newline")
 }
 
@@ -87,8 +85,8 @@ func TestFormatter_Format_NoFinalNewline(t *testing.T) {
 	content := `<div>Content</div>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
-	require.False(t, len(formatted) > 0 && formatted[len(formatted)-1] == '\n',
+	assert.NoError(t, err)
+	assert.False(t, len(formatted) > 0 && formatted[len(formatted)-1] == '\n',
 		"formatted content should not end with newline when InsertFinal is false")
 }
 
@@ -96,14 +94,14 @@ func TestFormatString(t *testing.T) {
 	content := `<div><span>Test</span></div>`
 
 	formatted, err := formatter.FormatString(content)
-	require.NoError(t, err)
-	require.NotEmpty(t, formatted)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, formatted)
 }
 
 func TestDefaultFormatterOptions(t *testing.T) {
 	opts := formatter.DefaultFormatterOptions()
-	require.Equal(t, 2, opts.IndentWidth)
-	require.True(t, opts.InsertFinal)
+	assert.Equal(t, 2, opts.IndentWidth)
+	assert.True(t, opts.InsertFinal)
 }
 
 func TestIndentString(t *testing.T) {
@@ -112,14 +110,14 @@ func TestIndentString(t *testing.T) {
 
 	expected := "    line1\n    line2\n    line3"
 
-	require.Equal(t, expected, indented)
+	assert.Equal(t, expected, indented)
 }
 
 func TestIndentString_WithEmptyLines(t *testing.T) {
 	text := "line1\n\nline3"
 	indented := formatter.IndentString(text, 1, 2)
-	require.Contains(t, indented, "line1")
-	require.Contains(t, indented, "line3")
+	assert.Contains(t, indented, "line1")
+	assert.Contains(t, indented, "line3")
 }
 
 func TestFormatter_Format_InlineNoExtraSpaces(t *testing.T) {
@@ -160,8 +158,8 @@ func TestFormatter_Format_InlineNoExtraSpaces(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.expected, formatted)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expected, formatted)
 		})
 	}
 }
@@ -176,12 +174,12 @@ func TestFormatter_Format_PartialFragment_SingleElement(t *testing.T) {
 </div>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	// Should not wrap in extra divs
-	require.True(t, len(formatted) > 0)
-	require.Contains(t, formatted, "card")
+	assert.True(t, len(formatted) > 0)
+	assert.Contains(t, formatted, "card")
 	// Should not have outer wrapper
-	require.NotContains(t, formatted, "<div>\n  <div class=\"card\">")
+	assert.NotContains(t, formatted, "<div>\n  <div class=\"card\">")
 }
 
 func TestFormatter_Format_PartialFragment_MultipleElements(t *testing.T) {
@@ -195,16 +193,16 @@ func TestFormatter_Format_PartialFragment_MultipleElements(t *testing.T) {
 </li>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
-	require.Contains(t, formatted, "<li")
-	require.Contains(t, formatted, "v-for")
+	assert.NoError(t, err)
+	assert.Contains(t, formatted, "<li")
+	assert.Contains(t, formatted, "v-for")
 	lines := 0
 	for i := 0; i < len(formatted); i++ {
 		if formatted[i] == '\n' {
 			lines++
 		}
 	}
-	require.Greater(t, lines, 1, "should format multiple list items")
+	assert.Greater(t, lines, 1, "should format multiple list items")
 }
 
 // Tests for formatter handling of full documents
@@ -222,10 +220,10 @@ func TestFormatter_Format_FullDocument_PreservesDoctype(t *testing.T) {
 </html>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
-	require.True(t, len(formatted) > 0)
-	require.Equal(t, "<!DOCTYPE html>", formatted[:15], "should preserve DOCTYPE")
-	require.Contains(t, formatted, "<html")
+	assert.NoError(t, err)
+	assert.True(t, len(formatted) > 0)
+	assert.Equal(t, "<!DOCTYPE html>", formatted[:15], "should preserve DOCTYPE")
+	assert.Contains(t, formatted, "<html")
 }
 
 func TestFormatter_Format_FullDocument_WithHead(t *testing.T) {
@@ -243,10 +241,10 @@ func TestFormatter_Format_FullDocument_WithHead(t *testing.T) {
 </html>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
-	require.Contains(t, formatted, "<meta")
-	require.Contains(t, formatted, "<title")
-	require.Contains(t, formatted, "<!DOCTYPE")
+	assert.NoError(t, err)
+	assert.Contains(t, formatted, "<meta")
+	assert.Contains(t, formatted, "<title")
+	assert.Contains(t, formatted, "<!DOCTYPE")
 }
 
 // Tests for multi-line attribute rendering (lines > 100 chars with multiple attributes)
@@ -257,10 +255,10 @@ func TestFormatter_Format_MultiLineAttributes(t *testing.T) {
 	content := `<div class="very-long-class-name-that-makes-line-exceed-limit" data-attribute="another-very-long-value" id="some-id" style="color: red;">content</div>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
-	require.Contains(t, formatted, "class=")
-	require.Contains(t, formatted, "data-attribute=")
-	require.Contains(t, formatted, "content")
+	assert.NoError(t, err)
+	assert.Contains(t, formatted, "class=")
+	assert.Contains(t, formatted, "data-attribute=")
+	assert.Contains(t, formatted, "content")
 }
 
 // Tests for pre element formatting (renderPreContent)
@@ -302,9 +300,9 @@ func TestFormatter_Format_PreElement(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			for _, s := range tc.contains {
-				require.Contains(t, formatted, s)
+				assert.Contains(t, formatted, s)
 			}
 		})
 	}
@@ -356,12 +354,12 @@ func TestFormatter_Format_EscapeText(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			for _, s := range tc.contains {
-				require.Contains(t, formatted, s)
+				assert.Contains(t, formatted, s)
 			}
 			for _, s := range tc.excludes {
-				require.NotContains(t, formatted, s)
+				assert.NotContains(t, formatted, s)
 			}
 		})
 	}
@@ -426,8 +424,8 @@ func TestFormatter_Format_PhrasingContainers(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.expected, formatted)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expected, formatted)
 		})
 	}
 }
@@ -466,7 +464,7 @@ func TestFormatter_Format_BlockElements(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			if tc.shouldBreak {
 				// Block elements with element children should have newlines
 				lines := 0
@@ -475,7 +473,7 @@ func TestFormatter_Format_BlockElements(t *testing.T) {
 						lines++
 					}
 				}
-				require.Greater(t, lines, 1, "block with element children should break across lines")
+				assert.Greater(t, lines, 1, "block with element children should break across lines")
 			}
 		})
 	}
@@ -515,8 +513,8 @@ func TestFormatter_Format_NestedInlineElements(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.expected, formatted)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expected, formatted)
 		})
 	}
 }
@@ -529,7 +527,7 @@ func TestFormatter_Format_InlineWithBlockChild(t *testing.T) {
 	content := `<span><div>block in inline</div></span>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	// Should break across multiple lines because div is block
 	lines := 0
 	for _, c := range formatted {
@@ -537,7 +535,7 @@ func TestFormatter_Format_InlineWithBlockChild(t *testing.T) {
 			lines++
 		}
 	}
-	require.Greater(t, lines, 1, "inline with block child should break")
+	assert.Greater(t, lines, 1, "inline with block child should break")
 }
 
 // Tests for normalizeInlineText edge cases
@@ -574,8 +572,8 @@ func TestFormatter_Format_NormalizeInlineText(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.expected, formatted)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expected, formatted)
 		})
 	}
 }
@@ -614,9 +612,9 @@ func TestFormatter_Format_ScriptStyleElements(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			for _, s := range tc.contains {
-				require.Contains(t, formatted, s)
+				assert.Contains(t, formatted, s)
 			}
 		})
 	}
@@ -651,9 +649,9 @@ func TestFormatter_Format_TrimRawContent(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			for _, s := range tc.contains {
-				require.Contains(t, formatted, s)
+				assert.Contains(t, formatted, s)
 			}
 		})
 	}
@@ -703,9 +701,9 @@ func TestFormatter_Format_VoidElements(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			for _, s := range tc.contains {
-				require.Contains(t, formatted, s)
+				assert.Contains(t, formatted, s)
 			}
 		})
 	}
@@ -740,9 +738,9 @@ func TestFormatter_Format_Comments(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			for _, s := range tc.contains {
-				require.Contains(t, formatted, s)
+				assert.Contains(t, formatted, s)
 			}
 		})
 	}
@@ -798,8 +796,8 @@ func TestFormatter_Format_TableFragments(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			formatted, err := f.Format(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.expected, formatted)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expected, formatted)
 		})
 	}
 }
@@ -814,8 +812,8 @@ func TestFormatter_Format_FullDocumentWithoutDoctype(t *testing.T) {
 </html>`
 
 	formatted, err := f.Format(content)
-	require.NoError(t, err)
-	require.Contains(t, formatted, "<html")
-	require.Contains(t, formatted, "<head>")
-	require.Contains(t, formatted, "<body>")
+	assert.NoError(t, err)
+	assert.Contains(t, formatted, "<html")
+	assert.Contains(t, formatted, "<head>")
+	assert.Contains(t, formatted, "<body>")
 }

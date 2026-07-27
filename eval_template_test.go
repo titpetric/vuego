@@ -6,9 +6,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 // TestRequiredAttributeError tests that a missing :required attribute
@@ -33,7 +32,7 @@ func TestRequiredAttributeError(t *testing.T) {
 	var buf bytes.Buffer
 	err := vue.Render(t.Context(), &buf, "required-error-test/page.vuego", data)
 
-	require.Equal(t, "error in required-error-test/component.vuego (included from required-error-test/page.vuego): required attribute 'title' not provided", err.Error())
+	assert.Equal(t, "error in required-error-test/component.vuego (included from required-error-test/page.vuego): required attribute 'title' not provided", err.Error())
 }
 
 // TestRootLevelTemplateRequired tests that a root-level template with :required attribute
@@ -48,7 +47,7 @@ func TestRootLevelTemplateRequired(t *testing.T) {
 	var buf bytes.Buffer
 	err := vue.Render(t.Context(), &buf, "root-template-required/page.vuego", data)
 
-	require.Equal(t, "required attribute 'title' not provided", err.Error())
+	assert.Equal(t, "required attribute 'title' not provided", err.Error())
 }
 
 // TestRootLevelTemplateRequiredSuccess tests that a root-level template with :required attribute
@@ -63,8 +62,8 @@ func TestRootLevelTemplateRequiredSuccess(t *testing.T) {
 	var buf bytes.Buffer
 	err := vue.Render(t.Context(), &buf, "root-template-required/page.vuego", data)
 
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "<h1>My Page Title</h1>")
+	assert.NoError(t, err)
+	assert.Contains(t, buf.String(), "<h1>My Page Title</h1>")
 }
 
 // TestRequiredCSVExpansion tests that :required supports CSV format
@@ -80,7 +79,7 @@ func TestRequiredCSVExpansion(t *testing.T) {
 	var buf bytes.Buffer
 	err := vue.Render(t.Context(), &buf, "required-error-test/page.vuego", data)
 
-	require.Equal(t, "error in required-error-test/component.vuego (included from required-error-test/page.vuego): required attribute 'author' not provided", err.Error())
+	assert.Equal(t, "error in required-error-test/component.vuego (included from required-error-test/page.vuego): required attribute 'author' not provided", err.Error())
 }
 
 // TestTemplateSimpleAttribute tests that a simple bound attribute on a template
@@ -94,8 +93,8 @@ func TestTemplate_SimpleAttribute(t *testing.T) {
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{})
 
-	require.NoError(t, err)
-	require.Equal(t, "X=5", buf.String())
+	assert.NoError(t, err)
+	assert.Equal(t, "X=5", buf.String())
 }
 
 // TestTemplateExpressionAttribute tests that a bound attribute with an expression
@@ -109,8 +108,8 @@ func TestTemplate_ExpressionAttribute(t *testing.T) {
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{})
 
-	require.NoError(t, err)
-	require.Equal(t, "X=5", buf.String())
+	assert.NoError(t, err)
+	assert.Equal(t, "X=5", buf.String())
 }
 
 // TestTemplateVariableAttribute tests that a bound attribute using a context variable
@@ -124,8 +123,8 @@ func TestTemplate_VariableAttribute(t *testing.T) {
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{"y": 10})
 
-	require.NoError(t, err)
-	require.Equal(t, "X=10", buf.String())
+	assert.NoError(t, err)
+	assert.Equal(t, "X=10", buf.String())
 }
 
 // TestTemplateVariableAttribute tests that a bound attribute using a context variable
@@ -141,8 +140,8 @@ func TestTemplate_VariableAttribute_JSON(t *testing.T) {
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{})
 
-	require.NoError(t, err)
-	require.Equal(t, "X=10", buf.String())
+	assert.NoError(t, err)
+	assert.Equal(t, "X=10", buf.String())
 }
 
 // TestTemplateNestedAttribute tests that nested templates each have their own
@@ -156,8 +155,8 @@ func TestTemplate_NestedAttribute(t *testing.T) {
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{})
 
-	require.NoError(t, err)
-	require.Equal(t, "X=1 Y=2", buf.String())
+	assert.NoError(t, err)
+	assert.Equal(t, "X=1 Y=2", buf.String())
 }
 
 // TestTemplateForAttribute tests that bound attributes on a template with v-for
@@ -171,8 +170,8 @@ func TestTemplate_ForAttribute(t *testing.T) {
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{"items": []int{1, 2, 3}})
 
-	require.NoError(t, err)
-	require.Equal(t, "1:0 2:0 3:0 ", buf.String())
+	assert.NoError(t, err)
+	assert.Equal(t, "1:0 2:0 3:0 ", buf.String())
 }
 
 // TestTemplate_ForStatefulAttribute tests that bound attributes on a template with v-for
@@ -187,9 +186,9 @@ func TestTemplate_ForStatefulAttribute(t *testing.T) {
 	vue := vuego.NewVue(templateFS)
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{"items": []int{1, 2, 3}})
 
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	// Item 1: printed=0, v-if false (1 > 1 is false), nothing rendered
 	// Item 2: printed=0, v-if true (2 > 1 is true), :printed="0+1"=1, renders "2:1 "
 	// Item 3: printed=0, v-if true (3 > 1 is true), :printed="0+1"=1, renders "3:1 "
-	require.Equal(t, "2:1 3:1 ", buf.String())
+	assert.Equal(t, "2:1 3:1 ", buf.String())
 }

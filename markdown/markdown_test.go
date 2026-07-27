@@ -7,9 +7,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/titpetric/vuego/markdown"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestTemplates(t *testing.T) {

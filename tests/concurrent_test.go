@@ -6,9 +6,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestVue_ConcurrentRender(t *testing.T) {
@@ -57,14 +56,14 @@ func TestVue_ConcurrentRender(t *testing.T) {
 	for err := range errors {
 		renderErrors = append(renderErrors, err)
 	}
-	require.Empty(t, renderErrors)
+	assert.Empty(t, renderErrors)
 
 	// Verify all renders completed
 	count := 0
 	for range results {
 		count++
 	}
-	require.Equal(t, numGoroutines, count, "Expected all goroutines to complete")
+	assert.Equal(t, numGoroutines, count, "Expected all goroutines to complete")
 }
 
 func TestVue_ConcurrentRenderWithFuncs(t *testing.T) {
@@ -90,8 +89,8 @@ func TestVue_ConcurrentRenderWithFuncs(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.Render(t.Context(), &buf, "page.html", data)
-			require.NoError(t, err)
-			require.Contains(t, buf.String(), "USER")
+			assert.NoError(t, err)
+			assert.Contains(t, buf.String(), "USER")
 		}(i)
 	}
 
@@ -130,7 +129,7 @@ func TestVue_ConcurrentRenderDifferentTemplates(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.Render(t.Context(), &buf, template, data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 		}(i)
 	}
 

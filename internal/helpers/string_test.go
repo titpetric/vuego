@@ -3,9 +3,8 @@ package helpers_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego/internal/helpers"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 // Tests for additional string identifier validation beyond what's in expr_test.go
@@ -28,7 +27,7 @@ func TestIsIdentifier_EdgeCases(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
 			result := helpers.IsIdentifier(tc.input)
-			require.Equal(t, tc.expected, result)
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }
@@ -62,7 +61,7 @@ func TestFormatAttr(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
 			result := helpers.FormatAttr(tc.input)
-			require.Equal(t, tc.expected, result)
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }
@@ -96,7 +95,7 @@ func TestCamelToKebab(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
 			result := helpers.CamelToKebab(tc.input)
-			require.Equal(t, tc.expected, result)
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }

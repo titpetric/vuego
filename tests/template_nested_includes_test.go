@@ -6,9 +6,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 // TestTemplate_NestedIncludesStateIsolation reproduces the issue where shared vuego.Template
@@ -54,10 +53,10 @@ func TestTemplate_NestedIncludesStateIsolation(t *testing.T) {
 
 	var buf1 bytes.Buffer
 	err := tpl.Load("pages/blog.vuego").Fill(data1).Render(t.Context(), &buf1)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	output1 := buf1.String()
-	require.Contains(t, output1, "Article 1")
-	require.Contains(t, output1, "Article 2")
+	assert.Contains(t, output1, "Article 1")
+	assert.Contains(t, output1, "Article 2")
 
 	// Second render with different data using same shared tpl instance
 	data2 := map[string]any{
@@ -69,14 +68,14 @@ func TestTemplate_NestedIncludesStateIsolation(t *testing.T) {
 
 	var buf2 bytes.Buffer
 	err = tpl.Load("pages/blog.vuego").Fill(data2).Render(t.Context(), &buf2)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 	output2 := buf2.String()
 
 	// Verify second render has new articles and not old ones
-	require.Contains(t, output2, "Article 3", "Second render should have Article 3")
-	require.Contains(t, output2, "Article 4", "Second render lost articles data")
-	require.NotContains(t, output2, "Article 1", "Old data should not appear")
-	require.NotContains(t, output2, "Article 2", "Old data should not appear")
+	assert.Contains(t, output2, "Article 3", "Second render should have Article 3")
+	assert.Contains(t, output2, "Article 4", "Second render lost articles data")
+	assert.NotContains(t, output2, "Article 1", "Old data should not appear")
+	assert.NotContains(t, output2, "Article 2", "Old data should not appear")
 }
 
 // TestTemplate_ConcurrentNestedIncludesRender tests concurrent renders with nested includes
@@ -142,15 +141,15 @@ func TestTemplate_ConcurrentNestedIncludesRender(t *testing.T) {
 	for err := range errors {
 		renderErrors = append(renderErrors, err)
 	}
-	require.Empty(t, renderErrors)
+	assert.Empty(t, renderErrors)
 
 	// Verify all renders completed and contain expected content
 	count := 0
 	for output := range results {
 		count++
 		// Each output should contain article list items
-		require.Contains(t, output, "<li>", "Output should contain list items")
-		require.Contains(t, output, "Article_", "Output should contain article data")
+		assert.Contains(t, output, "<li>", "Output should contain list items")
+		assert.Contains(t, output, "Article_", "Output should contain article data")
 	}
-	require.Equal(t, numGoroutines, count, "Expected all goroutines to complete")
+	assert.Equal(t, numGoroutines, count, "Expected all goroutines to complete")
 }

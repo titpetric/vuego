@@ -5,9 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestLoadWithLessProcessor(t *testing.T) {
@@ -15,7 +14,7 @@ func TestLoadWithLessProcessor(t *testing.T) {
 
 	tpl := vuego.NewFS(root, vuego.WithLessProcessor())
 
-	require.NotNil(t, tpl)
+	assert.NotNil(t, tpl)
 }
 
 func TestLoadWithMultipleProcessors(t *testing.T) {
@@ -23,7 +22,7 @@ func TestLoadWithMultipleProcessors(t *testing.T) {
 
 	tpl := vuego.NewFS(root, vuego.WithLessProcessor(), vuego.WithLessProcessor())
 
-	require.NotNil(t, tpl)
+	assert.NotNil(t, tpl)
 }
 
 func TestLoadWithoutProcessors(t *testing.T) {
@@ -31,7 +30,7 @@ func TestLoadWithoutProcessors(t *testing.T) {
 
 	tpl := vuego.NewFS(root)
 
-	require.NotNil(t, tpl)
+	assert.NotNil(t, tpl)
 }
 
 func TestTemplateFuncs(t *testing.T) {
@@ -46,7 +45,7 @@ func TestTemplateFuncs(t *testing.T) {
 	tpl := vuego.NewFS(root, vuego.WithFuncs(funcMap))
 
 	// Verify template is created
-	require.NotNil(t, tpl)
+	assert.NotNil(t, tpl)
 }
 
 func TestTemplateChaining(t *testing.T) {
@@ -57,8 +56,8 @@ func TestTemplateChaining(t *testing.T) {
 	// Verify chaining works
 	result := tpl.Assign("key", "value")
 
-	require.Equal(t, tpl, result)
-	require.Equal(t, "value", tpl.Get("key"))
+	assert.Equal(t, tpl, result)
+	assert.Equal(t, "value", tpl.Get("key"))
 }
 
 func TestLoadTemplateRender(t *testing.T) {
@@ -73,6 +72,6 @@ func TestLoadTemplateRender(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := tpl.Load("pages/components/Button.vuego").Render(t.Context(), &buf)
-	require.NoError(t, err)
-	require.Greater(t, buf.Len(), 0)
+	assert.NoError(t, err)
+	assert.Greater(t, buf.Len(), 0)
 }

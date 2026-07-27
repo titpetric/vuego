@@ -5,9 +5,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 // BlogPost represents a blog post with typed fields
@@ -89,11 +88,11 @@ Tag count: {{ tags | len }}
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "parent.vuego", tc.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 
 			output := buf.String()
 			for _, exp := range tc.expected {
-				require.Contains(t, output, exp, "output: %s", output)
+				assert.Contains(t, output, exp, "output: %s", output)
 			}
 		})
 	}

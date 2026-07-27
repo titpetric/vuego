@@ -10,9 +10,8 @@ import (
 	"testing/fstest"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestVue_Funcs_PipeChaining(t *testing.T) {

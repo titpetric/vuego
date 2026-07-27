@@ -5,10 +5,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/diff"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestVue_EvalVHtml(t *testing.T) {
@@ -72,8 +70,8 @@ func TestVue_EvalVHtml(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			require.NoError(t, err)
-			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
+			assert.NoError(t, err)
+			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
@@ -121,8 +119,8 @@ func TestVue_EvalVHtml_NoReinterpolation(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			require.NoError(t, err)
-			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
+			assert.NoError(t, err)
+			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
@@ -171,9 +169,9 @@ func TestVue_EvalVHtml_PreservesWhitespace(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			// Compare exact output to verify whitespace is preserved
-			require.Equal(t, tc.expected, buf.String())
+			assert.Equal(t, tc.expected, buf.String())
 		})
 	}
 }

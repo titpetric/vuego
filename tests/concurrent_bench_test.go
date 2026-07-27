@@ -5,9 +5,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func BenchmarkVue_ConcurrentBlogRender(b *testing.B) {
@@ -92,7 +91,7 @@ func BenchmarkVue_ConcurrentBlogRender(b *testing.B) {
 		for pb.Next() {
 			var buf strings.Builder
 			err := vue.Render(b.Context(), &buf, "blog.html", data)
-			require.NoError(b, err)
+			assert.NoError(b, err)
 		}
 	})
 }

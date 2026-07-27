@@ -3,9 +3,8 @@ package helpers_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego/internal/helpers"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestIsTruthy(t *testing.T) {
@@ -48,7 +47,7 @@ func TestIsTruthy(t *testing.T) {
 	for _, tc := range tests {
 		t.Run("", func(t *testing.T) {
 			result := helpers.IsTruthy(tc.value)
-			require.Equal(t, tc.expected, result)
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }

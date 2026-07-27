@@ -6,10 +6,10 @@ import (
 	"testing/fstest"
 	"time"
 
-	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func getBlogData() map[string]any {
@@ -99,7 +99,7 @@ func BenchmarkVue_Render_Detailed(b *testing.B) {
 	// Warm up cache
 	var buf strings.Builder
 	err := vue.Render(b.Context(), &buf, "blog.vuego", data)
-	require.NoError(b, err)
+	assert.NoError(b, err)
 
 	// Measure total time
 	var totalDuration time.Duration
@@ -109,7 +109,7 @@ func BenchmarkVue_Render_Detailed(b *testing.B) {
 		start := time.Now()
 		var buf strings.Builder
 		err := vue.Render(b.Context(), &buf, "blog.vuego", data)
-		require.NoError(b, err)
+		assert.NoError(b, err)
 		totalDuration += time.Since(start)
 	}
 
@@ -136,7 +136,7 @@ func TestDetailedRenderTiming(t *testing.T) {
 		start := time.Now()
 		var buf strings.Builder
 		err := vue.Render(t.Context(), &buf, "blog.vuego", data)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		totalTime += time.Since(start)
 	}
 

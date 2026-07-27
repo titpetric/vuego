@@ -5,9 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 var _ vuego.NodeProcessor = &vuego.LessProcessor{}
@@ -24,14 +23,14 @@ func TestLessProcessor_LessCompilation(t *testing.T) {
 	// Render the template
 	var buf bytes.Buffer
 	err := v.Render(t.Context(), &buf, "less.html", map[string]any{})
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	// Verify the output contains compiled CSS instead of LESS
 	output := buf.String()
 	t.Logf("Output:\n%s", output)
-	require.Contains(t, output, `<style type="text/css">`)
-	require.NotContains(t, output, `type="text/css+less"`)
-	require.Contains(t, output, "color: red;")
+	assert.Contains(t, output, `<style type="text/css">`)
+	assert.NotContains(t, output, `type="text/css+less"`)
+	assert.Contains(t, output, "color: red;")
 }
 
 // TestLessProcessor_LessVariables tests LESS variable compilation.
@@ -43,12 +42,12 @@ func TestLessProcessor_LessVariables(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := v.Render(t.Context(), &buf, "less_variables.html", map[string]any{})
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	output := buf.String()
-	require.Contains(t, output, `<style type="text/css">`)
+	assert.Contains(t, output, `<style type="text/css">`)
 	// LESS variables should be compiled to actual values
-	require.Contains(t, output, "#ff0000") // @primary-color: #ff0000 should be compiled
+	assert.Contains(t, output, "#ff0000") // @primary-color: #ff0000 should be compiled
 }
 
 // TestLessProcessor_NoLessTag tests that normal style tags are unaffected.
@@ -60,12 +59,12 @@ func TestLessProcessor_NoLessTag(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := v.Render(t.Context(), &buf, "mixed_styles.html", map[string]any{})
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	output := buf.String()
 	// Normal style tags should remain unchanged, LESS tags should be compiled to type="text/css"
-	require.Contains(t, output, `<style type="text/css">`)
-	require.NotContains(t, output, `type="text/css+less"`)
+	assert.Contains(t, output, `<style type="text/css">`)
+	assert.NotContains(t, output, `type="text/css+less"`)
 	// Verify LESS compilation worked (LESS variables should be compiled)
-	require.Contains(t, output, "color: #333;")
+	assert.Contains(t, output, "color: #333;")
 }

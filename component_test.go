@@ -4,9 +4,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestNewComponent(t *testing.T) {
@@ -15,7 +14,7 @@ func TestNewComponent(t *testing.T) {
 	}
 
 	comp := vuego.NewLoader(fs)
-	require.NotNil(t, comp)
+	assert.NotNil(t, comp)
 }
 
 func TestComponent_Stat(t *testing.T) {
@@ -27,12 +26,12 @@ func TestComponent_Stat(t *testing.T) {
 
 	t.Run("file exists", func(t *testing.T) {
 		err := comp.Stat("exists.html")
-		require.NoError(t, err)
+		assert.NoError(t, err)
 	})
 
 	t.Run("file not found", func(t *testing.T) {
 		err := comp.Stat("missing.html")
-		require.Error(t, err)
+		assert.Error(t, err)
 	})
 }
 
@@ -45,14 +44,14 @@ func TestComponent_Load(t *testing.T) {
 
 	t.Run("valid document", func(t *testing.T) {
 		nodes, err := comp.Load("doc.html")
-		require.NoError(t, err)
-		require.NotNil(t, nodes)
-		require.Greater(t, len(nodes), 0)
+		assert.NoError(t, err)
+		assert.NotNil(t, nodes)
+		assert.Greater(t, len(nodes), 0)
 	})
 
 	t.Run("file not found", func(t *testing.T) {
 		_, err := comp.Load("missing.html")
-		require.Error(t, err)
+		assert.Error(t, err)
 	})
 
 	t.Run("invalid html", func(t *testing.T) {
@@ -61,8 +60,8 @@ func TestComponent_Load(t *testing.T) {
 		}
 		comp := vuego.NewLoader(fs)
 		nodes, err := comp.Load("bad.html")
-		require.NoError(t, err)
-		require.NotNil(t, nodes)
+		assert.NoError(t, err)
+		assert.NotNil(t, nodes)
 	})
 }
 
@@ -76,19 +75,19 @@ func TestComponent_LoadFragment(t *testing.T) {
 
 	t.Run("fragment without html tag", func(t *testing.T) {
 		nodes, err := comp.LoadFragment("fragment.html")
-		require.NoError(t, err)
-		require.NotNil(t, nodes)
-		require.Greater(t, len(nodes), 0)
+		assert.NoError(t, err)
+		assert.NotNil(t, nodes)
+		assert.Greater(t, len(nodes), 0)
 	})
 
 	t.Run("full document falls back to Load", func(t *testing.T) {
 		nodes, err := comp.LoadFragment("document.html")
-		require.NoError(t, err)
-		require.NotNil(t, nodes)
+		assert.NoError(t, err)
+		assert.NotNil(t, nodes)
 	})
 
 	t.Run("file not found", func(t *testing.T) {
 		_, err := comp.LoadFragment("missing.html")
-		require.Error(t, err)
+		assert.Error(t, err)
 	})
 }

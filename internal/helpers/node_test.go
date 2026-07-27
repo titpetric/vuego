@@ -3,10 +3,10 @@ package helpers_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 
 	"github.com/titpetric/vuego/internal/helpers"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestGetAttr(t *testing.T) {
@@ -19,8 +19,8 @@ func TestGetAttr(t *testing.T) {
 				{Key: "id", Val: "main"},
 			},
 		}
-		require.Equal(t, "container", helpers.GetAttr(n, "class"))
-		require.Equal(t, "main", helpers.GetAttr(n, "id"))
+		assert.Equal(t, "container", helpers.GetAttr(n, "class"))
+		assert.Equal(t, "main", helpers.GetAttr(n, "id"))
 	})
 
 	t.Run("missing attribute", func(t *testing.T) {
@@ -29,12 +29,12 @@ func TestGetAttr(t *testing.T) {
 			Data: "div",
 			Attr: []html.Attribute{{Key: "class", Val: "container"}},
 		}
-		require.Equal(t, "", helpers.GetAttr(n, "id"))
+		assert.Equal(t, "", helpers.GetAttr(n, "id"))
 	})
 
 	t.Run("empty attributes", func(t *testing.T) {
 		n := &html.Node{Type: html.ElementNode, Data: "div"}
-		require.Equal(t, "", helpers.GetAttr(n, "class"))
+		assert.Equal(t, "", helpers.GetAttr(n, "class"))
 	})
 }
 
@@ -49,9 +49,9 @@ func TestRemoveAttr(t *testing.T) {
 			},
 		}
 		helpers.RemoveAttr(n, "class")
-		require.Len(t, n.Attr, 1)
-		require.Equal(t, "id", n.Attr[0].Key)
-		require.Equal(t, "main", n.Attr[0].Val)
+		assert.Len(t, n.Attr, 1)
+		assert.Equal(t, "id", n.Attr[0].Key)
+		assert.Equal(t, "main", n.Attr[0].Val)
 	})
 
 	t.Run("does nothing for missing attribute", func(t *testing.T) {
@@ -61,14 +61,14 @@ func TestRemoveAttr(t *testing.T) {
 			Attr: []html.Attribute{{Key: "class", Val: "container"}},
 		}
 		helpers.RemoveAttr(n, "id")
-		require.Len(t, n.Attr, 1)
-		require.Equal(t, "class", n.Attr[0].Key)
+		assert.Len(t, n.Attr, 1)
+		assert.Equal(t, "class", n.Attr[0].Key)
 	})
 
 	t.Run("handles empty attributes", func(t *testing.T) {
 		n := &html.Node{Type: html.ElementNode, Data: "div"}
 		helpers.RemoveAttr(n, "class")
-		require.Len(t, n.Attr, 0)
+		assert.Len(t, n.Attr, 0)
 	})
 }
 
@@ -80,9 +80,9 @@ func TestFilterAttrs(t *testing.T) {
 			{Key: "data-test", Val: "value"},
 		}
 		filtered := helpers.FilterAttrs(attrs, "id")
-		require.Len(t, filtered, 2)
-		require.Equal(t, "class", filtered[0].Key)
-		require.Equal(t, "data-test", filtered[1].Key)
+		assert.Len(t, filtered, 2)
+		assert.Equal(t, "class", filtered[0].Key)
+		assert.Equal(t, "data-test", filtered[1].Key)
 	})
 
 	t.Run("does not modify original slice", func(t *testing.T) {
@@ -91,10 +91,10 @@ func TestFilterAttrs(t *testing.T) {
 			{Key: "id", Val: "main"},
 		}
 		filtered := helpers.FilterAttrs(attrs, "class")
-		require.Len(t, attrs, 2)
-		require.Len(t, filtered, 1)
-		require.Equal(t, "class", attrs[0].Key)
-		require.Equal(t, "id", filtered[0].Key)
+		assert.Len(t, attrs, 2)
+		assert.Len(t, filtered, 1)
+		assert.Equal(t, "class", attrs[0].Key)
+		assert.Equal(t, "id", filtered[0].Key)
 	})
 
 	t.Run("handles missing key", func(t *testing.T) {
@@ -102,13 +102,13 @@ func TestFilterAttrs(t *testing.T) {
 			{Key: "class", Val: "container"},
 		}
 		filtered := helpers.FilterAttrs(attrs, "id")
-		require.Len(t, filtered, 1)
-		require.Equal(t, "class", filtered[0].Key)
+		assert.Len(t, filtered, 1)
+		assert.Equal(t, "class", filtered[0].Key)
 	})
 
 	t.Run("handles empty attributes", func(t *testing.T) {
 		filtered := helpers.FilterAttrs(nil, "class")
-		require.Len(t, filtered, 0)
+		assert.Len(t, filtered, 0)
 	})
 }
 
@@ -125,11 +125,11 @@ func TestCloneNode(t *testing.T) {
 		n.NextSibling = sibling
 
 		clone := helpers.CloneNode(n)
-		require.Equal(t, n.Type, clone.Type)
-		require.Equal(t, n.Data, clone.Data)
-		require.Equal(t, n.Attr, clone.Attr)
-		require.Nil(t, clone.FirstChild)
-		require.Nil(t, clone.NextSibling)
+		assert.Equal(t, n.Type, clone.Type)
+		assert.Equal(t, n.Data, clone.Data)
+		assert.Equal(t, n.Attr, clone.Attr)
+		assert.Nil(t, clone.FirstChild)
+		assert.Nil(t, clone.NextSibling)
 	})
 
 	t.Run("modifying clone attrs does not affect original", func(t *testing.T) {
@@ -140,8 +140,8 @@ func TestCloneNode(t *testing.T) {
 		}
 		clone := helpers.CloneNode(n)
 		clone.Attr = append(clone.Attr, html.Attribute{Key: "id", Val: "main"})
-		require.Len(t, n.Attr, 1)
-		require.Len(t, clone.Attr, 2)
+		assert.Len(t, n.Attr, 1)
+		assert.Len(t, clone.Attr, 2)
 	})
 }
 
@@ -162,23 +162,23 @@ func TestDeepCloneNode(t *testing.T) {
 
 		clone := helpers.DeepCloneNode(n)
 
-		require.Equal(t, n.Type, clone.Type)
-		require.Equal(t, n.Data, clone.Data)
-		require.NotNil(t, clone.FirstChild)
+		assert.Equal(t, n.Type, clone.Type)
+		assert.Equal(t, n.Data, clone.Data)
+		assert.NotNil(t, clone.FirstChild)
 
 		cloneChild1 := clone.FirstChild
-		require.Equal(t, child1.Data, cloneChild1.Data)
-		require.Equal(t, clone, cloneChild1.Parent)
+		assert.Equal(t, child1.Data, cloneChild1.Data)
+		assert.Equal(t, clone, cloneChild1.Parent)
 
 		cloneChild2 := cloneChild1.NextSibling
-		require.NotNil(t, cloneChild2)
-		require.Equal(t, child2.Data, cloneChild2.Data)
-		require.Equal(t, clone, cloneChild2.Parent)
+		assert.NotNil(t, cloneChild2)
+		assert.Equal(t, child2.Data, cloneChild2.Data)
+		assert.Equal(t, clone, cloneChild2.Parent)
 
 		cloneGrandchild := cloneChild2.FirstChild
-		require.NotNil(t, cloneGrandchild)
-		require.Equal(t, grandchild.Data, cloneGrandchild.Data)
-		require.Equal(t, cloneChild2, cloneGrandchild.Parent)
+		assert.NotNil(t, cloneGrandchild)
+		assert.Equal(t, grandchild.Data, cloneGrandchild.Data)
+		assert.Equal(t, cloneChild2, cloneGrandchild.Parent)
 	})
 
 	t.Run("modifying clone does not affect original", func(t *testing.T) {
@@ -192,8 +192,8 @@ func TestDeepCloneNode(t *testing.T) {
 		clone := helpers.DeepCloneNode(n)
 		clone.FirstChild.Data = "modified"
 
-		require.Equal(t, "original", n.FirstChild.Data)
-		require.Equal(t, "modified", clone.FirstChild.Data)
+		assert.Equal(t, "original", n.FirstChild.Data)
+		assert.Equal(t, "modified", clone.FirstChild.Data)
 	})
 
 	t.Run("preserves sibling relationships", func(t *testing.T) {
@@ -209,19 +209,19 @@ func TestDeepCloneNode(t *testing.T) {
 		clone := helpers.DeepCloneNode(n)
 
 		c1 := clone.FirstChild
-		require.NotNil(t, c1)
-		require.Nil(t, c1.PrevSibling)
-		require.Equal(t, "first", c1.Data)
+		assert.NotNil(t, c1)
+		assert.Nil(t, c1.PrevSibling)
+		assert.Equal(t, "first", c1.Data)
 
 		c2 := c1.NextSibling
-		require.NotNil(t, c2)
-		require.Equal(t, c1, c2.PrevSibling)
-		require.Equal(t, "second", c2.Data)
+		assert.NotNil(t, c2)
+		assert.Equal(t, c1, c2.PrevSibling)
+		assert.Equal(t, "second", c2.Data)
 
 		c3 := c2.NextSibling
-		require.NotNil(t, c3)
-		require.Equal(t, c2, c3.PrevSibling)
-		require.Nil(t, c3.NextSibling)
-		require.Equal(t, "third", c3.Data)
+		assert.NotNil(t, c3)
+		assert.Equal(t, c2, c3.PrevSibling)
+		assert.Nil(t, c3.NextSibling)
+		assert.Equal(t, "third", c3.Data)
 	})
 }

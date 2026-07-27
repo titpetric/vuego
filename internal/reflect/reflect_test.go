@@ -3,10 +3,9 @@ package reflect_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
 	"github.com/titpetric/vuego/internal/reflect"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 // TestResolveValue_NestedStructByFieldName resolves nested struct fields using Go field names.
@@ -62,9 +61,9 @@ func TestResolveValue_NestedStructByFieldName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, ok := reflect.ResolveValue(tt.value, tt.fieldName)
-			require.Equal(t, tt.ok, ok)
+			assert.Equal(t, tt.ok, ok)
 			if ok {
-				require.Equal(t, tt.want, got)
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}
@@ -129,9 +128,9 @@ func TestResolveValue_NestedStructByJSONTag(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, ok := reflect.ResolveValue(tt.value, tt.fieldName)
-			require.Equal(t, tt.ok, ok)
+			assert.Equal(t, tt.ok, ok)
 			if ok {
-				require.Equal(t, tt.want, got)
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}
@@ -150,15 +149,15 @@ func TestResolveValue_PointerDereference(t *testing.T) {
 
 	// config is *Config, should still work
 	got, ok := reflect.ResolveValue(config, "AppName")
-	require.True(t, ok)
-	require.Equal(t, config.AppName, got)
+	assert.True(t, ok)
+	assert.Equal(t, config.AppName, got)
 
 	// Nested pointer access
 	db, _ := reflect.ResolveValue(config, "Database")
 	got, ok = reflect.ResolveValue(db, "Options")
-	require.True(t, ok)
+	assert.True(t, ok)
 	opts := got.(*Options)
-	require.Equal(t, "localhost:5432", opts.ServerAddr)
+	assert.Equal(t, "localhost:5432", opts.ServerAddr)
 }
 
 // TestResolveValue_SliceIndexing resolves slice elements by numeric index.
@@ -214,9 +213,9 @@ func TestResolveValue_SliceIndexing(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, ok := reflect.ResolveValue(tt.value, tt.fieldName)
-			require.Equal(t, tt.ok, ok)
+			assert.Equal(t, tt.ok, ok)
 			if ok {
-				require.Equal(t, tt.want, got)
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}
@@ -263,9 +262,9 @@ func TestResolveValue_MapAccess(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, ok := reflect.ResolveValue(tt.value, tt.fieldName)
-			require.Equal(t, tt.ok, ok)
+			assert.Equal(t, tt.ok, ok)
 			if ok {
-				require.Equal(t, tt.want, got)
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}
@@ -302,7 +301,7 @@ func TestResolveValue_NilAndEmpty(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, ok := reflect.ResolveValue(tt.value, tt.fieldName)
-			require.Equal(t, tt.ok, ok)
+			assert.Equal(t, tt.ok, ok)
 		})
 	}
 }
@@ -364,7 +363,7 @@ func TestCanDescend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := reflect.CanDescend(tt.value)
-			require.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -390,26 +389,26 @@ func TestResolveValue_WithVueStack(t *testing.T) {
 
 	// Resolve the top-level config object from the stack
 	configVal, ok := stack.Lookup("config")
-	require.True(t, ok)
-	require.NotNil(t, configVal)
+	assert.True(t, ok)
+	assert.NotNil(t, configVal)
 
 	// Now use ResolveValue to access nested fields
 	appName, ok := reflect.ResolveValue(configVal, "AppName")
-	require.True(t, ok)
-	require.Equal(t, "MyApp", appName)
+	assert.True(t, ok)
+	assert.Equal(t, "MyApp", appName)
 
 	// Access nested struct
 	db, ok := reflect.ResolveValue(configVal, "Database")
-	require.True(t, ok)
+	assert.True(t, ok)
 	dbVal := db.(*Database)
-	require.Equal(t, "mydb", dbVal.Name)
+	assert.Equal(t, "mydb", dbVal.Name)
 
 	// Access deeply nested field
 	opts, ok := reflect.ResolveValue(dbVal, "Options")
-	require.True(t, ok)
+	assert.True(t, ok)
 	optsVal := opts.(*Options)
-	require.Equal(t, "localhost:5432", optsVal.ServerAddr)
-	require.Equal(t, 100, optsVal.PoolSize)
+	assert.Equal(t, "localhost:5432", optsVal.ServerAddr)
+	assert.Equal(t, 100, optsVal.PoolSize)
 }
 
 // Test data structures with multiple levels of nesting
@@ -494,7 +493,7 @@ func TestIsSlice(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := reflect.IsSlice(tt.value)
-			require.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -551,7 +550,7 @@ func TestSliceToAny(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := reflect.SliceToAny(tt.input)
-			require.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

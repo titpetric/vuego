@@ -5,10 +5,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/diff"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestVue_EvalFor(t *testing.T) {
@@ -98,8 +96,8 @@ func TestVue_EvalFor(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			require.NoError(t, err)
-			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
+			assert.NoError(t, err)
+			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
@@ -115,6 +113,6 @@ func TestParseFor(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := vue.RenderFragment(t.Context(), &buf, "test.vuego", map[string]any{"items": []string{"a"}})
-	require.NoError(t, err)
-	diff.EqualHTML(t, []byte("<div>a</div>"), buf.Bytes(), nil, nil)
+	assert.NoError(t, err)
+	assert.EqualHTML(t, []byte("<div>a</div>"), buf.Bytes(), nil, nil)
 }

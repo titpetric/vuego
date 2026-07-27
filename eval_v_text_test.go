@@ -5,10 +5,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/diff"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestVue_EvalVText(t *testing.T) {
@@ -90,8 +88,8 @@ func TestVue_EvalVText(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			require.NoError(t, err)
-			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
+			assert.NoError(t, err)
+			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
@@ -131,9 +129,9 @@ func TestVue_EvalVText_PreservesWhitespace(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			// Compare exact output to verify whitespace is preserved
-			require.Equal(t, tc.expected, buf.String())
+			assert.Equal(t, tc.expected, buf.String())
 		})
 	}
 }
@@ -182,8 +180,8 @@ func TestVue_EvalVText_WithFiltersAndFunctions(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			require.NoError(t, err)
-			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
+			assert.NoError(t, err)
+			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
@@ -228,8 +226,8 @@ func TestVue_EvalVText_WithComplexVariables(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			require.NoError(t, err)
-			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
+			assert.NoError(t, err)
+			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
@@ -272,8 +270,8 @@ func TestVue_EvalVText_HTMLEscaping(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			require.NoError(t, err)
-			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
+			assert.NoError(t, err)
+			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }

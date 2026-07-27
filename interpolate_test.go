@@ -5,10 +5,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/diff"
+	"github.com/titpetric/vuego/testing/assert"
 )
 
 func TestVue_Interpolate(t *testing.T) {
@@ -102,8 +100,8 @@ func TestVue_Interpolate(t *testing.T) {
 
 			var buf bytes.Buffer
 			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			require.NoError(t, err)
-			diff.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
+			assert.NoError(t, err)
+			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }
