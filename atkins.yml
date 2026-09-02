@@ -42,9 +42,8 @@ jobs:
   cover:
     desc: "Show source coverage"
     steps:
-      - splint -include-sources -output splint-doc.json . || true
-      - jq '.Packages' splint-doc.json > go-fsck.json
-      - go-fsck docs > docs/api.md
+      - splint -include-sources -save . || true
+      - go-fsck docs -i splint.json > docs/api.md
       - go tool cover -func=pkg.cov | summary coverfunc --json > pkg.cov.json
       - go-fsck extract --pretty-json ./...
       - go-fsck coverage -c pkg.cov.json -o go-fsck.json
