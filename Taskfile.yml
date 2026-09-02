@@ -2,7 +2,7 @@
 version: "3"
 
 includes:
-  gofsck: ./Taskfile.gofsck.yml
+  splint: ./Taskfile.splint.yml
 
 tasks:
   default:

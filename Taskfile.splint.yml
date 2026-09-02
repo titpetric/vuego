@@ -1,0 +1,8 @@
+---
+version: "3"
+
+tasks:
+  default:
+    desc: Run splint analysis on all packages
+    cmds:
+      - splint ./...

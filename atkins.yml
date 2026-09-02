@@ -28,8 +28,7 @@ jobs:
     parallel: true
     passthru: true
     steps:
-      - go-fsck lint ./... --exclude imports,func-args || true
-      - golangci-lint run --fix ./... || true
+      - splint --linters godoc,pairing,grouping,filecheck,coverage ./... || true
 
   test:
     desc: "Run built tests"
