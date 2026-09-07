@@ -18,9 +18,7 @@ jobs:
   fmt:
     desc: "Format the code"
     steps:
-      - goimports -w -local $(go list .) .
-      - goimports-reviser -set-alias -format -imports-order "std,blanked,general,company,project" ./...
-      - go fmt ./...
+      - splint fix ./...
       - go mod tidy
 
   lint:
