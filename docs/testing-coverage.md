@@ -10,337 +10,337 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 ## Packages
 
-| Status | Package                          | Coverage | Cognitive | Lines |
-|--------|----------------------------------|----------|-----------|-------|
-| ✅     | titpetric/vuego                  | 86.24%   | 1269      | 4098  |
-| ❌     | titpetric/vuego/diff             | 57.28%   | 155       | 457   |
-| ✅     | titpetric/vuego/formatter        | 95.26%   | 119       | 568   |
-| ✅     | titpetric/vuego/internal/helpers | 100.00%  | 84        | 313   |
-| ✅     | titpetric/vuego/internal/parser  | 84.60%   | 6         | 25    |
-| ✅     | titpetric/vuego/internal/reflect | 95.46%   | 61        | 224   |
-| ✅     | titpetric/vuego/internal/ulid    | 50.00%   | 0         | 20    |
-| ❌     | titpetric/vuego/markdown         | 71.70%   | 58        | 506   |
-| ❌     | titpetric/vuego/testing/assert   | 42.73%   | 65        | 297   |
+| Status | Package          | Coverage | Cognitive | Lines |
+|--------|------------------|----------|-----------|-------|
+| ✅     | .                | 88.44%   | 1269      | 3817  |
+| ❌     | diff             | 41.58%   | 155       | 435   |
+| ✅     | formatter        | 95.38%   | 119       | 517   |
+| ✅     | internal/helpers | 100.00%  | 84        | 277   |
+| ✅     | internal/parser  | 84.62%   | 6         | 22    |
+| ✅     | internal/reflect | 90.40%   | 61        | 210   |
+| ✅     | internal/ulid    | 57.14%   | 0         | 15    |
+| ❌     | markdown         | 71.68%   | 58        | 459   |
+| ❌     | testing/assert   | 38.57%   | 65        | 266   |
 
 ## Functions
 
-| Status | Package                          | Function                          | Coverage | Cognitive |
-|--------|----------------------------------|-----------------------------------|----------|-----------|
-| ✅     | titpetric/vuego                  | ExprEvaluator.ClearCache          | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | ExprEvaluator.Eval                | 100.00%  | 2         |
-| ✅     | titpetric/vuego                  | ExprEvaluator.getProgram          | 100.00%  | 2         |
-| ❌     | titpetric/vuego                  | GetSlotName                       | 0.00%    | 1         |
-| ✅     | titpetric/vuego                  | LessProcessor.New                 | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | LessProcessor.PostProcess         | 75.00%   | 3         |
-| ✅     | titpetric/vuego                  | LessProcessor.PreProcess          | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | LessProcessor.compileLessTag      | 85.00%   | 7         |
-| ✅     | titpetric/vuego                  | LessProcessor.isLessStyleTag      | 100.00%  | 4         |
-| ❌     | titpetric/vuego                  | LessProcessor.processNode         | 70.00%   | 11        |
-| ✅     | titpetric/vuego                  | LessProcessor.replaceWithStyleTag | 97.20%   | 3         |
-| ✅     | titpetric/vuego                  | LessProcessorError.Error          | 0.00%    | 0         |
-| ✅     | titpetric/vuego                  | Loader.Load                       | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | Loader.LoadFragment               | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | Loader.Stat                       | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | Loader.loadFragment               | 88.90%   | 3         |
-| ✅     | titpetric/vuego                  | New                               | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | NewExprEvaluator                  | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | NewFS                             | 100.00%  | 2         |
-| ✅     | titpetric/vuego                  | NewLessProcessor                  | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | NewLoader                         | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | NewOverlayFS                      | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | NewRenderer                       | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | NewSlotScope                      | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | NewStack                          | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | NewStackWithData                  | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | NewVue                            | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | NewVueContext                     | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | OverlayFS.Glob                    | 100.00%  | 6         |
-| ✅     | titpetric/vuego                  | OverlayFS.Open                    | 100.00%  | 5         |
-| ✅     | titpetric/vuego                  | OverlayFS.ReadDir                 | 100.00%  | 16        |
-| ✅     | titpetric/vuego                  | SlotScope.GetSlot                 | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | SlotScope.SetSlot                 | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | Stack.Copy                        | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | Stack.EnvMap                      | 100.00%  | 5         |
-| ✅     | titpetric/vuego                  | Stack.ForEach                     | 100.00%  | 12        |
-| ✅     | titpetric/vuego                  | Stack.GetInt                      | 73.30%   | 5         |
-| ✅     | titpetric/vuego                  | Stack.GetMap                      | 100.00%  | 5         |
-| ✅     | titpetric/vuego                  | Stack.GetSlice                    | 100.00%  | 3         |
-| ✅     | titpetric/vuego                  | Stack.GetString                   | 72.70%   | 3         |
-| ✅     | titpetric/vuego                  | Stack.Lookup                      | 85.70%   | 6         |
-| ✅     | titpetric/vuego                  | Stack.Pop                         | 93.30%   | 6         |
-| ✅     | titpetric/vuego                  | Stack.Push                        | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | Stack.Resolve                     | 92.30%   | 7         |
-| ✅     | titpetric/vuego                  | Stack.Set                         | 75.00%   | 1         |
-| ✅     | titpetric/vuego                  | Stack.resolveStep                 | 100.00%  | 8         |
-| ✅     | titpetric/vuego                  | View                              | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | Vue.DefaultFuncMap                | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | Vue.Funcs                         | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | Vue.GetComponentFile              | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | Vue.RegisterComponent             | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | Vue.RegisterNodeProcessor         | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | Vue.Render                        | 91.70%   | 3         |
-| ✅     | titpetric/vuego                  | Vue.RenderFragment                | 80.00%   | 4         |
-| ✅     | titpetric/vuego                  | Vue.buildClassString              | 95.00%   | 7         |
-| ✅     | titpetric/vuego                  | Vue.buildStyleString              | 92.30%   | 10        |
-| ✅     | titpetric/vuego                  | Vue.callFunc                      | 91.20%   | 34        |
-| ✅     | titpetric/vuego                  | Vue.evalAttributes                | 95.70%   | 47        |
-| ❌     | titpetric/vuego                  | Vue.evalBoundAttribute            | 75.00%   | 10        |
-| ✅     | titpetric/vuego                  | Vue.evalCondition                 | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | Vue.evalConditionExpr             | 82.80%   | 7         |
-| ✅     | titpetric/vuego                  | Vue.evalElseIfChain               | 93.00%   | 34        |
-| ✅     | titpetric/vuego                  | Vue.evalFilter                    | 100.00%  | 6         |
-| ✅     | titpetric/vuego                  | Vue.evalFor                       | 84.60%   | 6         |
-| ✅     | titpetric/vuego                  | Vue.evalInclude                   | 92.30%   | 15        |
-| ❌     | titpetric/vuego                  | Vue.evalObjectBinding             | 62.50%   | 6         |
-| ✅     | titpetric/vuego                  | Vue.evalPipe                      | 86.40%   | 16        |
-| ✅     | titpetric/vuego                  | Vue.evalSegment                   | 63.60%   | 5         |
-| ✅     | titpetric/vuego                  | Vue.evalSlot                      | 93.80%   | 47        |
-| ❌     | titpetric/vuego                  | Vue.evalTemplate                  | 72.40%   | 111       |
-| ✅     | titpetric/vuego                  | Vue.evalVFor                      | 86.20%   | 29        |
-| ✅     | titpetric/vuego                  | Vue.evalVHtml                     | 96.60%   | 9         |
-| ✅     | titpetric/vuego                  | Vue.evalVShow                     | 66.70%   | 5         |
-| ✅     | titpetric/vuego                  | Vue.evalVText                     | 96.90%   | 9         |
-| ✅     | titpetric/vuego                  | Vue.evaluate                      | 91.90%   | 109       |
-| ✅     | titpetric/vuego                  | Vue.evaluateChildren              | 100.00%  | 1         |
-| ❌     | titpetric/vuego                  | Vue.evaluateNodeAsElement         | 66.70%   | 41        |
-| ✅     | titpetric/vuego                  | Vue.interpolate                   | 100.00%  | 2         |
-| ✅     | titpetric/vuego                  | Vue.interpolateToWriter           | 88.70%   | 48        |
-| ✅     | titpetric/vuego                  | Vue.loadCachedWithFrontMatter     | 93.50%   | 8         |
-| ✅     | titpetric/vuego                  | Vue.mergeStyles                   | 100.00%  | 2         |
-| ✅     | titpetric/vuego                  | Vue.parseObjectPairs              | 93.80%   | 10        |
-| ✅     | titpetric/vuego                  | Vue.postProcessNodes              | 75.00%   | 3         |
-| ✅     | titpetric/vuego                  | Vue.preProcessNodes               | 66.70%   | 4         |
-| ❌     | titpetric/vuego                  | Vue.processComponentNode          | 77.80%   | 9         |
-| ✅     | titpetric/vuego                  | Vue.propagateTemplateAttributes   | 89.50%   | 14        |
-| ✅     | titpetric/vuego                  | Vue.render                        | 75.00%   | 3         |
-| ✅     | titpetric/vuego                  | Vue.renderNodesWithContext        | 81.80%   | 4         |
-| ✅     | titpetric/vuego                  | Vue.replaceWithInclude            | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | Vue.resolveArgument               | 93.30%   | 10        |
-| ✅     | titpetric/vuego                  | Vue.resolveComponentTags          | 75.00%   | 3         |
-| ✅     | titpetric/vuego                  | Vue.setStyleProperty              | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | Vue.splitObjectItems              | 85.70%   | 10        |
-| ✅     | titpetric/vuego                  | VueContext.Context                | 0.00%    | 0         |
-| ✅     | titpetric/vuego                  | VueContext.CurrentTag             | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | VueContext.ExprEnv                | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | VueContext.FormatTemplateChain    | 66.70%   | 1         |
-| ✅     | titpetric/vuego                  | VueContext.PopTag                 | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | VueContext.PushTag                | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | VueContext.Stack                  | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | VueContext.WithTemplate           | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | VueContext.bindContextFuncs       | 90.90%   | 7         |
-| ✅     | titpetric/vuego                  | VueContext.nextSeenID             | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | VueContext.wrapContextFunc        | 92.90%   | 2         |
-| ✅     | titpetric/vuego                  | WithComponents                    | 92.60%   | 12        |
-| ✅     | titpetric/vuego                  | WithFS                            | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | WithFuncs                         | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | WithLessProcessor                 | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | WithProcessor                     | 0.00%    | 0         |
-| ✅     | titpetric/vuego                  | assignSeenAttrs                   | 100.00%  | 5         |
-| ✅     | titpetric/vuego                  | camelToKebab                      | 100.00%  | 5         |
-| ❌     | titpetric/vuego                  | classifySegment                   | 80.00%   | 7         |
-| ✅     | titpetric/vuego                  | containsInterpolation             | 100.00%  | 1         |
-| ❌     | titpetric/vuego                  | convertValue                      | 65.00%   | 24        |
-| ✅     | titpetric/vuego                  | defaultFunc                       | 100.00%  | 2         |
-| ✅     | titpetric/vuego                  | escapeAttrValue                   | 100.00%  | 4         |
-| ✅     | titpetric/vuego                  | escapeFunc                        | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | extractFrontMatter                | 88.20%   | 5         |
-| ✅     | titpetric/vuego                  | extractSlotContent                | 92.90%   | 47        |
-| ✅     | titpetric/vuego                  | extractSlotsFromDOM               | 100.00%  | 25        |
-| ❌     | titpetric/vuego                  | fileFunc                          | 80.00%   | 9         |
-| ❌     | titpetric/vuego                  | formatDateFunc                    | 0.00%    | 1         |
-| ✅     | titpetric/vuego                  | formatTimeFunc                    | 62.50%   | 4         |
-| ✅     | titpetric/vuego                  | getCachedPath                     | 100.00%  | 2         |
-| ✅     | titpetric/vuego                  | getIndent                         | 66.70%   | 1         |
-| ✅     | titpetric/vuego                  | hasVSlot                          | 100.00%  | 8         |
-| ❌     | titpetric/vuego                  | htmlRenderer.Render               | 0.00%    | 3         |
-| ❌     | titpetric/vuego                  | init                              | 0.00%    | 1         |
-| ✅     | titpetric/vuego                  | intFunc                           | 42.90%   | 3         |
-| ✅     | titpetric/vuego                  | isLiteralAttr                     | 100.00%  | 2         |
-| ❌     | titpetric/vuego                  | jsonFileFunc                      | 69.20%   | 11        |
-| ✅     | titpetric/vuego                  | jsonFunc                          | 75.00%   | 1         |
-| ✅     | titpetric/vuego                  | jsonPrettyFunc                    | 75.00%   | 1         |
-| ✅     | titpetric/vuego                  | lenFunc                           | 83.30%   | 1         |
-| ✅     | titpetric/vuego                  | loadConfig                        | 92.30%   | 15        |
-| ✅     | titpetric/vuego                  | lowerFunc                         | 66.70%   | 1         |
-| ✅     | titpetric/vuego                  | parseArgs                         | 100.00%  | 11        |
-| ✅     | titpetric/vuego                  | parseFor                          | 89.50%   | 8         |
-| ✅     | titpetric/vuego                  | parsePipeExpr                     | 100.00%  | 6         |
-| ✅     | titpetric/vuego                  | parseStyleMap                     | 92.90%   | 6         |
-| ✅     | titpetric/vuego                  | parseStyleString                  | 100.00%  | 6         |
-| ✅     | titpetric/vuego                  | parseVSlotDirective               | 60.00%   | 4         |
-| ❌     | titpetric/vuego                  | parseValue                        | 69.20%   | 7         |
-| ✅     | titpetric/vuego                  | renderAttrs                       | 100.00%  | 6         |
-| ✅     | titpetric/vuego                  | renderNode                        | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | renderNodeWithContext             | 93.00%   | 67        |
-| ✅     | titpetric/vuego                  | shouldEscapeTextNode              | 100.00%  | 2         |
-| ✅     | titpetric/vuego                  | shouldIgnoreAttr                  | 100.00%  | 2         |
-| ✅     | titpetric/vuego                  | splitPathImpl                     | 87.50%   | 31        |
-| ✅     | titpetric/vuego                  | stringFunc                        | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | template.Assign                   | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | template.Err                      | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | template.Fill                     | 100.00%  | 5         |
-| ✅     | titpetric/vuego                  | template.Get                      | 100.00%  | 4         |
-| ✅     | titpetric/vuego                  | template.Load                     | 100.00%  | 1         |
-| ✅     | titpetric/vuego                  | template.New                      | 0.00%    | 0         |
-| ✅     | titpetric/vuego                  | template.Render                   | 90.00%   | 4         |
-| ✅     | titpetric/vuego                  | template.RenderByte               | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | template.RenderFile               | 0.00%    | 0         |
-| ✅     | titpetric/vuego                  | template.RenderReader             | 76.50%   | 4         |
-| ✅     | titpetric/vuego                  | template.RenderString             | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | template.SetErr                   | 0.00%    | 0         |
-| ✅     | titpetric/vuego                  | template.layout                   | 90.30%   | 19        |
-| ✅     | titpetric/vuego                  | template.new                      | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | template.renderWithoutLayout      | 66.70%   | 1         |
-| ✅     | titpetric/vuego                  | template.resolveLayoutPath        | 100.00%  | 4         |
-| ✅     | titpetric/vuego                  | titleFunc                         | 85.70%   | 6         |
-| ✅     | titpetric/vuego                  | toMapData                         | 85.70%   | 3         |
-| ✅     | titpetric/vuego                  | trimFunc                          | 66.70%   | 1         |
-| ✅     | titpetric/vuego                  | typeFunc                          | 100.00%  | 0         |
-| ✅     | titpetric/vuego                  | upperFunc                         | 66.70%   | 1         |
-| ❌     | titpetric/vuego                  | yamlFileFunc                      | 69.20%   | 11        |
-| ❌     | titpetric/vuego/diff             | CompareHTML                       | 76.50%   | 6         |
-| ✅     | titpetric/vuego/diff             | CountChildren                     | 83.30%   | 2         |
-| ❌     | titpetric/vuego/diff             | DomToYAML                         | 0.00%    | 2         |
-| ❌     | titpetric/vuego/diff             | FormatToNormalizedHTML            | 0.00%    | 1         |
-| ❌     | titpetric/vuego/diff             | GenerateUnifiedDiff               | 0.00%    | 15        |
-| ✅     | titpetric/vuego/diff             | SignificantChildren               | 95.80%   | 30        |
-| ❌     | titpetric/vuego/diff             | attrsEqual                        | 75.00%   | 15        |
-| ✅     | titpetric/vuego/diff             | classEqual                        | 81.80%   | 4         |
-| ❌     | titpetric/vuego/diff             | compareNodeRecursive              | 66.70%   | 17        |
-| ✅     | titpetric/vuego/diff             | filteredChildren                  | 100.00%  | 3         |
-| ✅     | titpetric/vuego/diff             | isIgnorable                       | 80.00%   | 3         |
-| ❌     | titpetric/vuego/diff             | nodeToMap                         | 0.00%    | 27        |
-| ✅     | titpetric/vuego/diff             | parseClasses                      | 88.90%   | 4         |
-| ✅     | titpetric/vuego/diff             | parseStyleProperties              | 86.70%   | 6         |
-| ❌     | titpetric/vuego/diff             | renderNodeForDiff                 | 0.00%    | 15        |
-| ✅     | titpetric/vuego/diff             | styleEqual                        | 81.80%   | 5         |
-| ✅     | titpetric/vuego/formatter        | DefaultFormatterOptions           | 100.00%  | 0         |
-| ✅     | titpetric/vuego/formatter        | FormatString                      | 100.00%  | 0         |
-| ✅     | titpetric/vuego/formatter        | Formatter.Format                  | 100.00%  | 2         |
-| ❌     | titpetric/vuego/formatter        | Formatter.allChildrenAreInline    | 80.00%   | 12        |
-| ✅     | titpetric/vuego/formatter        | Formatter.collectChildren         | 100.00%  | 4         |
-| ✅     | titpetric/vuego/formatter        | Formatter.formatFragment          | 97.00%   | 3         |
-| ✅     | titpetric/vuego/formatter        | Formatter.formatFullDocument      | 98.00%   | 7         |
-| ✅     | titpetric/vuego/formatter        | Formatter.formatNode              | 90.60%   | 18        |
-| ✅     | titpetric/vuego/formatter        | Formatter.formatNodeChildren      | 100.00%  | 1         |
-| ✅     | titpetric/vuego/formatter        | Formatter.formatRawTextElement    | 100.00%  | 5         |
-| ✅     | titpetric/vuego/formatter        | Formatter.isIgnorableWhitespace   | 66.70%   | 1         |
-| ✅     | titpetric/vuego/formatter        | Formatter.renderCloseTag          | 100.00%  | 0         |
-| ✅     | titpetric/vuego/formatter        | Formatter.renderInlineChildren    | 100.00%  | 6         |
-| ✅     | titpetric/vuego/formatter        | Formatter.renderOpenTag           | 100.00%  | 3         |
-| ✅     | titpetric/vuego/formatter        | Formatter.renderPreContent        | 100.00%  | 6         |
-| ✅     | titpetric/vuego/formatter        | Formatter.shouldKeepInline        | 100.00%  | 6         |
-| ✅     | titpetric/vuego/formatter        | Formatter.splitFrontmatter        | 45.50%   | 5         |
-| ✅     | titpetric/vuego/formatter        | IndentString                      | 100.00%  | 3         |
-| ✅     | titpetric/vuego/formatter        | NewFormatter                      | 100.00%  | 0         |
-| ✅     | titpetric/vuego/formatter        | NewFormatterWithOptions           | 100.00%  | 0         |
-| ✅     | titpetric/vuego/formatter        | escapeText                        | 100.00%  | 9         |
-| ✅     | titpetric/vuego/formatter        | fragmentContext                   | 100.00%  | 7         |
-| ✅     | titpetric/vuego/formatter        | isInlineAtom                      | 100.00%  | 3         |
-| ✅     | titpetric/vuego/formatter        | isPhrasingContainer               | 100.00%  | 3         |
-| ✅     | titpetric/vuego/formatter        | isVoidElement                     | 100.00%  | 3         |
-| ✅     | titpetric/vuego/formatter        | normalizeInlineText               | 94.10%   | 7         |
-| ✅     | titpetric/vuego/formatter        | trimRawContent                    | 100.00%  | 5         |
-| ✅     | titpetric/vuego/internal/helpers | AppendAttr                        | 100.00%  | 0         |
-| ✅     | titpetric/vuego/internal/helpers | CamelToKebab                      | 100.00%  | 9         |
-| ✅     | titpetric/vuego/internal/helpers | CloneNode                         | 100.00%  | 0         |
-| ✅     | titpetric/vuego/internal/helpers | ContainsPipe                      | 100.00%  | 3         |
-| ✅     | titpetric/vuego/internal/helpers | DeepCloneNode                     | 100.00%  | 6         |
-| ✅     | titpetric/vuego/internal/helpers | FilterAttrs                       | 100.00%  | 3         |
-| ✅     | titpetric/vuego/internal/helpers | FormatAttr                        | 100.00%  | 0         |
-| ✅     | titpetric/vuego/internal/helpers | GetAttr                           | 100.00%  | 3         |
-| ✅     | titpetric/vuego/internal/helpers | GetBodyNode                       | 100.00%  | 11        |
-| ✅     | titpetric/vuego/internal/helpers | HasAttr                           | 100.00%  | 3         |
-| ✅     | titpetric/vuego/internal/helpers | IsComplexExpr                     | 100.00%  | 8         |
-| ✅     | titpetric/vuego/internal/helpers | IsFunctionCall                    | 100.00%  | 5         |
-| ✅     | titpetric/vuego/internal/helpers | IsIdentifier                      | 100.00%  | 4         |
-| ✅     | titpetric/vuego/internal/helpers | IsIdentifierChar                  | 100.00%  | 8         |
-| ✅     | titpetric/vuego/internal/helpers | IsTruthy                          | 100.00%  | 4         |
-| ✅     | titpetric/vuego/internal/helpers | NeedsHTMLEscape                   | 100.00%  | 3         |
-| ✅     | titpetric/vuego/internal/helpers | NewNode                           | 100.00%  | 0         |
-| ✅     | titpetric/vuego/internal/helpers | NormalizeComparisonOperators      | 100.00%  | 7         |
-| ✅     | titpetric/vuego/internal/helpers | RemoveAttr                        | 100.00%  | 3         |
-| ✅     | titpetric/vuego/internal/helpers | SetAttr                           | 100.00%  | 3         |
-| ✅     | titpetric/vuego/internal/helpers | ShallowCloneWithAttrs             | 100.00%  | 1         |
-| ✅     | titpetric/vuego/internal/parser  | ParseTemplateBytes                | 84.60%   | 6         |
-| ✅     | titpetric/vuego/internal/reflect | CanDescend                        | 100.00%  | 5         |
-| ✅     | titpetric/vuego/internal/reflect | IsSlice                           | 100.00%  | 2         |
-| ✅     | titpetric/vuego/internal/reflect | PopulateStructFields              | 83.90%   | 17        |
-| ✅     | titpetric/vuego/internal/reflect | ResolveValue                      | 100.00%  | 2         |
-| ✅     | titpetric/vuego/internal/reflect | SliceToAny                        | 100.00%  | 4         |
-| ✅     | titpetric/vuego/internal/reflect | StructToMap                       | 81.80%   | 18        |
-| ✅     | titpetric/vuego/internal/reflect | resolveMap                        | 100.00%  | 1         |
-| ✅     | titpetric/vuego/internal/reflect | resolveSliceIndex                 | 100.00%  | 2         |
-| ✅     | titpetric/vuego/internal/reflect | resolveStruct                     | 100.00%  | 6         |
-| ✅     | titpetric/vuego/internal/reflect | resolveValueRecursive             | 88.90%   | 4         |
-| ✅     | titpetric/vuego/internal/ulid    | Parse                             | 0.00%    | 0         |
-| ✅     | titpetric/vuego/internal/ulid    | String                            | 100.00%  | 0         |
-| ✅     | titpetric/vuego/internal/ulid    | ULID                              | 100.00%  | 0         |
-| ✅     | titpetric/vuego/internal/ulid    | Valid                             | 0.00%    | 0         |
-| ✅     | titpetric/vuego/markdown         | Document.FrontMatter              | 100.00%  | 0         |
-| ✅     | titpetric/vuego/markdown         | Document.Render                   | 100.00%  | 0         |
-| ✅     | titpetric/vuego/markdown         | Document.RenderContext            | 100.00%  | 0         |
-| ✅     | titpetric/vuego/markdown         | Markdown.Load                     | 100.00%  | 1         |
-| ✅     | titpetric/vuego/markdown         | Markdown.PostProcess              | 100.00%  | 0         |
-| ✅     | titpetric/vuego/markdown         | Markdown.Register                 | 0.00%    | 0         |
-| ✅     | titpetric/vuego/markdown         | Markdown.RenderBytes              | 0.00%    | 0         |
-| ✅     | titpetric/vuego/markdown         | Markdown.RenderBytesContext       | 0.00%    | 0         |
-| ✅     | titpetric/vuego/markdown         | Markdown.collectCells             | 100.00%  | 3         |
-| ✅     | titpetric/vuego/markdown         | Markdown.inlineContent            | 100.00%  | 0         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderBlockquote         | 75.00%   | 1         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderChildren           | 75.00%   | 3         |
-| ❌     | titpetric/vuego/markdown         | Markdown.renderCodeBlock          | 0.00%    | 1         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderFencedCodeBlock    | 77.80%   | 1         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderFootnote           | 75.00%   | 1         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderFootnoteList       | 75.00%   | 1         |
-| ❌     | titpetric/vuego/markdown         | Markdown.renderHTMLBlock          | 0.00%    | 3         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderHeading            | 75.00%   | 1         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderInlineChildren     | 75.00%   | 3         |
-| ❌     | titpetric/vuego/markdown         | Markdown.renderInlineNode         | 48.60%   | 10        |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderList               | 75.00%   | 1         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderListItem           | 75.00%   | 1         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderNode               | 70.60%   | 3         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderParagraph          | 71.40%   | 1         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderTable              | 100.00%  | 3         |
-| ✅     | titpetric/vuego/markdown         | Markdown.renderTemplate           | 88.90%   | 2         |
-| ✅     | titpetric/vuego/markdown         | Markdown.tryHandlers              | 50.00%   | 3         |
-| ✅     | titpetric/vuego/markdown         | New                               | 100.00%  | 2         |
-| ✅     | titpetric/vuego/markdown         | Templates                         | 100.00%  | 0         |
-| ✅     | titpetric/vuego/markdown         | alignString                       | 40.00%   | 1         |
-| ✅     | titpetric/vuego/markdown         | codeBlockContent                  | 100.00%  | 1         |
-| ✅     | titpetric/vuego/markdown         | codeSpanContent                   | 100.00%  | 3         |
-| ✅     | titpetric/vuego/markdown         | headingID                         | 100.00%  | 0         |
-| ✅     | titpetric/vuego/markdown         | inlineText                        | 71.40%   | 5         |
-| ✅     | titpetric/vuego/markdown         | splitFrontMatter                  | 90.90%   | 3         |
-| ❌     | titpetric/vuego/testing/assert   | Assert                            | 0.00%    | 1         |
-| ❌     | titpetric/vuego/testing/assert   | CheckEquals                       | 0.00%    | 1         |
-| ✅     | titpetric/vuego/testing/assert   | Contains                          | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | Empty                             | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | Equal                             | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | EqualHTML                         | 100.00%  | 0         |
-| ❌     | titpetric/vuego/testing/assert   | EqualValues                       | 0.00%    | 1         |
-| ✅     | titpetric/vuego/testing/assert   | Error                             | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | ErrorIs                           | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | Errorf                            | 0.00%    | 0         |
-| ❌     | titpetric/vuego/testing/assert   | Fail                              | 0.00%    | 1         |
-| ✅     | titpetric/vuego/testing/assert   | False                             | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | Greater                           | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | IsIncreasing                      | 50.00%   | 5         |
-| ✅     | titpetric/vuego/testing/assert   | Len                               | 50.00%   | 2         |
-| ✅     | titpetric/vuego/testing/assert   | Nil                               | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | NoError                           | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | NotContains                       | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | NotEmpty                          | 50.00%   | 1         |
-| ❌     | titpetric/vuego/testing/assert   | NotEqual                          | 0.00%    | 1         |
-| ✅     | titpetric/vuego/testing/assert   | NotNil                            | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | ObjectsAreEqualValues             | 100.00%  | 0         |
-| ❌     | titpetric/vuego/testing/assert   | Run                               | 0.00%    | 10        |
-| ✅     | titpetric/vuego/testing/assert   | TestSuite.SetT                    | 0.00%    | 0         |
-| ✅     | titpetric/vuego/testing/assert   | TestSuite.T                       | 0.00%    | 0         |
-| ✅     | titpetric/vuego/testing/assert   | True                              | 50.00%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | compare                           | 60.00%   | 2         |
-| ❌     | titpetric/vuego/testing/assert   | containsElement                   | 66.70%   | 9         |
-| ✅     | titpetric/vuego/testing/assert   | hasLength                         | 66.70%   | 1         |
-| ✅     | titpetric/vuego/testing/assert   | isEmpty                           | 66.70%   | 2         |
-| ✅     | titpetric/vuego/testing/assert   | isNil                             | 100.00%  | 2         |
-| ❌     | titpetric/vuego/testing/assert   | orderedCompare                    | 57.10%   | 14        |
+| Status | Package          | Function                          | Coverage | Cognitive |
+|--------|------------------|-----------------------------------|----------|-----------|
+| ✅     | .                | ExprEvaluator.ClearCache          | 100.00%  | 0         |
+| ✅     |                  | ExprEvaluator.Eval                | 100.00%  | 2         |
+| ✅     |                  | ExprEvaluator.getProgram          | 100.00%  | 2         |
+| ❌     |                  | GetSlotName                       | 0.00%    | 1         |
+| ✅     |                  | LessProcessor.New                 | 100.00%  | 0         |
+| ✅     |                  | LessProcessor.PostProcess         | 75.00%   | 3         |
+| ✅     |                  | LessProcessor.PreProcess          | 100.00%  | 0         |
+| ✅     |                  | LessProcessor.compileLessTag      | 85.00%   | 7         |
+| ✅     |                  | LessProcessor.isLessStyleTag      | 100.00%  | 4         |
+| ❌     |                  | LessProcessor.processNode         | 70.00%   | 11        |
+| ✅     |                  | LessProcessor.replaceWithStyleTag | 97.22%   | 3         |
+| ✅     |                  | LessProcessorError.Error          | 0.00%    | 0         |
+| ✅     |                  | Loader.Load                       | 100.00%  | 0         |
+| ✅     |                  | Loader.LoadFragment               | 100.00%  | 1         |
+| ✅     |                  | Loader.Stat                       | 100.00%  | 0         |
+| ✅     |                  | Loader.loadFragment               | 88.89%   | 3         |
+| ✅     |                  | New                               | 100.00%  | 0         |
+| ✅     |                  | NewExprEvaluator                  | 100.00%  | 0         |
+| ✅     |                  | NewFS                             | 100.00%  | 2         |
+| ✅     |                  | NewLessProcessor                  | 100.00%  | 1         |
+| ✅     |                  | NewLoader                         | 100.00%  | 0         |
+| ✅     |                  | NewOverlayFS                      | 100.00%  | 0         |
+| ✅     |                  | NewRenderer                       | 100.00%  | 0         |
+| ✅     |                  | NewSlotScope                      | 100.00%  | 0         |
+| ✅     |                  | NewStack                          | 100.00%  | 0         |
+| ✅     |                  | NewStackWithData                  | 100.00%  | 1         |
+| ✅     |                  | NewVue                            | 100.00%  | 0         |
+| ✅     |                  | NewVueContext                     | 100.00%  | 1         |
+| ✅     |                  | OverlayFS.Glob                    | 100.00%  | 6         |
+| ✅     |                  | OverlayFS.Open                    | 100.00%  | 5         |
+| ✅     |                  | OverlayFS.ReadDir                 | 100.00%  | 16        |
+| ✅     |                  | SlotScope.GetSlot                 | 100.00%  | 0         |
+| ✅     |                  | SlotScope.SetSlot                 | 100.00%  | 0         |
+| ✅     |                  | Stack.Copy                        | 100.00%  | 0         |
+| ✅     |                  | Stack.EnvMap                      | 100.00%  | 5         |
+| ✅     |                  | Stack.ForEach                     | 100.00%  | 12        |
+| ✅     |                  | Stack.GetInt                      | 73.33%   | 5         |
+| ✅     |                  | Stack.GetMap                      | 100.00%  | 5         |
+| ✅     |                  | Stack.GetSlice                    | 100.00%  | 3         |
+| ✅     |                  | Stack.GetString                   | 72.73%   | 3         |
+| ✅     |                  | Stack.Lookup                      | 85.71%   | 6         |
+| ✅     |                  | Stack.Pop                         | 93.33%   | 6         |
+| ✅     |                  | Stack.Push                        | 100.00%  | 1         |
+| ✅     |                  | Stack.Resolve                     | 92.31%   | 7         |
+| ✅     |                  | Stack.Set                         | 75.00%   | 1         |
+| ✅     |                  | Stack.resolveStep                 | 100.00%  | 8         |
+| ✅     |                  | View                              | 100.00%  | 0         |
+| ✅     |                  | Vue.DefaultFuncMap                | 100.00%  | 0         |
+| ✅     |                  | Vue.Funcs                         | 100.00%  | 1         |
+| ✅     |                  | Vue.GetComponentFile              | 100.00%  | 0         |
+| ✅     |                  | Vue.RegisterComponent             | 100.00%  | 0         |
+| ✅     |                  | Vue.RegisterNodeProcessor         | 100.00%  | 1         |
+| ✅     |                  | Vue.Render                        | 91.67%   | 3         |
+| ✅     |                  | Vue.RenderFragment                | 80.00%   | 4         |
+| ✅     |                  | Vue.buildClassString              | 95.00%   | 7         |
+| ✅     |                  | Vue.buildStyleString              | 92.31%   | 10        |
+| ✅     |                  | Vue.callFunc                      | 91.18%   | 34        |
+| ✅     |                  | Vue.evalAttributes                | 95.65%   | 47        |
+| ❌     |                  | Vue.evalBoundAttribute            | 75.00%   | 10        |
+| ✅     |                  | Vue.evalCondition                 | 100.00%  | 0         |
+| ✅     |                  | Vue.evalConditionExpr             | 82.76%   | 7         |
+| ✅     |                  | Vue.evalElseIfChain               | 93.02%   | 34        |
+| ✅     |                  | Vue.evalFilter                    | 100.00%  | 6         |
+| ✅     |                  | Vue.evalFor                       | 84.62%   | 6         |
+| ✅     |                  | Vue.evalInclude                   | 92.31%   | 15        |
+| ❌     |                  | Vue.evalObjectBinding             | 62.50%   | 6         |
+| ✅     |                  | Vue.evalPipe                      | 86.36%   | 16        |
+| ✅     |                  | Vue.evalSegment                   | 63.64%   | 5         |
+| ✅     |                  | Vue.evalSlot                      | 93.75%   | 47        |
+| ❌     |                  | Vue.evalTemplate                  | 72.45%   | 111       |
+| ✅     |                  | Vue.evalVFor                      | 86.21%   | 29        |
+| ✅     |                  | Vue.evalVHtml                     | 96.55%   | 9         |
+| ✅     |                  | Vue.evalVShow                     | 66.67%   | 5         |
+| ✅     |                  | Vue.evalVText                     | 96.88%   | 9         |
+| ✅     |                  | Vue.evaluate                      | 91.89%   | 109       |
+| ✅     |                  | Vue.evaluateChildren              | 100.00%  | 1         |
+| ❌     |                  | Vue.evaluateNodeAsElement         | 66.67%   | 41        |
+| ✅     |                  | Vue.interpolate                   | 100.00%  | 2         |
+| ✅     |                  | Vue.interpolateToWriter           | 88.73%   | 48        |
+| ✅     |                  | Vue.loadCachedWithFrontMatter     | 93.55%   | 8         |
+| ✅     |                  | Vue.mergeStyles                   | 100.00%  | 2         |
+| ✅     |                  | Vue.parseObjectPairs              | 93.75%   | 10        |
+| ✅     |                  | Vue.postProcessNodes              | 75.00%   | 3         |
+| ✅     |                  | Vue.preProcessNodes               | 66.67%   | 4         |
+| ❌     |                  | Vue.processComponentNode          | 77.78%   | 9         |
+| ✅     |                  | Vue.propagateTemplateAttributes   | 89.47%   | 14        |
+| ✅     |                  | Vue.render                        | 75.00%   | 3         |
+| ✅     |                  | Vue.renderNodesWithContext        | 81.82%   | 4         |
+| ✅     |                  | Vue.replaceWithInclude            | 100.00%  | 0         |
+| ✅     |                  | Vue.resolveArgument               | 93.33%   | 10        |
+| ✅     |                  | Vue.resolveComponentTags          | 75.00%   | 3         |
+| ✅     |                  | Vue.setStyleProperty              | 100.00%  | 1         |
+| ✅     |                  | Vue.splitObjectItems              | 85.71%   | 10        |
+| ✅     |                  | VueContext.Context                | 0.00%    | 0         |
+| ✅     |                  | VueContext.CurrentTag             | 100.00%  | 1         |
+| ✅     |                  | VueContext.ExprEnv                | 100.00%  | 0         |
+| ✅     |                  | VueContext.FormatTemplateChain    | 66.67%   | 1         |
+| ✅     |                  | VueContext.PopTag                 | 100.00%  | 1         |
+| ✅     |                  | VueContext.PushTag                | 100.00%  | 0         |
+| ✅     |                  | VueContext.Stack                  | 100.00%  | 0         |
+| ✅     |                  | VueContext.WithTemplate           | 100.00%  | 0         |
+| ✅     |                  | VueContext.bindContextFuncs       | 90.91%   | 7         |
+| ✅     |                  | VueContext.nextSeenID             | 100.00%  | 0         |
+| ✅     |                  | VueContext.wrapContextFunc        | 92.86%   | 2         |
+| ✅     |                  | WithComponents                    | 92.59%   | 12        |
+| ✅     |                  | WithFS                            | 100.00%  | 0         |
+| ✅     |                  | WithFuncs                         | 100.00%  | 0         |
+| ✅     |                  | WithLessProcessor                 | 100.00%  | 0         |
+| ✅     |                  | WithProcessor                     | 0.00%    | 0         |
+| ✅     |                  | assignSeenAttrs                   | 100.00%  | 5         |
+| ✅     |                  | camelToKebab                      | 100.00%  | 5         |
+| ❌     |                  | classifySegment                   | 80.00%   | 7         |
+| ✅     |                  | containsInterpolation             | 100.00%  | 1         |
+| ❌     |                  | convertValue                      | 65.00%   | 24        |
+| ✅     |                  | defaultFunc                       | 100.00%  | 2         |
+| ✅     |                  | escapeAttrValue                   | 100.00%  | 4         |
+| ✅     |                  | escapeFunc                        | 100.00%  | 1         |
+| ✅     |                  | extractFrontMatter                | 88.24%   | 5         |
+| ✅     |                  | extractSlotContent                | 92.86%   | 47        |
+| ✅     |                  | extractSlotsFromDOM               | 100.00%  | 25        |
+| ❌     |                  | fileFunc                          | 80.00%   | 9         |
+| ❌     |                  | formatDateFunc                    | 0.00%    | 1         |
+| ✅     |                  | formatTimeFunc                    | 62.50%   | 4         |
+| ✅     |                  | getCachedPath                     | 100.00%  | 2         |
+| ✅     |                  | getIndent                         | 66.67%   | 1         |
+| ✅     |                  | hasVSlot                          | 100.00%  | 8         |
+| ❌     |                  | htmlRenderer.Render               | 0.00%    | 3         |
+| ✅     |                  | init                              | 100.00%  | 1         |
+| ✅     |                  | intFunc                           | 42.86%   | 3         |
+| ✅     |                  | isLiteralAttr                     | 100.00%  | 2         |
+| ❌     |                  | jsonFileFunc                      | 69.23%   | 11        |
+| ✅     |                  | jsonFunc                          | 75.00%   | 1         |
+| ✅     |                  | jsonPrettyFunc                    | 75.00%   | 1         |
+| ✅     |                  | lenFunc                           | 83.33%   | 1         |
+| ✅     |                  | loadConfig                        | 92.31%   | 15        |
+| ✅     |                  | lowerFunc                         | 66.67%   | 1         |
+| ✅     |                  | parseArgs                         | 100.00%  | 11        |
+| ✅     |                  | parseFor                          | 89.47%   | 8         |
+| ✅     |                  | parsePipeExpr                     | 100.00%  | 6         |
+| ✅     |                  | parseStyleMap                     | 92.86%   | 6         |
+| ✅     |                  | parseStyleString                  | 100.00%  | 6         |
+| ✅     |                  | parseVSlotDirective               | 60.00%   | 4         |
+| ❌     |                  | parseValue                        | 69.23%   | 7         |
+| ✅     |                  | renderAttrs                       | 100.00%  | 6         |
+| ✅     |                  | renderNode                        | 100.00%  | 0         |
+| ✅     |                  | renderNodeWithContext             | 92.98%   | 67        |
+| ✅     |                  | shouldEscapeTextNode              | 100.00%  | 2         |
+| ✅     |                  | shouldIgnoreAttr                  | 100.00%  | 2         |
+| ✅     |                  | splitPathImpl                     | 87.50%   | 31        |
+| ✅     |                  | stringFunc                        | 100.00%  | 0         |
+| ✅     |                  | template.Assign                   | 100.00%  | 0         |
+| ✅     |                  | template.Err                      | 100.00%  | 0         |
+| ✅     |                  | template.Fill                     | 100.00%  | 5         |
+| ✅     |                  | template.Get                      | 100.00%  | 4         |
+| ✅     |                  | template.Load                     | 100.00%  | 1         |
+| ✅     |                  | template.New                      | 0.00%    | 0         |
+| ✅     |                  | template.Render                   | 90.00%   | 4         |
+| ✅     |                  | template.RenderByte               | 100.00%  | 0         |
+| ✅     |                  | template.RenderFile               | 0.00%    | 0         |
+| ✅     |                  | template.RenderReader             | 76.47%   | 4         |
+| ✅     |                  | template.RenderString             | 100.00%  | 0         |
+| ✅     |                  | template.SetErr                   | 0.00%    | 0         |
+| ✅     |                  | template.layout                   | 90.32%   | 19        |
+| ✅     |                  | template.new                      | 100.00%  | 0         |
+| ✅     |                  | template.renderWithoutLayout      | 66.67%   | 1         |
+| ✅     |                  | template.resolveLayoutPath        | 100.00%  | 4         |
+| ✅     |                  | titleFunc                         | 85.71%   | 6         |
+| ✅     |                  | toMapData                         | 85.71%   | 3         |
+| ✅     |                  | trimFunc                          | 66.67%   | 1         |
+| ✅     |                  | typeFunc                          | 100.00%  | 0         |
+| ✅     |                  | upperFunc                         | 66.67%   | 1         |
+| ❌     |                  | yamlFileFunc                      | 69.23%   | 11        |
+| ❌     | diff             | CompareHTML                       | 76.47%   | 6         |
+| ✅     |                  | CountChildren                     | 83.33%   | 2         |
+| ❌     |                  | DomToYAML                         | 0.00%    | 2         |
+| ❌     |                  | FormatToNormalizedHTML            | 0.00%    | 1         |
+| ❌     |                  | GenerateUnifiedDiff               | 0.00%    | 15        |
+| ✅     |                  | SignificantChildren               | 95.83%   | 30        |
+| ❌     |                  | attrsEqual                        | 75.00%   | 15        |
+| ✅     |                  | classEqual                        | 81.82%   | 4         |
+| ❌     |                  | compareNodeRecursive              | 66.67%   | 17        |
+| ✅     |                  | filteredChildren                  | 100.00%  | 3         |
+| ✅     |                  | isIgnorable                       | 80.00%   | 3         |
+| ❌     |                  | nodeToMap                         | 0.00%    | 27        |
+| ✅     |                  | parseClasses                      | 88.89%   | 4         |
+| ✅     |                  | parseStyleProperties              | 86.67%   | 6         |
+| ❌     |                  | renderNodeForDiff                 | 0.00%    | 15        |
+| ✅     |                  | styleEqual                        | 81.82%   | 5         |
+| ✅     | formatter        | DefaultFormatterOptions           | 100.00%  | 0         |
+| ✅     |                  | FormatString                      | 100.00%  | 0         |
+| ✅     |                  | Formatter.Format                  | 100.00%  | 2         |
+| ❌     |                  | Formatter.allChildrenAreInline    | 80.00%   | 12        |
+| ✅     |                  | Formatter.collectChildren         | 100.00%  | 4         |
+| ✅     |                  | Formatter.formatFragment          | 96.97%   | 3         |
+| ✅     |                  | Formatter.formatFullDocument      | 98.04%   | 7         |
+| ✅     |                  | Formatter.formatNode              | 90.57%   | 18        |
+| ✅     |                  | Formatter.formatNodeChildren      | 100.00%  | 1         |
+| ✅     |                  | Formatter.formatRawTextElement    | 100.00%  | 5         |
+| ✅     |                  | Formatter.isIgnorableWhitespace   | 66.67%   | 1         |
+| ✅     |                  | Formatter.renderCloseTag          | 100.00%  | 0         |
+| ✅     |                  | Formatter.renderInlineChildren    | 100.00%  | 6         |
+| ✅     |                  | Formatter.renderOpenTag           | 100.00%  | 3         |
+| ✅     |                  | Formatter.renderPreContent        | 100.00%  | 6         |
+| ✅     |                  | Formatter.shouldKeepInline        | 100.00%  | 6         |
+| ✅     |                  | Formatter.splitFrontmatter        | 45.45%   | 5         |
+| ✅     |                  | IndentString                      | 100.00%  | 3         |
+| ✅     |                  | NewFormatter                      | 100.00%  | 0         |
+| ✅     |                  | NewFormatterWithOptions           | 100.00%  | 0         |
+| ✅     |                  | escapeText                        | 100.00%  | 9         |
+| ✅     |                  | fragmentContext                   | 100.00%  | 7         |
+| ✅     |                  | isInlineAtom                      | 100.00%  | 3         |
+| ✅     |                  | isPhrasingContainer               | 100.00%  | 3         |
+| ✅     |                  | isVoidElement                     | 100.00%  | 3         |
+| ✅     |                  | normalizeInlineText               | 94.12%   | 7         |
+| ✅     |                  | trimRawContent                    | 100.00%  | 5         |
+| ✅     | internal/helpers | AppendAttr                        | 100.00%  | 0         |
+| ✅     |                  | CamelToKebab                      | 100.00%  | 9         |
+| ✅     |                  | CloneNode                         | 100.00%  | 0         |
+| ✅     |                  | ContainsPipe                      | 100.00%  | 3         |
+| ✅     |                  | DeepCloneNode                     | 100.00%  | 6         |
+| ✅     |                  | FilterAttrs                       | 100.00%  | 3         |
+| ✅     |                  | FormatAttr                        | 100.00%  | 0         |
+| ✅     |                  | GetAttr                           | 100.00%  | 3         |
+| ✅     |                  | GetBodyNode                       | 100.00%  | 11        |
+| ✅     |                  | HasAttr                           | 100.00%  | 3         |
+| ✅     |                  | IsComplexExpr                     | 100.00%  | 8         |
+| ✅     |                  | IsFunctionCall                    | 100.00%  | 5         |
+| ✅     |                  | IsIdentifier                      | 100.00%  | 4         |
+| ✅     |                  | IsIdentifierChar                  | 100.00%  | 8         |
+| ✅     |                  | IsTruthy                          | 100.00%  | 4         |
+| ✅     |                  | NeedsHTMLEscape                   | 100.00%  | 3         |
+| ✅     |                  | NewNode                           | 100.00%  | 0         |
+| ✅     |                  | NormalizeComparisonOperators      | 100.00%  | 7         |
+| ✅     |                  | RemoveAttr                        | 100.00%  | 3         |
+| ✅     |                  | SetAttr                           | 100.00%  | 3         |
+| ✅     |                  | ShallowCloneWithAttrs             | 100.00%  | 1         |
+| ✅     | internal/parser  | ParseTemplateBytes                | 84.62%   | 6         |
+| ✅     | internal/reflect | CanDescend                        | 100.00%  | 5         |
+| ✅     |                  | IsSlice                           | 100.00%  | 2         |
+| ✅     |                  | PopulateStructFields              | 83.87%   | 17        |
+| ✅     |                  | ResolveValue                      | 100.00%  | 2         |
+| ✅     |                  | SliceToAny                        | 100.00%  | 4         |
+| ✅     |                  | StructToMap                       | 81.82%   | 18        |
+| ✅     |                  | resolveMap                        | 100.00%  | 1         |
+| ✅     |                  | resolveSliceIndex                 | 100.00%  | 2         |
+| ✅     |                  | resolveStruct                     | 100.00%  | 6         |
+| ✅     |                  | resolveValueRecursive             | 88.89%   | 4         |
+| ✅     | internal/ulid    | Parse                             | 0.00%    | 0         |
+| ✅     |                  | String                            | 100.00%  | 0         |
+| ✅     |                  | ULID                              | 100.00%  | 0         |
+| ✅     |                  | Valid                             | 0.00%    | 0         |
+| ✅     | markdown         | Document.FrontMatter              | 100.00%  | 0         |
+| ✅     |                  | Document.Render                   | 100.00%  | 0         |
+| ✅     |                  | Document.RenderContext            | 100.00%  | 0         |
+| ✅     |                  | Markdown.Load                     | 100.00%  | 1         |
+| ✅     |                  | Markdown.PostProcess              | 100.00%  | 0         |
+| ✅     |                  | Markdown.Register                 | 0.00%    | 0         |
+| ✅     |                  | Markdown.RenderBytes              | 0.00%    | 0         |
+| ✅     |                  | Markdown.RenderBytesContext       | 0.00%    | 0         |
+| ✅     |                  | Markdown.collectCells             | 100.00%  | 3         |
+| ✅     |                  | Markdown.inlineContent            | 100.00%  | 0         |
+| ✅     |                  | Markdown.renderBlockquote         | 75.00%   | 1         |
+| ✅     |                  | Markdown.renderChildren           | 75.00%   | 3         |
+| ❌     |                  | Markdown.renderCodeBlock          | 0.00%    | 1         |
+| ✅     |                  | Markdown.renderFencedCodeBlock    | 77.78%   | 1         |
+| ✅     |                  | Markdown.renderFootnote           | 75.00%   | 1         |
+| ✅     |                  | Markdown.renderFootnoteList       | 75.00%   | 1         |
+| ❌     |                  | Markdown.renderHTMLBlock          | 0.00%    | 3         |
+| ✅     |                  | Markdown.renderHeading            | 75.00%   | 1         |
+| ✅     |                  | Markdown.renderInlineChildren     | 75.00%   | 3         |
+| ❌     |                  | Markdown.renderInlineNode         | 48.65%   | 10        |
+| ✅     |                  | Markdown.renderList               | 75.00%   | 1         |
+| ✅     |                  | Markdown.renderListItem           | 75.00%   | 1         |
+| ✅     |                  | Markdown.renderNode               | 70.59%   | 3         |
+| ✅     |                  | Markdown.renderParagraph          | 71.43%   | 1         |
+| ✅     |                  | Markdown.renderTable              | 100.00%  | 3         |
+| ✅     |                  | Markdown.renderTemplate           | 88.89%   | 2         |
+| ✅     |                  | Markdown.tryHandlers              | 50.00%   | 3         |
+| ✅     |                  | New                               | 100.00%  | 2         |
+| ✅     |                  | Templates                         | 100.00%  | 0         |
+| ✅     |                  | alignString                       | 40.00%   | 1         |
+| ✅     |                  | codeBlockContent                  | 100.00%  | 1         |
+| ✅     |                  | codeSpanContent                   | 100.00%  | 3         |
+| ✅     |                  | headingID                         | 100.00%  | 0         |
+| ✅     |                  | inlineText                        | 71.43%   | 5         |
+| ✅     |                  | splitFrontMatter                  | 90.91%   | 3         |
+| ❌     | testing/assert   | Assert                            | 0.00%    | 1         |
+| ❌     |                  | CheckEquals                       | 0.00%    | 1         |
+| ✅     |                  | Contains                          | 50.00%   | 1         |
+| ✅     |                  | Empty                             | 50.00%   | 1         |
+| ✅     |                  | Equal                             | 50.00%   | 1         |
+| ✅     |                  | EqualHTML                         | 100.00%  | 0         |
+| ❌     |                  | EqualValues                       | 0.00%    | 1         |
+| ✅     |                  | Error                             | 50.00%   | 1         |
+| ✅     |                  | ErrorIs                           | 50.00%   | 1         |
+| ✅     |                  | Errorf                            | 0.00%    | 0         |
+| ❌     |                  | Fail                              | 0.00%    | 1         |
+| ✅     |                  | False                             | 50.00%   | 1         |
+| ✅     |                  | Greater                           | 50.00%   | 1         |
+| ✅     |                  | IsIncreasing                      | 50.00%   | 5         |
+| ✅     |                  | Len                               | 50.00%   | 2         |
+| ✅     |                  | Nil                               | 50.00%   | 1         |
+| ✅     |                  | NoError                           | 50.00%   | 1         |
+| ✅     |                  | NotContains                       | 50.00%   | 1         |
+| ✅     |                  | NotEmpty                          | 50.00%   | 1         |
+| ❌     |                  | NotEqual                          | 0.00%    | 1         |
+| ✅     |                  | NotNil                            | 50.00%   | 1         |
+| ✅     |                  | ObjectsAreEqualValues             | 100.00%  | 0         |
+| ❌     |                  | Run                               | 0.00%    | 10        |
+| ✅     |                  | TestSuite.SetT                    | 0.00%    | 0         |
+| ✅     |                  | TestSuite.T                       | 0.00%    | 0         |
+| ✅     |                  | True                              | 50.00%   | 1         |
+| ✅     |                  | compare                           | 60.00%   | 2         |
+| ❌     |                  | containsElement                   | 66.67%   | 9         |
+| ✅     |                  | hasLength                         | 66.67%   | 1         |
+| ✅     |                  | isEmpty                           | 66.67%   | 2         |
+| ✅     |                  | isNil                             | 100.00%  | 2         |
+| ❌     |                  | orderedCompare                    | 57.14%   | 14        |

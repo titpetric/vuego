@@ -40,13 +40,7 @@ jobs:
   cover:
     desc: "Show source coverage"
     steps:
-      - defer: rm -f splint.json
-      - splint -include-sources -save . || true
-      - go-fsck docs -i splint.json > docs/api.md
-      # The extract reads the profile itself, so the coverage is in the
-      # document splint writes rather than folded in by a second pass over a
-      # summary of it. splint exits 1 on a finding, which is not this job.
-      - splint -save --append-coverage=pkg.cov ./... || true
-      - go-fsck coverage -i splint.json --template=docs/testing-coverage.md.tpl -v > docs/testing-coverage.md
+      - splint docs . > docs/api.md
+      - splint coverage --append-coverage=pkg.cov --template=docs/testing-coverage.md.tpl -v ./... > docs/testing-coverage.md
       - perl -pi -e 's/github.com\/titpetric/titpetric/g' docs/testing-coverage.md
       - task: mdox:fmt
