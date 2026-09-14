@@ -1,6 +1,8 @@
 package helpers
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // IsTruthy converts a value to boolean following Vue semantics.
 // For bound attributes, false values should not render the attribute.

@@ -1,6 +1,8 @@
 package vuego
 
-import "golang.org/x/net/html"
+import (
+	"golang.org/x/net/html"
+)
 
 // NodeProcessor is an interface for post-processing []*html.Node after template evaluation.
 // Implementations can inspect and modify HTML nodes to implement custom tags and attributes.

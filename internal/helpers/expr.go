@@ -1,6 +1,8 @@
 package helpers
 
-import "strings"
+import (
+	"strings"
+)
 
 // IsFunctionCall checks if an expression looks like a function call.
 func IsFunctionCall(expr string) bool {

@@ -17,7 +17,7 @@ import (
 	"github.com/yuin/goldmark/text"
 	yaml "gopkg.in/yaml.v3"
 
-	vuego "github.com/titpetric/vuego"
+	"github.com/titpetric/vuego"
 )
 
 // PostProcessor transforms rendered HTML for a specific block type.
