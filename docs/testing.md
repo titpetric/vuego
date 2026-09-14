@@ -27,7 +27,7 @@ task test
 
 Generates detailed coverage reports and documentation:
 
-- Extracts source documentation with `go-fsck`
+- Extracts source documentation with `splint`
 - Generates API documentation in `docs/api.md`
 - Creates JSON coverage summary in `pkg.cov.json`
 - Produces coverage report in `docs/testing-coverage.md`
