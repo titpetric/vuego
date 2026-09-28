@@ -8,7 +8,7 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 // TestEvalInclude_StackManagement verifies that include stack push/pop is properly balanced

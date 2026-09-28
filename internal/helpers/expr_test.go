@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/titpetric/vuego/internal/helpers"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 func TestContainsPipe(t *testing.T) {

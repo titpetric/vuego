@@ -7,7 +7,7 @@ import (
 	"testing/fstest"
 
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 // TestTemplate_NestedIncludesStateIsolation reproduces the issue where shared vuego.Template

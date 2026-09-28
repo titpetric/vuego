@@ -8,7 +8,7 @@ import (
 	"testing/fstest"
 
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 // getTOCData returns a read-only table of contents data structure

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/titpetric/vuego/internal/parser"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 func TestParseTemplateBytes(t *testing.T) {

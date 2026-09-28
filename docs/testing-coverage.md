@@ -20,7 +20,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | internal/reflect | 90.40%   | 61        | 210   |
 | ✅     | internal/ulid    | 57.14%   | 0         | 15    |
 | ❌     | markdown         | 71.68%   | 58        | 459   |
-| ❌     | testing/assert   | 38.57%   | 65        | 266   |
+| ❌     | tests/assert     | 74.29%   | 65        | 266   |
 
 ## Functions
 
@@ -312,17 +312,17 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     |                  | headingID                         | 100.00%  | 0         |
 | ✅     |                  | inlineText                        | 71.43%   | 5         |
 | ✅     |                  | splitFrontMatter                  | 90.91%   | 3         |
-| ❌     | testing/assert   | Assert                            | 0.00%    | 1         |
-| ❌     |                  | CheckEquals                       | 0.00%    | 1         |
+| ✅     | tests/assert     | Assert                            | 16.67%   | 1         |
+| ✅     |                  | CheckEquals                       | 20.00%   | 1         |
 | ✅     |                  | Contains                          | 50.00%   | 1         |
 | ✅     |                  | Empty                             | 50.00%   | 1         |
 | ✅     |                  | Equal                             | 50.00%   | 1         |
 | ✅     |                  | EqualHTML                         | 100.00%  | 0         |
-| ❌     |                  | EqualValues                       | 0.00%    | 1         |
+| ✅     |                  | EqualValues                       | 50.00%   | 1         |
 | ✅     |                  | Error                             | 50.00%   | 1         |
 | ✅     |                  | ErrorIs                           | 50.00%   | 1         |
-| ✅     |                  | Errorf                            | 0.00%    | 0         |
-| ❌     |                  | Fail                              | 0.00%    | 1         |
+| ✅     |                  | Errorf                            | 100.00%  | 0         |
+| ✅     |                  | Fail                              | 100.00%  | 1         |
 | ✅     |                  | False                             | 50.00%   | 1         |
 | ✅     |                  | Greater                           | 50.00%   | 1         |
 | ✅     |                  | IsIncreasing                      | 50.00%   | 5         |
@@ -331,16 +331,16 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     |                  | NoError                           | 50.00%   | 1         |
 | ✅     |                  | NotContains                       | 50.00%   | 1         |
 | ✅     |                  | NotEmpty                          | 50.00%   | 1         |
-| ❌     |                  | NotEqual                          | 0.00%    | 1         |
+| ✅     |                  | NotEqual                          | 50.00%   | 1         |
 | ✅     |                  | NotNil                            | 50.00%   | 1         |
 | ✅     |                  | ObjectsAreEqualValues             | 100.00%  | 0         |
-| ❌     |                  | Run                               | 0.00%    | 10        |
-| ✅     |                  | TestSuite.SetT                    | 0.00%    | 0         |
-| ✅     |                  | TestSuite.T                       | 0.00%    | 0         |
+| ✅     |                  | Run                               | 100.00%  | 10        |
+| ✅     |                  | TestSuite.SetT                    | 100.00%  | 0         |
+| ✅     |                  | TestSuite.T                       | 100.00%  | 0         |
 | ✅     |                  | True                              | 50.00%   | 1         |
 | ✅     |                  | compare                           | 60.00%   | 2         |
-| ❌     |                  | containsElement                   | 66.67%   | 9         |
-| ✅     |                  | hasLength                         | 66.67%   | 1         |
-| ✅     |                  | isEmpty                           | 66.67%   | 2         |
+| ✅     |                  | containsElement                   | 91.67%   | 9         |
+| ✅     |                  | hasLength                         | 100.00%  | 1         |
+| ✅     |                  | isEmpty                           | 100.00%  | 2         |
 | ✅     |                  | isNil                             | 100.00%  | 2         |
-| ❌     |                  | orderedCompare                    | 57.14%   | 14        |
+| ✅     |                  | orderedCompare                    | 85.71%   | 14        |

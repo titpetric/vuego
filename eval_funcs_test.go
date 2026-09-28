@@ -7,7 +7,7 @@ import (
 	"testing/fstest"
 
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 // TestVue_InterpolationWithPipes - comprehensive tests for pipe evaluation with high cognitive complexity

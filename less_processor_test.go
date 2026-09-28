@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 var _ vuego.NodeProcessor = &vuego.LessProcessor{}

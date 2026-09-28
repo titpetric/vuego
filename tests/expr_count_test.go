@@ -5,7 +5,7 @@ import (
 
 	"github.com/expr-lang/expr"
 
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 // TestCountBuiltinConflict demonstrates the conflict between expr's count() function

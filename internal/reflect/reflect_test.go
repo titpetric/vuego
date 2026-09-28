@@ -5,7 +5,7 @@ import (
 
 	"github.com/titpetric/vuego"
 	"github.com/titpetric/vuego/internal/reflect"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 // TestResolveValue_NestedStructByFieldName resolves nested struct fields using Go field names.

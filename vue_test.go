@@ -10,7 +10,7 @@ import (
 	"testing/fstest"
 
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 func TestVue_Render(t *testing.T) {

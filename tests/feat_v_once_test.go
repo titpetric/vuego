@@ -6,7 +6,7 @@ import (
 	"testing/fstest"
 
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 func TestVOnce_SkipsSubsequentRenders(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/titpetric/vuego/diff"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 func TestSignificantChildren(t *testing.T) {

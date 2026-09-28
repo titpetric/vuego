@@ -10,7 +10,7 @@ import (
 	"github.com/titpetric/lessgo/dst"
 	"github.com/titpetric/lessgo/renderer"
 
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 // TestAllLessFilesRender verifies all LESS files in the repo can be rendered successfully.

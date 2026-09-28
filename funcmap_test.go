@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/titpetric/vuego"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 func TestVue_Funcs_PipeChaining(t *testing.T) {

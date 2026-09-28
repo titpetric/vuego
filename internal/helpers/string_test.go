@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/titpetric/vuego/internal/helpers"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 // Tests for additional string identifier validation beyond what's in expr_test.go

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/titpetric/vuego/formatter"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 const example = `<!DOCTYPE html>

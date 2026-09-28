@@ -121,7 +121,7 @@ type hasT interface {
 }
 
 // TestSuite to be used as base struct for test suites.
-// replaces https://pkg.go.dev/github.com/stretchr/testify@v1.8.0/suite
+// Replaces https://pkg.go.dev/github.com/stretchr/testify@v1.8.0/suite.
 type TestSuite struct {
 	t *testing.T
 }
@@ -145,7 +145,7 @@ type hasTearDown interface {
 }
 
 // Run runs the test suite with SetupTest first and TearDownTest after.
-// replaces https://pkg.go.dev/github.com/stretchr/testify/suite#Run
+// Replaces https://pkg.go.dev/github.com/stretchr/testify/suite#Run.
 func Run(t *testing.T, suite hasT) {
 	suite.SetT(t)
 	tests := []testing.InternalTest{}

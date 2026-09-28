@@ -6,7 +6,7 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/titpetric/vuego/internal/helpers"
-	"github.com/titpetric/vuego/testing/assert"
+	"github.com/titpetric/vuego/tests/assert"
 )
 
 func TestGetAttr(t *testing.T) {
