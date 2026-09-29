@@ -1,6 +1,7 @@
 package formatter_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/titpetric/vuego/formatter"
@@ -25,77 +26,61 @@ lucide.createIcons();
   </body>
 </html>`
 
+// format runs the default formatter over input. It is shared by every test
+// file in this package.
+func format(t *testing.T, input string) string {
+	t.Helper()
+
+	out, err := formatter.NewFormatter().Format(input)
+	assert.NoError(t, err)
+	return out
+}
+
 func TestNewFormatter(t *testing.T) {
-	f := formatter.NewFormatter()
-	assert.NotNil(t, f)
+	t.Run("carries the default options", func(t *testing.T) {
+		out, err := formatter.NewFormatter().Format("<div><p>a</p></div>")
+		assert.NoError(t, err)
+
+		// IndentWidth 2 and InsertFinal true.
+		assert.Equal(t, "<div>\n  <p>a</p>\n</div>\n", out)
+	})
 }
 
-func TestFormatter_Format_FrontmatterPreserved(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	formatted, err := f.Format(example)
-	assert.NoError(t, err)
-
-	assert.Contains(t, formatted, "></template>", "Tags without content need to be one-lined (template tag).")
-	assert.Contains(t, formatted, "></script>", "Tags without content need to be one-lined (script tag).")
-
-	assert.EqualHTML(t, []byte(example), []byte(formatted), []byte(example), nil)
-}
-
-func TestFormatter_Format_SimpleHTML(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	content := `<div><h1>Title</h1></div>`
-
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, formatted)
-}
-
-func TestFormatter_Format_VuegoTemplate(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	content := `<template v-for="item in items">
-  <div>{{ item.name }}</div>
-</template>`
-
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, formatted)
-}
-
-func TestFormatter_Format_InsertsFinalNewline(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	content := `<div>Content</div>`
-
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	assert.True(t, len(formatted) > 0 && formatted[len(formatted)-1] == '\n',
-		"formatted content should end with newline")
-}
-
-func TestFormatter_Format_NoFinalNewline(t *testing.T) {
-	opts := formatter.FormatterOptions{
-		IndentWidth: 2,
-		InsertFinal: false,
+func TestNewFormatterWithOptions(t *testing.T) {
+	tests := []struct {
+		name string
+		opts formatter.FormatterOptions
+		want string
+	}{
+		{
+			name: "default width and final newline",
+			opts: formatter.FormatterOptions{IndentWidth: 2, InsertFinal: true},
+			want: "<div>\n  <p>a</p>\n</div>\n",
+		},
+		{
+			name: "four space indent",
+			opts: formatter.FormatterOptions{IndentWidth: 4, InsertFinal: true},
+			want: "<div>\n    <p>a</p>\n</div>\n",
+		},
+		{
+			name: "no indent",
+			opts: formatter.FormatterOptions{IndentWidth: 0, InsertFinal: true},
+			want: "<div>\n<p>a</p>\n</div>\n",
+		},
+		{
+			name: "no final newline",
+			opts: formatter.FormatterOptions{IndentWidth: 2, InsertFinal: false},
+			want: "<div>\n  <p>a</p>\n</div>",
+		},
 	}
-	f := formatter.NewFormatterWithOptions(opts)
 
-	content := `<div>Content</div>`
-
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	assert.False(t, len(formatted) > 0 && formatted[len(formatted)-1] == '\n',
-		"formatted content should not end with newline when InsertFinal is false")
-}
-
-func TestFormatString(t *testing.T) {
-	content := `<div><span>Test</span></div>`
-
-	formatted, err := formatter.FormatString(content)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, formatted)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			out, err := formatter.NewFormatterWithOptions(test.opts).Format("<div><p>a</p></div>")
+			assert.NoError(t, err)
+			assert.Equal(t, test.want, out)
+		})
+	}
 }
 
 func TestDefaultFormatterOptions(t *testing.T) {
@@ -104,716 +89,189 @@ func TestDefaultFormatterOptions(t *testing.T) {
 	assert.True(t, opts.InsertFinal)
 }
 
+func TestFormatString(t *testing.T) {
+	t.Run("formats with the default options", func(t *testing.T) {
+		out, err := formatter.FormatString("<div><span>Test</span></div>")
+		assert.NoError(t, err)
+		assert.Equal(t, "<div>\n  <span>Test</span>\n</div>\n", out)
+	})
+
+	t.Run("matches NewFormatter", func(t *testing.T) {
+		out, err := formatter.FormatString(example)
+		assert.NoError(t, err)
+		assert.Equal(t, format(t, example), out)
+	})
+}
+
 func TestIndentString(t *testing.T) {
-	text := "line1\nline2\nline3"
-	indented := formatter.IndentString(text, 2, 2)
-
-	expected := "    line1\n    line2\n    line3"
-
-	assert.Equal(t, expected, indented)
-}
-
-func TestIndentString_WithEmptyLines(t *testing.T) {
-	text := "line1\n\nline3"
-	indented := formatter.IndentString(text, 1, 2)
-	assert.Contains(t, indented, "line1")
-	assert.Contains(t, indented, "line3")
-}
-
-func TestFormatter_Format_InlineNoExtraSpaces(t *testing.T) {
-	f := formatter.NewFormatter()
-
 	tests := []struct {
-		name     string
-		input    string
-		expected string
+		name  string
+		text  string
+		level int
+		width int
+		want  string
 	}{
 		{
-			name:     "no space around child element",
-			input:    `<button> <i data-lucide="sun"></i> </button>`,
-			expected: "<button><i data-lucide=\"sun\"></i></button>\n",
+			name:  "two levels of two spaces",
+			text:  "line1\nline2\nline3",
+			level: 2,
+			width: 2,
+			want:  "    line1\n    line2\n    line3",
 		},
 		{
-			name:     "no space around text content",
-			input:    `<span> hello </span>`,
-			expected: "<span>hello</span>\n",
+			name:  "blank lines stay blank",
+			text:  "line1\n\nline3",
+			level: 1,
+			width: 2,
+			want:  "  line1\n\n  line3",
 		},
 		{
-			name:     "preserve space between siblings",
-			input:    `<p> <span>a</span> <span>b</span> </p>`,
-			expected: "<p><span>a</span> <span>b</span></p>\n",
+			name:  "zero level leaves the text alone",
+			text:  "line1\nline2",
+			level: 0,
+			width: 2,
+			want:  "line1\nline2",
 		},
 		{
-			name:     "nested inline elements trimmed",
-			input:    `<a href="/"> <i class="icon"></i> <span>Label</span> </a>`,
-			expected: "<a href=\"/\"><i class=\"icon\"></i> <span>Label</span></a>\n",
+			name:  "zero width leaves the text alone",
+			text:  "line1\nline2",
+			level: 3,
+			width: 0,
+			want:  "line1\nline2",
 		},
 		{
-			name:     "text with inline element no extra space",
-			input:    `<p>Hello <strong>world</strong>!</p>`,
-			expected: "<p>Hello <strong>world</strong>!</p>\n",
+			name:  "existing indentation is kept",
+			text:  "a\n  b",
+			level: 1,
+			width: 2,
+			want:  "  a\n    b",
+		},
+		{
+			name:  "empty text",
+			text:  "",
+			level: 1,
+			width: 2,
+			want:  "",
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			assert.Equal(t, tc.expected, formatted)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.want, formatter.IndentString(test.text, test.level, test.width))
 		})
 	}
 }
 
-// Tests for formatter handling of partial fragments
-func TestFormatter_Format_PartialFragment_SingleElement(t *testing.T) {
-	f := formatter.NewFormatter()
+func TestFormatter_Format(t *testing.T) {
+	t.Run("keeps frontmatter and the DOM of the input", func(t *testing.T) {
+		formatted := format(t, example)
 
-	content := `<div class="card">
-  <h1>Title</h1>
-  <p>Content</p>
-</div>`
+		assert.Contains(t, formatted, "></template>", "Tags without content need to be one-lined (template tag).")
+		assert.Contains(t, formatted, "></script>", "Tags without content need to be one-lined (script tag).")
+		assert.EqualHTML(t, []byte(example), []byte(formatted), []byte(example), nil)
+	})
 
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	// Should not wrap in extra divs
-	assert.True(t, len(formatted) > 0)
-	assert.Contains(t, formatted, "card")
-	// Should not have outer wrapper
-	assert.NotContains(t, formatted, "<div>\n  <div class=\"card\">")
-}
-
-func TestFormatter_Format_PartialFragment_MultipleElements(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	content := `<li v-for="item in items" :key="item.id">
-  <span>{{ item.name }}</span>
-</li>
-<li v-for="item in items" :key="item.id">
-  <span>{{ item.name }}</span>
-</li>`
-
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	assert.Contains(t, formatted, "<li")
-	assert.Contains(t, formatted, "v-for")
-	lines := 0
-	for i := 0; i < len(formatted); i++ {
-		if formatted[i] == '\n' {
-			lines++
-		}
-	}
-	assert.Greater(t, lines, 1, "should format multiple list items")
-}
-
-// Tests for formatter handling of full documents
-func TestFormatter_Format_FullDocument_PreservesDoctype(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	content := `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Test</title>
-</head>
-<body>
-  <h1>Hello</h1>
-</body>
-</html>`
-
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	assert.True(t, len(formatted) > 0)
-	assert.Equal(t, "<!DOCTYPE html>", formatted[:15], "should preserve DOCTYPE")
-	assert.Contains(t, formatted, "<html")
-}
-
-func TestFormatter_Format_FullDocument_WithHead(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	content := `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Test Page</title>
-</head>
-<body>
-<h1>Content</h1>
-</body>
-</html>`
-
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	assert.Contains(t, formatted, "<meta")
-	assert.Contains(t, formatted, "<title")
-	assert.Contains(t, formatted, "<!DOCTYPE")
-}
-
-// Tests for multi-line attribute rendering (lines > 100 chars with multiple attributes)
-func TestFormatter_Format_MultiLineAttributes(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	// Long line with multiple attributes triggers multi-line rendering
-	content := `<div class="very-long-class-name-that-makes-line-exceed-limit" data-attribute="another-very-long-value" id="some-id" style="color: red;">content</div>`
-
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	assert.Contains(t, formatted, "class=")
-	assert.Contains(t, formatted, "data-attribute=")
-	assert.Contains(t, formatted, "content")
-}
-
-// Tests for pre element formatting (renderPreContent)
-func TestFormatter_Format_PreElement(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	tests := []struct {
-		name     string
-		input    string
-		contains []string
+	frontmatter := []struct {
+		name  string
+		input string
+		want  string
 	}{
 		{
-			name:     "pre with text",
-			input:    `<pre>  code here  </pre>`,
-			contains: []string{"<pre>", "</pre>", "code here"},
+			name:  "frontmatter is preserved verbatim",
+			input: "---\ntitle: Test\n---\n<div>a</div>",
+			want:  "---\ntitle: Test\n---\n<div>a</div>\n",
 		},
 		{
-			name:     "pre with nested code element",
-			input:    `<pre><code>function() { return 1; }</code></pre>`,
-			contains: []string{"<pre>", "<code>", "</code>", "</pre>"},
+			name:  "an unterminated block is body text",
+			input: "---\ntitle: Test\n<div>a</div>",
+			want:  "---\ntitle: Test\n<div>a</div>\n",
 		},
 		{
-			name:     "pre with HTML entities",
-			input:    `<pre>a < b && c > d</pre>`,
-			contains: []string{"&lt;", "&gt;", "&amp;"},
-		},
-		{
-			name:     "pre with comment",
-			input:    `<pre>text<!-- comment -->more</pre>`,
-			contains: []string{"<!--", "comment", "-->"},
-		},
-		{
-			name:     "pre with void element",
-			input:    `<pre>line1<br>line2</pre>`,
-			contains: []string{"<br>", "line1", "line2"},
+			name:  "content that does not open with --- has no frontmatter",
+			input: "<div>a</div>",
+			want:  "<div>a</div>\n",
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			for _, s := range tc.contains {
-				assert.Contains(t, formatted, s)
-			}
+	for _, test := range frontmatter {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.want, format(t, test.input))
 		})
 	}
+
+	t.Run("a vuego template keeps its directives", func(t *testing.T) {
+		formatted := format(t, "<template v-for=\"item in items\">\n  <div>{{ item.name }}</div>\n</template>")
+		assert.Contains(t, formatted, `v-for="item in items"`)
+		assert.Contains(t, formatted, "{{ item.name }}")
+	})
+
+	t.Run("long attribute lists stay on the tag", func(t *testing.T) {
+		formatted := format(t, `<div class="very-long-class-name-that-makes-line-exceed-limit" data-attribute="another-very-long-value" id="some-id" style="color: red;">content</div>`)
+		assert.Contains(t, formatted, "class=")
+		assert.Contains(t, formatted, "data-attribute=")
+		assert.Contains(t, formatted, "content")
+	})
 }
 
-// Tests for escapeText with template expressions
-func TestFormatter_Format_EscapeText(t *testing.T) {
-	f := formatter.NewFormatter()
+func TestFormatter_Format_FullDocument(t *testing.T) {
+	t.Run("preserves the doctype", func(t *testing.T) {
+		formatted := format(t, "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <title>Test</title>\n</head>\n<body>\n  <h1>Hello</h1>\n</body>\n</html>")
+		assert.True(t, strings.HasPrefix(formatted, "<!DOCTYPE html>\n"), formatted)
+		assert.Contains(t, formatted, "<html")
+	})
 
-	tests := []struct {
-		name     string
-		input    string
-		contains []string
-		excludes []string
+	t.Run("formats head and body", func(t *testing.T) {
+		formatted := format(t, "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<title>Test Page</title>\n</head>\n<body>\n<h1>Content</h1>\n</body>\n</html>")
+		assert.Contains(t, formatted, "<meta")
+		assert.Contains(t, formatted, "<title")
+		assert.Contains(t, formatted, "<!DOCTYPE")
+	})
+
+	t.Run("without a doctype", func(t *testing.T) {
+		formatted := format(t, "<html lang=\"en\">\n<head><title>Test</title></head>\n<body><p>Content</p></body>\n</html>")
+		assert.NotContains(t, formatted, "<!DOCTYPE")
+		assert.Contains(t, formatted, "<html")
+		assert.Contains(t, formatted, "<head>")
+		assert.Contains(t, formatted, "<body>")
+	})
+}
+
+func TestFormatter_Format_Fragment(t *testing.T) {
+	t.Run("a single element gets no html or body wrapper", func(t *testing.T) {
+		formatted := format(t, "<div class=\"card\">\n  <h1>Title</h1>\n  <p>Content</p>\n</div>")
+		assert.Equal(t, "<div class=\"card\">\n  <h1>Title</h1>\n  <p>Content</p>\n</div>\n", formatted)
+	})
+
+	t.Run("sibling elements are each formatted", func(t *testing.T) {
+		formatted := format(t, "<li v-for=\"item in items\" :key=\"item.id\">\n  <span>{{ item.name }}</span>\n</li>\n<li v-for=\"item in items\" :key=\"item.id\">\n  <span>{{ item.name }}</span>\n</li>")
+		assert.Equal(t, 2, strings.Count(formatted, "<li"))
+		assert.Equal(t, 2, strings.Count(formatted, "v-for"))
+	})
+
+	// Table-scoped elements need an ancestor context node, or the HTML5
+	// parser drops them.
+	tables := []struct {
+		name  string
+		input string
+		want  string
 	}{
-		{
-			name:     "escape ampersand",
-			input:    `<p>A & B</p>`,
-			contains: []string{"&amp;"},
-		},
-		{
-			name:     "escape less than",
-			input:    `<p>A < B</p>`,
-			contains: []string{"&lt;"},
-		},
-		{
-			name:     "escape greater than",
-			input:    `<p>A > B</p>`,
-			contains: []string{"&gt;"},
-		},
-		{
-			name:     "preserve template expression",
-			input:    `<p>{{ a < b }}</p>`,
-			contains: []string{"{{ a < b }}"},
-			excludes: []string{"&lt;"},
-		},
-		{
-			name:     "template expression with comparison",
-			input:    `<span>{{ count > 0 && visible }}</span>`,
-			contains: []string{"{{ count > 0 && visible }}"},
-		},
-		{
-			name:     "mixed text and template",
-			input:    `<p>Result: {{ x < y }} is less & more</p>`,
-			contains: []string{"{{ x < y }}", "&amp;"},
-		},
+		{name: "td", input: `<td>cell</td>`, want: "<td>cell</td>\n"},
+		{name: "th", input: `<th>header</th>`, want: "<th>header</th>\n"},
+		{name: "tr with cells", input: `<tr><td>a</td><td>b</td></tr>`, want: "<tr>\n  <td>a</td>\n  <td>b</td>\n</tr>\n"},
+		{name: "tbody", input: `<tbody><tr><td>x</td></tr></tbody>`, want: "<tbody>\n  <tr>\n    <td>x</td>\n  </tr>\n</tbody>\n"},
+		{name: "thead", input: `<thead><tr><th>col</th></tr></thead>`, want: "<thead>\n  <tr>\n    <th>col</th>\n  </tr>\n</thead>\n"},
+		{name: "tfoot", input: `<tfoot><tr><td>sum</td></tr></tfoot>`, want: "<tfoot>\n  <tr>\n    <td>sum</td>\n  </tr>\n</tfoot>\n"},
+		{name: "caption", input: `<caption>Table Title</caption>`, want: "<caption>Table Title</caption>\n"},
+		{name: "colgroup", input: `<colgroup><col></colgroup>`, want: "<colgroup>\n  <col>\n</colgroup>\n"},
+		{name: "td with attributes", input: `<td class="active">value</td>`, want: "<td class=\"active\">value</td>\n"},
+		// A tag whose name merely starts with a table tag name must not pick
+		// up the table context.
+		{name: "theme is not thead", input: `<theme>x</theme>`, want: "<theme>x</theme>\n"},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			for _, s := range tc.contains {
-				assert.Contains(t, formatted, s)
-			}
-			for _, s := range tc.excludes {
-				assert.NotContains(t, formatted, s)
-			}
+	for _, test := range tables {
+		t.Run("table scope "+test.name, func(t *testing.T) {
+			assert.Equal(t, test.want, format(t, test.input))
 		})
 	}
-}
-
-// Tests for phrasing containers (p, h1-h6, td, th, etc.)
-func TestFormatter_Format_PhrasingContainers(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	tests := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "paragraph with inline elements",
-			input:    `<p><strong>bold</strong> and <em>italic</em></p>`,
-			expected: "<p><strong>bold</strong> and <em>italic</em></p>\n",
-		},
-		{
-			name:     "h1 with inline",
-			input:    `<h1><span>Title</span></h1>`,
-			expected: "<h1><span>Title</span></h1>\n",
-		},
-		{
-			name:     "h2 with text and inline",
-			input:    `<h2>Heading <code>code</code></h2>`,
-			expected: "<h2>Heading <code>code</code></h2>\n",
-		},
-		{
-			name:     "table cell with inline",
-			input:    `<td><a href="#">link</a></td>`,
-			expected: "<td><a href=\"#\">link</a></td>\n",
-		},
-		{
-			name:     "th with inline",
-			input:    `<th><strong>Header</strong></th>`,
-			expected: "<th><strong>Header</strong></th>\n",
-		},
-		{
-			name:     "dt with inline",
-			input:    `<dt><code>term</code></dt>`,
-			expected: "<dt><code>term</code></dt>\n",
-		},
-		{
-			name:     "dd with inline",
-			input:    `<dd><em>definition</em></dd>`,
-			expected: "<dd><em>definition</em></dd>\n",
-		},
-		{
-			name:     "figcaption with inline",
-			input:    `<figcaption><em>caption</em></figcaption>`,
-			expected: "<figcaption><em>caption</em></figcaption>\n",
-		},
-		{
-			name:     "summary with inline",
-			input:    `<summary><strong>Details</strong></summary>`,
-			expected: "<summary><strong>Details</strong></summary>\n",
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			assert.Equal(t, tc.expected, formatted)
-		})
-	}
-}
-
-// Tests for block elements with element children (should not inline)
-func TestFormatter_Format_BlockElements(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	tests := []struct {
-		name        string
-		input       string
-		shouldBreak bool
-	}{
-		{
-			name:        "div with child div",
-			input:       `<div><div>inner</div></div>`,
-			shouldBreak: true,
-		},
-		{
-			name:        "nav with child ul",
-			input:       `<nav><ul><li>item</li></ul></nav>`,
-			shouldBreak: true,
-		},
-		{
-			name:        "section with child p",
-			input:       `<section><p>text</p></section>`,
-			shouldBreak: true,
-		},
-		{
-			name:        "article with nested structure",
-			input:       `<article><header>title</header></article>`,
-			shouldBreak: true,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			if tc.shouldBreak {
-				// Block elements with element children should have newlines
-				lines := 0
-				for _, c := range formatted {
-					if c == '\n' {
-						lines++
-					}
-				}
-				assert.Greater(t, lines, 1, "block with element children should break across lines")
-			}
-		})
-	}
-}
-
-// Tests for inline elements with nested inline elements
-func TestFormatter_Format_NestedInlineElements(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	tests := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "span with nested em and strong",
-			input:    `<span><em><strong>text</strong></em></span>`,
-			expected: "<span><em><strong>text</strong></em></span>\n",
-		},
-		{
-			name:     "a with nested i",
-			input:    `<a href="#"><i class="icon"></i></a>`,
-			expected: "<a href=\"#\"><i class=\"icon\"></i></a>\n",
-		},
-		{
-			name:     "label with nested span",
-			input:    `<label><span>Name:</span></label>`,
-			expected: "<label><span>Name:</span></label>\n",
-		},
-		{
-			name:     "code with nested var",
-			input:    `<code><var>x</var></code>`,
-			expected: "<code><var>x</var></code>\n",
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			assert.Equal(t, tc.expected, formatted)
-		})
-	}
-}
-
-// Tests for allChildrenAreInline with block child in inline parent
-func TestFormatter_Format_InlineWithBlockChild(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	// An inline element containing a block element should break
-	content := `<span><div>block in inline</div></span>`
-
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	// Should break across multiple lines because div is block
-	lines := 0
-	for _, c := range formatted {
-		if c == '\n' {
-			lines++
-		}
-	}
-	assert.Greater(t, lines, 1, "inline with block child should break")
-}
-
-// Tests for normalizeInlineText edge cases
-func TestFormatter_Format_NormalizeInlineText(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	tests := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "collapse multiple spaces",
-			input:    `<p>hello    world</p>`,
-			expected: "<p>hello world</p>\n",
-		},
-		{
-			name:     "preserve space between inline elements",
-			input:    `<p><span>a</span>   <span>b</span></p>`,
-			expected: "<p><span>a</span> <span>b</span></p>\n",
-		},
-		{
-			name:     "newlines become spaces",
-			input:    "<p>line1\nline2</p>",
-			expected: "<p>line1 line2</p>\n",
-		},
-		{
-			name:     "tabs become spaces",
-			input:    "<p>col1\tcol2</p>",
-			expected: "<p>col1 col2</p>\n",
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			assert.Equal(t, tc.expected, formatted)
-		})
-	}
-}
-
-// Tests for script/style element formatting
-func TestFormatter_Format_ScriptStyleElements(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	tests := []struct {
-		name     string
-		input    string
-		contains []string
-	}{
-		{
-			name:     "script with content",
-			input:    "<script>\nconsole.log('hello');\n</script>",
-			contains: []string{"<script>", "</script>", "console.log"},
-		},
-		{
-			name:     "script empty",
-			input:    `<script src="app.js"></script>`,
-			contains: []string{"<script", "></script>"},
-		},
-		{
-			name:     "style with content",
-			input:    "<style>\n.foo { color: red; }\n</style>",
-			contains: []string{"<style>", "</style>", ".foo"},
-		},
-		{
-			name:     "style empty",
-			input:    `<style></style>`,
-			contains: []string{"<style></style>"},
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			for _, s := range tc.contains {
-				assert.Contains(t, formatted, s)
-			}
-		})
-	}
-}
-
-// Tests for trimRawContent edge cases
-func TestFormatter_Format_TrimRawContent(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	tests := []struct {
-		name     string
-		input    string
-		contains []string
-	}{
-		{
-			name:     "script with leading blank lines",
-			input:    "<script>\n\n\ncode();\n</script>",
-			contains: []string{"code();"},
-		},
-		{
-			name:     "script with trailing blank lines",
-			input:    "<script>\ncode();\n\n\n</script>",
-			contains: []string{"code();"},
-		},
-		{
-			name:     "script all whitespace",
-			input:    "<script>   \n\n   </script>",
-			contains: []string{"<script></script>"},
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			for _, s := range tc.contains {
-				assert.Contains(t, formatted, s)
-			}
-		})
-	}
-}
-
-// Tests for void elements
-func TestFormatter_Format_VoidElements(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	tests := []struct {
-		name     string
-		input    string
-		contains []string
-	}{
-		{
-			name:     "br element",
-			input:    `<p>line1<br>line2</p>`,
-			contains: []string{"<br>"},
-		},
-		{
-			name:     "hr element",
-			input:    `<div><hr></div>`,
-			contains: []string{"<hr>"},
-		},
-		{
-			name:     "img element",
-			input:    `<img src="test.png" alt="test">`,
-			contains: []string{"<img", "src=", "alt="},
-		},
-		{
-			name:     "input element",
-			input:    `<input type="text" name="field">`,
-			contains: []string{"<input", "type=", "name="},
-		},
-		{
-			name:     "meta element",
-			input:    `<meta charset="UTF-8">`,
-			contains: []string{"<meta", "charset="},
-		},
-		{
-			name:     "link element",
-			input:    `<link rel="stylesheet" href="style.css">`,
-			contains: []string{"<link", "rel=", "href="},
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			for _, s := range tc.contains {
-				assert.Contains(t, formatted, s)
-			}
-		})
-	}
-}
-
-// Tests for comment nodes
-func TestFormatter_Format_Comments(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	tests := []struct {
-		name     string
-		input    string
-		contains []string
-	}{
-		{
-			name:     "simple comment",
-			input:    `<!-- this is a comment -->`,
-			contains: []string{"<!--", "this is a comment", "-->"},
-		},
-		{
-			name:     "comment in element",
-			input:    `<div><!-- comment --></div>`,
-			contains: []string{"<!--", "comment", "-->"},
-		},
-		{
-			name:     "inline comment in paragraph",
-			input:    `<p>text<!-- inline -->more</p>`,
-			contains: []string{"<!--", "inline", "-->"},
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			for _, s := range tc.contains {
-				assert.Contains(t, formatted, s)
-			}
-		})
-	}
-}
-
-// Tests that table-scoped fragments are parsed with the correct context
-// so that elements like <td>, <th>, <tr> are not stripped by the HTML5 parser.
-func TestFormatter_Format_TableFragments(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	tests := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "td fragment",
-			input:    `<td>cell</td>`,
-			expected: "<td>cell</td>\n",
-		},
-		{
-			name:     "th fragment",
-			input:    `<th>header</th>`,
-			expected: "<th>header</th>\n",
-		},
-		{
-			name:     "tr fragment with cells",
-			input:    `<tr><td>a</td><td>b</td></tr>`,
-			expected: "<tr>\n  <td>a</td>\n  <td>b</td>\n</tr>\n",
-		},
-		{
-			name:     "tbody fragment",
-			input:    `<tbody><tr><td>x</td></tr></tbody>`,
-			expected: "<tbody>\n  <tr>\n    <td>x</td>\n  </tr>\n</tbody>\n",
-		},
-		{
-			name:     "thead fragment",
-			input:    `<thead><tr><th>col</th></tr></thead>`,
-			expected: "<thead>\n  <tr>\n    <th>col</th>\n  </tr>\n</thead>\n",
-		},
-		{
-			name:     "caption fragment",
-			input:    `<caption>Table Title</caption>`,
-			expected: "<caption>Table Title</caption>\n",
-		},
-		{
-			name:     "td with attributes",
-			input:    `<td class="active">value</td>`,
-			expected: "<td class=\"active\">value</td>\n",
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			formatted, err := f.Format(tc.input)
-			assert.NoError(t, err)
-			assert.Equal(t, tc.expected, formatted)
-		})
-	}
-}
-
-// Tests for full document without DOCTYPE
-func TestFormatter_Format_FullDocumentWithoutDoctype(t *testing.T) {
-	f := formatter.NewFormatter()
-
-	content := `<html lang="en">
-<head><title>Test</title></head>
-<body><p>Content</p></body>
-</html>`
-
-	formatted, err := f.Format(content)
-	assert.NoError(t, err)
-	assert.Contains(t, formatted, "<html")
-	assert.Contains(t, formatted, "<head>")
-	assert.Contains(t, formatted, "<body>")
 }
