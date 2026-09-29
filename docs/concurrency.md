@@ -1,6 +1,6 @@
 # Concurrency Safety
 
-A `*Vue` is safe for concurrent use once it is configured. So is a `Template` returned by `New` or `NewFS`: `Load` copies the base stack rather than writing to it.
+A `*Vue` is safe for concurrent use once it is configured, and a `Template` returned by `New` or `NewFS` is too: `Load` copies the base stack rather than writing to it.
 
 ## What each render owns
 
