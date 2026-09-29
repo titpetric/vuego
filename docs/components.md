@@ -179,7 +179,7 @@ The path is relative to the filesystem root passed to `vuego.NewVue()`.
 
 ## Slots
 
-Slots enable powerful component composition by allowing parent components to provide content to child components. Vuego supports default slots, named slots, and scoped slots.
+A slot is a hole in a component template that the including template fills. Vuego supports default slots, named slots and scoped slots.
 
 ### Default Slots
 

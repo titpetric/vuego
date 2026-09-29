@@ -39,17 +39,10 @@ type ExprEvaluator struct {
 <summary><code>type FuncMap</code></summary>
 
 ```go
-// FuncMap is a map of function names to functions, similar to text/template's FuncMap.
-// Functions can have any number of parameters and must return 1 or 2 values.
-// If 2 values are returned, the second must be an error.
-//
-// Functions can optionally take *VueContext or context.Context as the first parameter:
-//
-// - func myFunc(ctx context.Context) bool { ... }
-// - func myFunc(ctx *VueContext, arg1 string) (string, error) { ... }
-// - func myFunc(arg1 string) string { ... }
-//
-// This allows access to the execution context.
+// FuncMap maps template function names to functions, as text/template does.
+// A function takes any number of parameters and returns one value, or a value
+// and an error. An optional first parameter of *VueContext or context.Context
+// receives the execution context. See docs/funcmap.md.
 type FuncMap map[string]any
 ```
 
@@ -700,6 +693,8 @@ func (*SlotScope) SetSlot(name string, content *SlotContent)
 
 Copy returns a copy of the stack that can be discarded. The root data is retained as is, the envmap is a copy.
 
+Copy flattens without touching envCache. A base template's stack is shared by every goroutine that calls Load on it, and writing the cache there is a data race.
+
 ```go
 func (*Stack) Copy() *Stack
 ```
@@ -707,6 +702,8 @@ func (*Stack) Copy() *Stack
 ### EnvMap
 
 EnvMap converts the Stack to a map[string]any for expr evaluation. Includes all accessible values from stack and struct fields. The result is cached and reused until the stack is mutated via Push/Pop/Set.
+
+EnvMap is for a request-scoped stack, which one goroutine owns; the cache carries no mutex. Use Copy to read a stack another goroutine may hold.
 
 ```go
 func (*Stack) EnvMap() map[string]any
@@ -800,7 +797,7 @@ func (*Stack) Set(key string, val any)
 
 ### DefaultFuncMap
 
-DefaultFuncMap returns a FuncMap with built-in utility functions.
+DefaultFuncMap returns the built-in template functions. The keys are documented in docs/funcmap.md.
 
 ```go
 func (*Vue) DefaultFuncMap() FuncMap

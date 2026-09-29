@@ -1,4 +1,4 @@
-# FuncMap - Template Functions
+# FuncMap: template functions
 
 Vuego supports template functions similar to Go's `text/template` and `html/template` packages. Functions can be used in interpolations with pipe-based chaining and in `v-if` conditions.
 
@@ -105,10 +105,16 @@ Vuego comes with several built-in utility functions:
   <div v-if="len(items)">Has items</div>
   ```
 
-- `escape` - HTML-escapes the value
+- `escape` - HTML-escapes the value. Interpolation already escapes outside `script` and `style`, so this is for the raw contexts where it does not
 
   ```html
-  {{ userInput | escape }}
+  <script>const s = "{{ userInput | escape }}";</script>
+  ```
+
+- `type` - Returns the Go type of the value, written as `%T`
+
+  ```html
+  {{ items | type }}  <!-- []string -->
   ```
 
 - `int` - Converts value to integer
@@ -131,14 +137,55 @@ Vuego comes with several built-in utility functions:
   <script>var data = {{ user | json }};</script>
   ```
 
-### Date/Time Functions
+- `jsonPretty` - The same, indented
 
-- `formatTime(layout)` - Formats time.Time using Go layout format
+  ```html
+  <script>const data = {{ user | jsonPretty }};</script>
+  ```
+
+### Date and time functions
+
+Both require a layout argument and accept a `time.Time` or an RFC3339 string as the value. A value of any other type is returned unchanged.
+
+- `formatTime(layout)` - Formats with the given Go layout. A layout that is not a string falls back to `2006-01-02 15:04:05`
 
   ```html
   {{ timestamp | formatTime("2006-01-02 15:04:05") }}
   {{ timestamp | formatTime("Jan 2, 2006") }}
   ```
+
+- `formatDate(layout)` - The same, with a fallback of `2006-01-02`
+
+  ```html
+  {{ timestamp | formatDate("Jan 2 2006") }}
+  ```
+
+An argument that parses as a number is passed as a number, so a layout made only of digits does not reach the formatter and the fallback is used instead: `formatDate("2006")` prints `2024-03-01`, not `2024`. Give the layout a non-digit character, as in `formatDate("Jan 2006")`.
+
+### File functions
+
+Each reads from the template filesystem. The argument is a filename, or the name of a variable holding one.
+
+- `file(name)` - Returns the file contents as a string
+
+  ```html
+  <div>{{ file("partials/notice.txt") }}</div>
+  <div>{{ file(config.path) }}</div>
+  ```
+
+- `jsonFile(name)` - Decodes a JSON object into a `map[string]any`
+
+  ```html
+  {{ path | jsonFile }}
+  ```
+
+- `yamlFile(name)` - Decodes a YAML mapping into a `map[string]any`
+
+  ```html
+  {{ path | yamlFile }}
+  ```
+
+A call cannot be the left side of a pipe, so `jsonFile("config.json") | len` does not resolve. Pipe the filename into the function instead, as above, or render the value whole.
 
 ## Custom Function Examples
 

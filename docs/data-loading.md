@@ -280,7 +280,7 @@ my-site/
 ```go
 renderer := vuego.NewFS(os.DirFS("my-site"), vuego.WithComponents())
 
-// All config is auto-loaded, just render
+// The configuration is already loaded; render
 err := renderer.Load("pages/index.vuego").Render(ctx, w)
 ```
 

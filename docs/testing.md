@@ -1,171 +1,112 @@
 # Testing Guide
 
-## Test Commands
+## Pipeline
 
-The project uses [Task](https://taskfile.dev) for common development workflows. Here are the available test-related commands:
+The repository is driven by [atkins](https://github.com/titpetric/atkins). `atkins.yml` defines the jobs:
 
-### `task` (default)
+| Job       | What it runs                                                                                   |
+|-----------|------------------------------------------------------------------------------------------------|
+| `default` | fmt, lint, test and cover in order                                                             |
+| `fmt`     | `splint fix ./...` and `go mod tidy`                                                           |
+| `lint`    | `splint --linters godoc,pairing,grouping,filecheck,coverage ./...`                             |
+| `test`    | `go test -count 1 -cover -coverpkg github.com/titpetric/vuego/...`, replayed through gotestsum |
+| `cover`   | regenerates `docs/api.md` and `docs/testing-coverage.md`                                       |
 
-Starts the Vuego playground web server on http://localhost:8080
-
-### `task test`
-
-Runs the comprehensive test suite with coverage:
-
-- Executes tests with race detection (`-race`)
-- Fails fast on first error (`-failfast`)
-- Collects coverage data across all packages
-- Outputs coverage profile to `pkg.cov`
-
-**Usage:**
+Run a job by name:
 
 ```bash
-task test
+atkins            # the default job
+atkins test
+atkins cover
 ```
 
-### `task cover`
+`Taskfile.yml` carries two extra targets: `task uncover` lists source the last run never reached, and `task bench` runs the benchmarks at 1, 2 and 4 CPUs.
 
-Generates detailed coverage reports and documentation:
+The test job writes two files that are gitignored: `pkg.cov` (the coverage profile) and `test.json` (the `go test -json` stream gotestsum replays).
 
-- Extracts source documentation with `splint`
-- Generates API documentation in `docs/api.md`
-- Creates JSON coverage summary in `pkg.cov.json`
-- Produces coverage report in `docs/testing-coverage.md`
-
-**Usage:**
+## Running tests directly
 
 ```bash
-task cover
-```
-
-### `task uncover`
-
-Shows uncovered source lines from the last test run:
-
-```bash
-task uncover
-```
-
-### `task render`
-
-Renders a sample template for manual testing:
-
-```bash
-task render
-```
-
-## Running Individual Tests
-
-### Black Box Testing
-
-Tests in this project use **black box testing** (package `vuego_test`) to test only the exported API. This allows running individual test files independently:
-
-```bash
-# Run a specific test file
-go test -v stack_test.go
-
-# Run a specific test function
-go test -v -run TestStack_Push
-
-# Run all tests in a file with race detection
-go test -v -race stack_test.go
-```
-
-### All Tests
-
-```bash
-# Run all tests
 go test ./...
-
-# Run all tests with coverage
 go test -cover ./...
-
-# Run with race detection and verbose output
-go test -v -race ./...
+go test -race ./...
+go test -run TestStack_Push ./
 ```
 
-## Test Fixtures
+`TestTemplate_ConcurrentNestedIncludesRender` in `tests/` reports a data race under `-race`. The pipeline does not pass `-race`.
 
-Test fixtures are organized in the `testdata/` directory:
+## Layout
 
-### `testdata/fixtures/`
+Tests are black box: every test file is in the external test package (`vuego_test`, `markdown_test`, and so on) and reaches only the exported API. Each source file has a `_test.go` file beside it, and `splint --linters pairing` fails when one does not.
 
-Contains paired test files for template rendering validation:
+Shared helpers live in the test file paired with the source they exercise:
 
-- `.vuego` - Template files with directives (v-if, v-for, v-bind, etc.)
-- `.json` - Input data for the template
-- `.html` - Expected output after rendering
+- `vue_test.go` holds `renderFragment`, `renderPage`, `renderFuncs`, `renderCtx`, `renderInclude` and `assertRenderHTML`
+- `renderer_test.go` holds `parseNodes` and `renderNodes`
+- `markdown/markdown_test.go` holds `render`
 
-Each test case consists of three files with the same base name:
-
-```
-testdata/fixtures/
-├── v-for.vuego        # Template with v-for directive
-├── v-for.json         # Test data (array/object to iterate)
-└── v-for.html         # Expected rendered HTML
-```
-
-The test framework automatically discovers all `.vuego` files in fixtures and validates:
-
-1. Template renders without errors
-2. Output HTML matches the expected `.html` file
-3. DOM structure is equivalent (whitespace-normalized, attribute order-insensitive)
-
-### `testdata/pages/`
-
-Contains full page templates and components for integration testing:
-
-- Complete page layouts
-- Reusable components in `components/` subdirectory
-- Component composition and nesting tests
-- Error case validation (e.g., `required-error-test/`)
-
-### `testdata/json/`
-
-Contains complex JSON data files for realistic rendering scenarios.
-
-## Writing Tests
-
-### Test Naming Convention
-
-Follow the pattern `Test[Receiver_]Function`:
-
-- Methods: `TestVue_Render`, `TestStack_Push`
-- Functions: `TestNewVue`, `TestParseFor`
-- Descriptive tests: `TestRequiredAttributeError`, `TestFixtures`
-
-### Using testify/require
-
-All assertions use `github.com/stretchr/testify/require`:
+Assertions come from `tests/assert`, an internal package with the subset of the testify API this repository uses.
 
 ```go
 func TestVue_Render(t *testing.T) {
 	vue := vuego.NewVue(os.DirFS("testdata/pages"))
+
 	var buf bytes.Buffer
-	err := vue.Render(&buf, "Index.vuego", nil)
-	require.NoError(t, err)
-	require.Contains(t, buf.String(), "expected content")
+	assert.NoError(t, vue.Render(t.Context(), &buf, "Index.vuego", nil))
+	assert.Contains(t, buf.String(), "expected content")
 }
 ```
 
-### Adding Fixture Tests
+## Naming
 
-To add a new fixture test:
+A test is named after the symbol it covers, `Test[Receiver_]Function`:
 
-1. Create a `.vuego` template file in `testdata/fixtures/`
-2. Create a `.json` data file with the same base name
-3. Create a `.html` file with the expected output
+- methods: `TestVue_Render`, `TestStack_Push`
+- functions: `TestNewVue`, `TestParseFor`
+- unexported functions, named without a receiver: `TestEvalCondition`, `TestConvertValue`
 
-The `TestFixtures` function will automatically discover and run your test.
+`splint --linters coverage` reports an exported symbol no test references and no test is named after.
 
-Example:
+## Fixtures
+
+### `testdata/fixtures/`
+
+Three files share a base name:
+
+```
+testdata/fixtures/
+├── v-for.vuego        # template with the directive under test
+├── v-for.json         # data the template is filled with
+└── v-for.html         # expected output
+```
+
+`TestFixtures` in `vue_test.go` globs every `*.vuego` under the directory, fills it from the matching `.json` and compares the result against the `.html` with `assert.EqualHTML`, which ignores whitespace in text nodes and attribute order.
+
+To add a case, write the three files:
 
 ```bash
-# Create test files
 echo '<div v-if="show">Hello</div>' > testdata/fixtures/my-test.vuego
 echo '{"show": true}' > testdata/fixtures/my-test.json
 echo '<div>Hello</div>' > testdata/fixtures/my-test.html
 
-# Run the test
-go test -v -run TestFixtures
+go test -run TestFixtures ./
+```
+
+### `testdata/pages/`
+
+Full page templates with a `components/` directory, `theme.yml` and LESS sources, used by the layout and component tests.
+
+### Other directories
+
+`testdata/LoadConfig/` covers the `theme.yml` plus `data/` loading order, `testdata/nodeprocessor/` covers the LESS processor, and `testdata/bugs/`, `testdata/required-error-test/` and `testdata/root-template-required/` cover error cases.
+
+## Coverage
+
+`atkins cover` writes `docs/testing-coverage.md` from the profile. A function passes when it has 80% line coverage, or has cognitive complexity 0, or has complexity under 5 and any coverage at all.
+
+`uncover pkg.cov` prints the source no test reached. Pass a function name to narrow it:
+
+```bash
+uncover pkg.cov
+uncover pkg.cov Stack.Resolve
 ```

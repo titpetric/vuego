@@ -1,49 +1,33 @@
 # Concurrency Safety
 
-Vuego is designed to be **safe for concurrent use** after initialization.
+A `*Vue` is safe for concurrent use once it is configured. So is a `Template` returned by `New` or `NewFS`: `Load` copies the base stack rather than writing to it.
 
-## Thread-Safe Design
+## What each render owns
 
-The `*Vue` instance is **immutable after setup**, making it naturally thread-safe:
+`Vue` holds the template filesystem, the loader, the funcmap, the registered node processors and the component map, all read-only after setup. The parsed-template cache is the one mutable field and is guarded by a `sync.RWMutex`.
 
-```go
-vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{
-	"formatDate": func(t *time.Time) string {
-		return t.Format("2006-01-02")
-	},
-})
-
-// Safe to call from multiple goroutines
-go vue.Render(w1, "page.html", data1)
-go vue.Render(w2, "page.html", data2)
-go vue.Render(w3, "other.html", data3)
-```
-
-## Request-Scoped State
-
-Each call to `Render()` or `RenderFragment()` creates its own `VueContext` with a dedicated stack:
+Every call to `Render` or `RenderFragment` builds its own `VueContext` with its own `Stack`, so no two renders share evaluation state:
 
 ```go
-type Vue struct {
-	templateFS fs.FS      // Read-only after initialization
-	loader     *Component // Read-only after initialization
-	funcMap    FuncMap    // Read-only after Funcs()
-}
-
 type VueContext struct {
-	stack         *Stack // Request-scoped!
+	ctx   context.Context
+	stack *Stack
+
 	BaseDir       string
 	CurrentDir    string
 	FromFilename  string
 	TemplateStack []string
+	TagStack      []string
+	Processors    []NodeProcessor
+	SlotScope     *SlotScope
 }
 ```
 
-**Each render gets its own isolated stack**: No shared mutable state, no race conditions.
+Each registered `NodeProcessor` is allocated per render through its `New` method, so a processor may keep per-render state on itself.
 
-## Usage Examples
+## Examples
 
-### Web Server
+### Web server
 
 ```go
 func main() {
@@ -57,21 +41,22 @@ func main() {
 			"timestamp": time.Now(),
 		}
 
-		// Safe - each request gets its own context
-		vue.Render(w, "index.html", data)
+		if err := vue.Render(r.Context(), w, "index.vuego", data); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 
 	http.ListenAndServe(":8080", nil)
 }
 ```
 
-### Parallel Rendering
+### Parallel rendering
 
 ```go
-func renderMultiplePages(vue *vuego.Vue, pages []Page) []string {
+func renderPages(ctx context.Context, tpl vuego.Template, pages []Page) []string {
 	results := make([]string, len(pages))
-	var wg sync.WaitGroup
 
+	var wg sync.WaitGroup
 	for i, page := range pages {
 		wg.Add(1)
 		go func(idx int, p Page) {
@@ -83,9 +68,9 @@ func renderMultiplePages(vue *vuego.Vue, pages []Page) []string {
 				"content": p.Content,
 			}
 
-			// Safe - each goroutine gets its own context
-			vue.Render(&buf, "page.html", data)
-			results[idx] = buf.String()
+			if err := tpl.Load("page.vuego").Fill(data).Render(ctx, &buf); err == nil {
+				results[idx] = buf.String()
+			}
 		}(i, page)
 	}
 
@@ -94,49 +79,55 @@ func renderMultiplePages(vue *vuego.Vue, pages []Page) []string {
 }
 ```
 
-## What's Thread-Safe
+## Safe concurrently
 
-✅ **Safe for concurrent use:**
+- `Vue.Render` and `Vue.RenderFragment`
+- `Template.Load`, and the `Fill`, `Assign` and `Render` calls on the value it returns
+- `Template.RenderFile`, `RenderString`, `RenderByte` and `RenderReader`
+- every function in the FuncMap, as long as the function itself is
+- reading from the template filesystem
 
-- `vue.Render()`
-- `vue.RenderFragment()`
-- All template functions in `FuncMap`
-- Reading from `templateFS`
+## Not safe concurrently
 
-## What's NOT Thread-Safe
+Anything that changes the renderer, once a render has started:
 
-❌ **Not safe after first render:**
+- `Vue.Funcs`
+- `Vue.RegisterNodeProcessor` and `Vue.RegisterComponent`
+- `Fill` and `Assign` on the *base* template, the value `New` or `NewFS` returned
 
-- `vue.Funcs()` - Call this during initialization only
-
-**Best Practice:** Set up your Vue instance completely before using it concurrently:
+Configure first, then render:
 
 ```go
-// ✅ Good: Setup then use
+// Configured once, then shared.
 vue := vuego.NewVue(fs).Funcs(myFuncs)
-// Now safe for concurrent rendering
+go vue.Render(ctx, w1, "page.vuego", data1)
+go vue.Render(ctx, w2, "page.vuego", data2)
 
-// ❌ Bad: Modifying during use
+// A write during a render is a race.
 vue := vuego.NewVue(fs)
-go vue.Render(...)           // Started rendering
-vue.Funcs(additionalFuncs)   // RACE CONDITION!
+go vue.Render(ctx, w, "page.vuego", data)
+vue.Funcs(additionalFuncs)
 ```
 
-## Performance
+The same holds for a `Template`: fill the base with the data every render shares, then let each goroutine call `Load` and fill its own copy.
 
-Request-scoped allocation is **extremely cheap** in Go:
+```go
+tpl := vuego.NewFS(fs).Fill(sharedData) // before any goroutine starts
 
-- Each `VueContext` is stack-allocated
-- Garbage collector handles cleanup efficiently
-- No mutex contention
-- Scales linearly with CPU cores
+go tpl.Load("a.vuego").Fill(dataA).Render(ctx, w1)
+go tpl.Load("b.vuego").Fill(dataB).Render(ctx, w2)
+```
+
+## Allocation
+
+A render allocates a `VueContext`, a `Stack` holding the flattened data, and a deep clone of the parsed DOM. The parse itself is cached per filename and invalidated on the file's modification time. `internal/helpers` pools `html.Node` values and `Stack` pools the maps `Push` and `Pop` move, so a render reuses rather than allocating each scope.
 
 ## Testing
 
-The test suite includes race detection:
+The concurrency tests are in `tests/`: `concurrent_test.go`, `concurrent_bench_test.go` and `template_nested_includes_test.go`.
 
 ```bash
-go test ./... -race
+go test -race ./...
 ```
 
-All tests pass with the race detector, ensuring thread safety.
+The pipeline's `test` job does not pass `-race`; run it by hand when changing shared state.

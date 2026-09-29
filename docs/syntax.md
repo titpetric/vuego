@@ -246,7 +246,7 @@ Use `v-else-if` to test multiple conditions and `v-else` as the default fallback
 
 #### Empty List with `v-for` and `v-else`
 
-Use `v-else` after a `v-for` loop to display a "no results" message when the list is empty. Note that `v-else` must be an immediate sibling to the `v-for` element:
+Use `v-else` after a `v-for` loop to display a "no results" message when the list is empty. The `v-else` element must be an immediate sibling of the `v-for` element:
 
 ```html
 <ul>
