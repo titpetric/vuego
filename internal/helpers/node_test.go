@@ -1,6 +1,7 @@
 package helpers_test
 
 import (
+	"strings"
 	"testing"
 
 	"golang.org/x/net/html"
@@ -8,6 +9,40 @@ import (
 	"github.com/titpetric/vuego/internal/helpers"
 	"github.com/titpetric/vuego/tests/assert"
 )
+
+func TestNewNode(t *testing.T) {
+	t.Run("returns a zeroed node", func(t *testing.T) {
+		n := helpers.NewNode()
+		assert.Equal(t, html.NodeType(0), n.Type)
+		assert.Equal(t, "", n.Data)
+		assert.Equal(t, "", n.Namespace)
+		assert.Nil(t, n.Attr)
+		assert.Nil(t, n.FirstChild)
+		assert.Nil(t, n.LastChild)
+		assert.Nil(t, n.NextSibling)
+		assert.Nil(t, n.PrevSibling)
+		assert.Nil(t, n.Parent)
+	})
+
+	t.Run("clears state carried over from the pool", func(t *testing.T) {
+		// Fill a node, drop the reference and allocate enough nodes that a
+		// pooled one is handed back at least once.
+		dirty := helpers.NewNode()
+		dirty.Type = html.ElementNode
+		dirty.Data = "div"
+		dirty.Namespace = "svg"
+		dirty.Attr = []html.Attribute{{Key: "class", Val: "container"}}
+		dirty.FirstChild = &html.Node{Type: html.TextNode, Data: "text"}
+
+		for i := 0; i < 32; i++ {
+			n := helpers.NewNode()
+			assert.Equal(t, html.NodeType(0), n.Type)
+			assert.Equal(t, "", n.Data)
+			assert.Nil(t, n.Attr)
+			assert.Nil(t, n.FirstChild)
+		}
+	})
+}
 
 func TestGetAttr(t *testing.T) {
 	t.Run("existing attribute", func(t *testing.T) {
@@ -35,6 +70,102 @@ func TestGetAttr(t *testing.T) {
 	t.Run("empty attributes", func(t *testing.T) {
 		n := &html.Node{Type: html.ElementNode, Data: "div"}
 		assert.Equal(t, "", helpers.GetAttr(n, "class"))
+	})
+}
+
+func TestHasAttr(t *testing.T) {
+	n := &html.Node{
+		Type: html.ElementNode,
+		Data: "div",
+		Attr: []html.Attribute{
+			{Key: "class", Val: "container"},
+			{Key: "v-keep"},
+		},
+	}
+
+	t.Run("attribute with a value", func(t *testing.T) {
+		assert.True(t, helpers.HasAttr(n, "class"))
+	})
+
+	t.Run("attribute with an empty value", func(t *testing.T) {
+		assert.True(t, helpers.HasAttr(n, "v-keep"))
+	})
+
+	t.Run("missing attribute", func(t *testing.T) {
+		assert.False(t, helpers.HasAttr(n, "id"))
+	})
+
+	t.Run("no attributes", func(t *testing.T) {
+		assert.False(t, helpers.HasAttr(&html.Node{Type: html.ElementNode, Data: "div"}, "class"))
+	})
+}
+
+func TestSetAttr(t *testing.T) {
+	t.Run("replaces an existing value", func(t *testing.T) {
+		n := &html.Node{
+			Type: html.ElementNode,
+			Data: "div",
+			Attr: []html.Attribute{
+				{Key: "class", Val: "old"},
+				{Key: "id", Val: "main"},
+			},
+		}
+		helpers.SetAttr(n, "class", "new")
+		assert.Len(t, n.Attr, 2)
+		assert.Equal(t, "new", helpers.GetAttr(n, "class"))
+		assert.Equal(t, "main", helpers.GetAttr(n, "id"))
+	})
+
+	t.Run("appends a missing attribute", func(t *testing.T) {
+		n := &html.Node{
+			Type: html.ElementNode,
+			Data: "div",
+			Attr: []html.Attribute{{Key: "class", Val: "container"}},
+		}
+		helpers.SetAttr(n, "id", "main")
+		assert.Len(t, n.Attr, 2)
+		assert.Equal(t, "id", n.Attr[1].Key)
+		assert.Equal(t, "main", n.Attr[1].Val)
+	})
+
+	t.Run("appends to a node with no attributes", func(t *testing.T) {
+		n := &html.Node{Type: html.ElementNode, Data: "div"}
+		helpers.SetAttr(n, "class", "container")
+		assert.Len(t, n.Attr, 1)
+		assert.Equal(t, "container", helpers.GetAttr(n, "class"))
+	})
+
+	t.Run("sets an empty value", func(t *testing.T) {
+		n := &html.Node{
+			Type: html.ElementNode,
+			Data: "div",
+			Attr: []html.Attribute{{Key: "class", Val: "container"}},
+		}
+		helpers.SetAttr(n, "class", "")
+		assert.Len(t, n.Attr, 1)
+		assert.Equal(t, "", helpers.GetAttr(n, "class"))
+	})
+}
+
+func TestAppendAttr(t *testing.T) {
+	// AppendAttr delegates to SetAttr: an existing value is replaced, not
+	// extended.
+	t.Run("replaces an existing value", func(t *testing.T) {
+		n := &html.Node{
+			Type: html.ElementNode,
+			Data: "div",
+			Attr: []html.Attribute{{Key: "class", Val: "one"}},
+		}
+		helpers.AppendAttr(n, "class", "two")
+		assert.Len(t, n.Attr, 1)
+		assert.Equal(t, "two", helpers.GetAttr(n, "class"))
+	})
+
+	t.Run("appends a missing attribute", func(t *testing.T) {
+		n := &html.Node{Type: html.ElementNode, Data: "div"}
+		helpers.AppendAttr(n, "class", "one")
+		assert.Len(t, n.Attr, 1)
+		assert.Equal(t, "one", helpers.GetAttr(n, "class"))
 	})
 }
 
@@ -142,6 +273,59 @@ func TestCloneNode(t *testing.T) {
 		clone.Attr = append(clone.Attr, html.Attribute{Key: "id", Val: "main"})
 		assert.Len(t, n.Attr, 1)
 		assert.Len(t, clone.Attr, 2)
+	})
+}
+
+func TestShallowCloneWithAttrs(t *testing.T) {
+	t.Run("copies the attribute slice", func(t *testing.T) {
+		n := &html.Node{
+			Type: html.ElementNode,
+			Data: "div",
+			Attr: []html.Attribute{{Key: "class", Val: "container"}},
+		}
+
+		clone := helpers.ShallowCloneWithAttrs(n)
+		clone.Attr[0].Val = "changed"
+
+		assert.Equal(t, "container", helpers.GetAttr(n, "class"))
+		assert.Equal(t, "changed", helpers.GetAttr(clone, "class"))
+	})
+
+	t.Run("does not copy children or siblings", func(t *testing.T) {
+		n := &html.Node{Type: html.ElementNode, Data: "div"}
+		n.AppendChild(&html.Node{Type: html.TextNode, Data: "text"})
+		n.NextSibling = &html.Node{Type: html.TextNode, Data: "sibling"}
+
+		clone := helpers.ShallowCloneWithAttrs(n)
+		assert.Equal(t, n.Type, clone.Type)
+		assert.Equal(t, n.Data, clone.Data)
+		assert.Nil(t, clone.FirstChild)
+		assert.Nil(t, clone.NextSibling)
+	})
+
+	t.Run("leaves attrs nil when the source has none", func(t *testing.T) {
+		clone := helpers.ShallowCloneWithAttrs(&html.Node{Type: html.ElementNode, Data: "div"})
+		assert.Len(t, clone.Attr, 0)
+	})
+}
+
+func TestGetBodyNode(t *testing.T) {
+	t.Run("returns a body element", func(t *testing.T) {
+		body := helpers.GetBodyNode()
+		assert.NotNil(t, body)
+		assert.Equal(t, html.ElementNode, body.Type)
+		assert.Equal(t, "body", body.Data)
+	})
+
+	t.Run("returns the same cached node", func(t *testing.T) {
+		assert.Equal(t, helpers.GetBodyNode(), helpers.GetBodyNode())
+	})
+
+	t.Run("is usable as ParseFragment context", func(t *testing.T) {
+		nodes, err := html.ParseFragment(strings.NewReader("<p>a</p><p>b</p>"), helpers.GetBodyNode())
+		assert.NoError(t, err)
+		assert.Len(t, nodes, 2)
+		assert.Equal(t, "p", nodes[0].Data)
 	})
 }
 

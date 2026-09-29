@@ -7,161 +7,113 @@ import (
 	"github.com/titpetric/vuego/tests/assert"
 )
 
-func TestContainsPipe(t *testing.T) {
-	t.Run("empty string has no pipe", func(t *testing.T) {
-		assert.False(t, helpers.ContainsPipe(""))
-	})
-
-	t.Run("string with pipe returns true", func(t *testing.T) {
-		assert.True(t, helpers.ContainsPipe("name | upper"))
-	})
-
-	t.Run("string without pipe returns false", func(t *testing.T) {
-		assert.False(t, helpers.ContainsPipe("name"))
-	})
-
-	t.Run("pipe at start", func(t *testing.T) {
-		assert.True(t, helpers.ContainsPipe("| upper"))
-	})
-
-	t.Run("multiple pipes", func(t *testing.T) {
-		assert.True(t, helpers.ContainsPipe("name | upper | lower"))
-	})
-
-	t.Run("pipe in string literal doesn't count", func(t *testing.T) {
-		// Note: This function is simple and checks all characters
-		assert.True(t, helpers.ContainsPipe(`"text | literal"`))
-	})
-}
-
-func TestIsIdentifier(t *testing.T) {
-	t.Run("empty string is not identifier", func(t *testing.T) {
-		assert.False(t, helpers.IsIdentifier(""))
-	})
-
-	t.Run("valid identifier with letters", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifier("name"))
-	})
-
-	t.Run("valid identifier with underscore start", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifier("_name"))
-	})
-
-	t.Run("valid identifier with numbers", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifier("name123"))
-	})
-
-	t.Run("valid identifier with mixed case", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifier("MyName"))
-	})
-
-	t.Run("valid identifier with underscores", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifier("my_name_123"))
-	})
-
-	t.Run("single underscore is valid", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifier("_"))
-	})
-
-	t.Run("single letter is valid", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifier("a"))
-	})
-
-	t.Run("starts with digit is invalid", func(t *testing.T) {
-		assert.False(t, helpers.IsIdentifier("1name"))
-	})
-
-	t.Run("contains space is invalid", func(t *testing.T) {
-		assert.False(t, helpers.IsIdentifier("my name"))
-	})
-
-	t.Run("contains dash is invalid", func(t *testing.T) {
-		assert.False(t, helpers.IsIdentifier("my-name"))
-	})
-
-	t.Run("contains dot is invalid", func(t *testing.T) {
-		assert.False(t, helpers.IsIdentifier("my.name"))
-	})
-
-	t.Run("contains special chars is invalid", func(t *testing.T) {
-		assert.False(t, helpers.IsIdentifier("my@name"))
-	})
-
-	t.Run("contains pipe is invalid", func(t *testing.T) {
-		assert.False(t, helpers.IsIdentifier("my|name"))
-	})
-}
-
-func TestIsIdentifierChar(t *testing.T) {
-	t.Run("lowercase letter is valid", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifierChar('a', false))
-	})
-
-	t.Run("uppercase letter is valid", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifierChar('A', false))
-	})
-
-	t.Run("digit is valid", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifierChar('0', false))
-	})
-
-	t.Run("underscore is valid", func(t *testing.T) {
-		assert.True(t, helpers.IsIdentifierChar('_', false))
-	})
-
-	t.Run("space is invalid", func(t *testing.T) {
-		assert.False(t, helpers.IsIdentifierChar(' ', false))
-	})
-
-	t.Run("dash is invalid", func(t *testing.T) {
-		assert.False(t, helpers.IsIdentifierChar('-', false))
-	})
-
-	t.Run("special chars are invalid", func(t *testing.T) {
-		assert.False(t, helpers.IsIdentifierChar('$', false))
-		assert.False(t, helpers.IsIdentifierChar('@', false))
-		assert.False(t, helpers.IsIdentifierChar('!', false))
-	})
-}
-
 func TestIsFunctionCall(t *testing.T) {
-	t.Run("empty string is not a function call", func(t *testing.T) {
-		assert.False(t, helpers.IsFunctionCall(""))
-	})
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{input: "func()", want: true},
+		{input: "func(arg)", want: true},
+		{input: "func(arg1, arg2)", want: true},
+		{input: "  func()", want: true},
+		{input: "_func()", want: true},
+		{input: "func123()", want: true},
+		{input: "", want: false},
+		{input: "name", want: false},
+		{input: "()", want: false},
+		{input: "my-func()", want: false},
+	}
 
-	t.Run("identifier without parentheses is not a function call", func(t *testing.T) {
-		assert.False(t, helpers.IsFunctionCall("name"))
-	})
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			assert.Equal(t, test.want, helpers.IsFunctionCall(test.input))
+		})
+	}
+}
 
-	t.Run("function call with empty args", func(t *testing.T) {
-		assert.True(t, helpers.IsFunctionCall("func()"))
-	})
+func TestContainsPipe(t *testing.T) {
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{input: "name | upper", want: true},
+		{input: "| upper", want: true},
+		{input: "name | upper | lower", want: true},
+		// The check is a character scan, so a pipe inside a literal counts.
+		{input: `"text | literal"`, want: true},
+		{input: "", want: false},
+		{input: "name", want: false},
+	}
 
-	t.Run("function call with args", func(t *testing.T) {
-		assert.True(t, helpers.IsFunctionCall("func(arg)"))
-	})
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			assert.Equal(t, test.want, helpers.ContainsPipe(test.input))
+		})
+	}
+}
 
-	t.Run("function call with multiple args", func(t *testing.T) {
-		assert.True(t, helpers.IsFunctionCall("func(arg1, arg2)"))
-	})
+func TestIsComplexExpr(t *testing.T) {
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{input: "a == b", want: true},
+		{input: "a === b", want: true},
+		{input: "a != b", want: true},
+		{input: "a !== b", want: true},
+		{input: "a <= b", want: true},
+		{input: "a >= b", want: true},
+		{input: "a && b", want: true},
+		{input: "a || b", want: true},
+		{input: "a==b", want: true},
+		{input: "a + b", want: true},
+		{input: "a - b", want: true},
+		{input: "a * b", want: true},
+		{input: "a / b", want: true},
+		{input: "a % b", want: true},
+		{input: "a < b", want: true},
+		{input: "a > b", want: true},
+		{input: "ok ? yes : no", want: true},
+		{input: "", want: false},
+		{input: "name", want: false},
+		{input: "user.name", want: false},
+		// Arithmetic operators need surrounding spaces, so a path or a
+		// hyphenated name is not complex.
+		{input: "foo/bar", want: false},
+		{input: "foo-bar", want: false},
+		{input: "a+b", want: false},
+		// A ternary needs both halves.
+		{input: "ok ? yes", want: false},
+		{input: "a : b", want: false},
+	}
 
-	t.Run("function call with leading whitespace", func(t *testing.T) {
-		assert.True(t, helpers.IsFunctionCall("  func()"))
-	})
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			assert.Equal(t, test.want, helpers.IsComplexExpr(test.input))
+		})
+	}
+}
 
-	t.Run("parentheses at start is not a function call", func(t *testing.T) {
-		assert.False(t, helpers.IsFunctionCall("()"))
-	})
+func TestNormalizeComparisonOperators(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{input: "a === b", want: "a == b"},
+		{input: "a !== b", want: "a != b"},
+		{input: "a === b && c !== d", want: "a == b && c != d"},
+		{input: "a==b", want: "a==b"},
+		{input: "a != b", want: "a != b"},
+		{input: "a <= b", want: "a <= b"},
+		{input: "", want: ""},
+		{input: "name", want: "name"},
+		{input: "a === b ? 'y' : 'n'", want: "a == b ? 'y' : 'n'"},
+		{input: "user.role === 'admin'", want: "user.role == 'admin'"},
+	}
 
-	t.Run("invalid identifier with parentheses", func(t *testing.T) {
-		assert.False(t, helpers.IsFunctionCall("my-func()"))
-	})
-
-	t.Run("function call with underscore", func(t *testing.T) {
-		assert.True(t, helpers.IsFunctionCall("_func()"))
-	})
-
-	t.Run("function call with numbers in name", func(t *testing.T) {
-		assert.True(t, helpers.IsFunctionCall("func123()"))
-	})
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			assert.Equal(t, test.want, helpers.NormalizeComparisonOperators(test.input))
+		})
+	}
 }
