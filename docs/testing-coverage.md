@@ -1,12 +1,12 @@
 # Testing Coverage
 
-Testing criteria for a passing coverage requirement:
+A function passes coverage when it meets one of:
 
 - Line coverage of 80%
 - Cognitive complexity of 0
-- Have cognitive complexity < 5, but have any coverage
+- Cognitive complexity under 5 with any coverage at all
 
-Low cognitive complexity means there are few conditional branches to cover. Tests with cognitive complexity 0 would be covered by invocation.
+Low cognitive complexity means the function holds little branching to cover. One call reaches every line of a function with cognitive complexity 0.
 
 ## Packages
 
