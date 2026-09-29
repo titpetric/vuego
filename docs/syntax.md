@@ -13,7 +13,7 @@ Vuego implements a subset of Vue.js template syntax. This document provides a co
 
 ## Values
 
-Use `{{ var }}` to insert a value from the current scope. Values are automatically HTML-escaped for security.
+Use `{{ var }}` to insert a value from the current scope. The renderer HTML-escapes every value it writes.
 
 ### Basic Usage
 
@@ -73,7 +73,7 @@ Transform values using filters with the pipe syntax:
 - `len` - Get length of string, array, or map
 - `trim` - Remove leading/trailing whitespace
 - `escape` - HTML escape the value
-- `default(fallback)` - Use fallback if value is nil or empty
+- `default(fallback)` - Falls back when the value holds nil or an empty string
 - `formatTime([layout])` - Format time value
 - `int` - Convert to integer
 - `string` - Convert to string
@@ -83,7 +83,7 @@ Transform values using filters with the pipe syntax:
 
 The `json` filter marshals a value to JSON format. Its behavior differs depending on the context:
 
-**In `<script>` tags:** JSON is output unescaped, allowing safe embedding of data in JavaScript:
+**In `<script>` tags:** the renderer writes JSON raw, so the data lands as JavaScript:
 
 ```html
 <script>
@@ -92,7 +92,7 @@ The `json` filter marshals a value to JSON format. Its behavior differs dependin
 </script>
 ```
 
-**In other contexts** (`<pre>`, `<code>`, fragments, etc.): JSON is HTML-escaped to prevent XSS:
+**In other contexts** (`<pre>`, `<code>`, fragments): the renderer HTML-escapes the JSON, which blocks XSS:
 
 ```html
 <pre><code>{{ data | json }}</code></pre>
@@ -102,7 +102,7 @@ This automatic escaping prevents malicious content in the JSON from breaking out
 
 ## Directives
 
-Directives are special attributes that apply dynamic behavior to elements.
+A directive reads as an attribute and gives the element dynamic behavior.
 
 | Directive                | Description                                        |
 |--------------------------|----------------------------------------------------|
@@ -114,7 +114,7 @@ Directives are special attributes that apply dynamic behavior to elements.
 | `v-html`                 | Render unescaped HTML content                      |
 | `v-show`                 | Toggle element visibility with CSS display         |
 | `v-pre`                  | Skip template processing for element and children  |
-| `v-once`                 | Render element once and skip on subsequent renders |
+| `v-once`                 | Render element once and skip it on later renders   |
 | `v-slot` or `#`          | Define slot content and scoped slot props          |
 
 ### Attribute Binding (`:attr` / `v-bind:attr`)
@@ -127,15 +127,15 @@ Bind HTML attributes to dynamic values:
 <button :name="buttonName" :disabled="isDisabled">Click</button>
 ```
 
-Shorthand `:attr` is equivalent to `v-bind:attr`.
+The shorthand `:attr` means the same as `v-bind:attr`.
 
 #### Object Binding for `class` and `style`
 
-Bind to object literals to conditionally apply classes or styles. This is useful for dynamic styling based on data conditions.
+Bind to an object literal to apply classes or styles under a condition, which lets the data drive the styling.
 
 **Class Object Binding:**
 
-Object keys become class names, and are included only when their values are truthy:
+Object keys become class names, and the renderer writes a key when its value holds something truthy:
 
 ```html
 <!-- Bootstrap-style example: apply btn-primary only when isPrimary is true -->
@@ -160,7 +160,7 @@ Falsey values (including `0`, `false`, `""`, `nil`) exclude the class. Any other
 
 **Style Object Binding:**
 
-Object keys use camelCase and are automatically converted to kebab-case CSS properties. Values are applied as-is:
+Object keys use camelCase, which the renderer converts to kebab-case CSS properties. It writes each value unchanged:
 
 ```html
 <!-- camelCase properties are converted to kebab-case -->
@@ -176,7 +176,7 @@ Object keys use camelCase and are automatically converted to kebab-case CSS prop
 
 **camelCase to kebab-case conversion:**
 
-CSS property names must use kebab-case (e.g., `font-size`, `background-color`). To match JavaScript convention, use camelCase in the object binding and they will be automatically converted:
+CSS property names must use kebab-case, as in `font-size` and `background-color`. Write camelCase in the object binding to match the JavaScript convention, and the renderer converts each one:
 
 | camelCase         | converts to        | CSS property     |
 |-------------------|--------------------|------------------|
@@ -186,11 +186,11 @@ CSS property names must use kebab-case (e.g., `font-size`, `background-color`). 
 | `marginTop`       | `margin-top`       | margin-top       |
 | `borderRadius`    | `border-radius`    | border-radius    |
 
-Properties that already contain hyphens (e.g., custom CSS properties like `--my-color`) are left unchanged.
+A property name that already holds a hyphen, such as the custom property `--my-color`, passes through unchanged.
 
 ### Conditional Rendering (`v-if`, `v-else-if`, `v-else`)
 
-Render elements only when conditions are met. Use `v-else-if` and `v-else` to provide alternative branches:
+Render an element when its condition holds. Use `v-else-if` and `v-else` for the other branches:
 
 #### Basic `v-if`
 
@@ -204,7 +204,7 @@ Render elements only when conditions are met. Use `v-else-if` and `v-else` to pr
 
 #### Bracket Syntax (`[v-if]`)
 
-Directives can be wrapped in brackets to output them as literal attributes without interpolation. This is useful when you want the directive to remain in the rendered HTML rather than be processed by Vuego:
+Wrap a directive in brackets to write it out as a literal attribute, skipping interpolation. Reach for this to leave the directive in the rendered HTML instead of letting Vuego act on it:
 
 ```html
 <!-- Processed by Vuego (removed after evaluation) -->
@@ -215,7 +215,7 @@ Directives can be wrapped in brackets to output them as literal attributes witho
 <!-- Renders as: <div v-if="show">Content</div> -->
 ```
 
-**Note:** Attributes with bracket syntax are **not interpolated**. The value is treated as a literal string:
+An attribute in bracket syntax carries **no interpolation**. The renderer takes the value as a literal string:
 
 ```html
 <!-- Without brackets: {{ count }} is evaluated and replaced -->
@@ -227,7 +227,7 @@ Directives can be wrapped in brackets to output them as literal attributes witho
 
 #### Chained Conditions with `v-else-if` and `v-else`
 
-Use `v-else-if` to test multiple conditions and `v-else` as the default fallback:
+Use `v-else-if` to test further conditions and `v-else` as the fallback:
 
 ```html
 <div v-if="status == 'pending'">
@@ -246,7 +246,7 @@ Use `v-else-if` to test multiple conditions and `v-else` as the default fallback
 
 #### Empty List with `v-for` and `v-else`
 
-Use `v-else` after a `v-for` loop to display a "no results" message when the list is empty. The `v-else` element must be an immediate sibling of the `v-for` element:
+Use `v-else` after a `v-for` loop to show a "no results" message for an empty list. The `v-else` element must sit as an immediate sibling of the `v-for` element:
 
 ```html
 <ul>
@@ -283,7 +283,7 @@ Insert unescaped HTML content:
 <div v-html="htmlContent"></div>
 ```
 
-**⚠️ Warning:** Only use with trusted content; user-provided content can lead to XSS vulnerabilities.
+**Warning:** reach for this with trusted content alone. Content from a user opens an XSS hole.
 
 ### Visibility Control (`v-show`)
 
@@ -311,7 +311,7 @@ Useful for displaying template syntax as literal text in documentation or code e
 
 ### Single Render (`v-once`)
 
-Render an element once and skip it on subsequent evaluations. Useful for `<script>` and `<style>` tags that should only appear once on a page:
+Render an element once and skip it on later evaluations. This suits a `<script>` or `<style>` tag that belongs on the page a single time:
 
 ```html
 <script v-once src="/assets/js/component.js"></script>
@@ -330,7 +330,7 @@ Render an element once and skip it on subsequent evaluations. Useful for `<scrip
 </style>
 ```
 
-The `v-once` directive also works inside `v-for` loops and with reusable components, preventing duplicate content when components are rendered multiple times.
+The `v-once` directive also holds inside a `v-for` loop and across reusable components, so a component the page renders more than once contributes the content a single time.
 
 ### Slots
 
@@ -338,7 +338,7 @@ Slots allow parent components to provide content to child components. This enabl
 
 #### Default Slots
 
-A child component defines where content should be rendered using a `<slot>` element:
+A child component marks where the content belongs with a `<slot>` element:
 
 **Child Component (components/Card.vuego):**
 
@@ -368,7 +368,7 @@ A child component defines where content should be rendered using a `<slot>` elem
 
 #### Fallback Content
 
-Provide default content inside `<slot>` tags that renders when no content is provided:
+Put fallback content inside the `<slot>` tags; it renders when the caller supplies none:
 
 **Child Component:**
 
@@ -392,7 +392,7 @@ Provide default content inside `<slot>` tags that renders when no content is pro
 
 #### Named Slots
 
-Multiple slots can be used with `name` attributes to distribute content to specific locations:
+Give each slot a `name` attribute to send content to a particular place:
 
 **Child Component (components/Modal.vuego):**
 
@@ -420,7 +420,7 @@ Multiple slots can be used with `name` attributes to distribute content to speci
 </modal>
 ```
 
-The `#name` shorthand is equivalent to `v-slot:name`:
+The `#name` shorthand means the same as `v-slot:name`:
 
 ```html
 <modal>
@@ -466,7 +466,7 @@ Child components can pass data to slots via attribute bindings (`:prop="value"`)
 
 #### Named Scoped Slots
 
-Combine named slots with scoped props for maximum flexibility:
+Combine named slots with scoped props:
 
 **Child Component:**
 
@@ -503,7 +503,7 @@ Include reusable component files:
 <template include="components/Button.vuego" name="submit" title="Submit Form"></template>
 ```
 
-The `include` attribute specifies the template file path. Additional attributes are passed as props to the component.
+The `include` attribute names the template file. Every other attribute reaches the component as a prop.
 
 ### `<template>` Tag (Fragment Wrapper)
 
@@ -516,7 +516,7 @@ Wrap component content or fragments:
 </template>
 ```
 
-For component validation, use the `:required` attribute on the `<template>` tag to ensure props are provided. Specify multiple required props as a comma-separated list:
+Use the `:required` attribute on the `<template>` tag to make the caller supply a prop. Name several required props in a comma-separated list:
 
 ```html
 <template :required="name,title">
@@ -525,7 +525,7 @@ For component validation, use the `:required` attribute on the `<template>` tag 
 </template>
 ```
 
-Props listed in `:required` must be provided when the component is included, or rendering will fail with a validation error.
+A caller including the component must supply every prop `:required` lists, or the render fails with a validation error.
 
 ## Advanced
 
@@ -559,7 +559,7 @@ Vuego supports both complete HTML documents and fragments:
 </template>
 ```
 
-Both styles are valid and work identically.
+Both styles hold and render the same output.
 
 ## Notes and Limitations
 
@@ -591,21 +591,21 @@ Both styles are valid and work identically.
 
 ### Security
 
-- HTML escaping is automatically applied to interpolated values using `html.EscapeString`
+- `html.EscapeString` escapes every interpolated value
 - This provides basic XSS protection for `{{ }}` interpolations
-- `v-html` bypasses escaping - only use with trusted content
+- `v-html` bypasses escaping; reach for it with trusted content alone
 
 ### Data Types
 
 Vuego accepts `map[string]any` as data input. For strongly-typed data structures, convert them to maps before rendering.
 
-A convenience function of `vuego.View[V any](renderer Template, filename string, data V) Template` is provided.
+The package supplies `vuego.View[V any](renderer Template, filename string, data V) Template` for this.
 
 ### Whitespace
 
-- Empty text nodes (whitespace-only) are omitted from output
-- Whitespace differences are ignored when comparing DOM structures
-- Indentation is preserved within non-empty text nodes
+- The renderer drops a text node holding nothing but whitespace
+- A DOM comparison disregards whitespace differences
+- A text node holding content keeps its indentation
 
 ## See Also
 

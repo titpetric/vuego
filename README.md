@@ -2,33 +2,33 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/vuego.svg)](https://pkg.go.dev/github.com/titpetric/vuego) [![Coverage](https://img.shields.io/badge/coverage-92.20%25-brightgreen.svg)](https://github.com/titpetric/vuego)
 
-Vuego is a [Vue.js](https://vuejs.org/)-inspired template engine for Go. Render HTML templates with familiar Vue syntax - no JavaScript runtime required.
+Vuego brings a [Vue.js](https://vuejs.org/)-inspired template engine to Go. Render HTML templates in familiar Vue syntax, with no JavaScript runtime.
 
 You can try Vuego:
 
 - In your browser: The Vuego Tour [vuego.incubator.to](https://vuego.incubator.to/)
 - In your terminal: The Vuego CLI [titpetric/vuego-cli](https://github.com/titpetric/vuego-cli)
 
-The Vuego CLI is also available as a docker image and runs the tour.
+The Vuego CLI also ships as a docker image, which runs the tour.
 
 ## About
 
-Vuego is a server-side template rendering engine. It provides a template runtime that allows you to modify templates as the application is running. It allows for composition, supports layouts and aims to be an exclusive runtime where Go is used for front and back-end development.
+Vuego renders templates on the server. Its runtime picks up template edits while the application keeps running. It carries composition and layouts, and aims to serve as the single runtime for a codebase that writes Go on both the front end and the back end.
 
 The choices Vuego makes:
 
-- A largely VueJS compatible syntax with `v-if`, `v-for` and interpolation
+- A VueJS-compatible syntax covering `v-if`, `v-for` and interpolation
 - Composition with the usage of the html `<template>` tag (unique syntax)
 - DOM driven templating, type safety based on generics and reflection
 - YAML/JSON as the default way to provide template view rendering
 
-Especially with using a machine readable data format, vuego aims to support the development lifecycle with the [vuego-cli](https://github.com/titpetric/vuego-cli) tool. The tool allows you to run a development playground. The process is simple:
+A machine readable data format lets vuego support the development lifecycle through the [vuego-cli](https://github.com/titpetric/vuego-cli) tool, which runs a development playground. Three steps:
 
 - start `vuego-cli serve ./templates`
 - edit .json and .vuego files
 - refresh to view changes
 
-Project it in active development. Some changes in API surface are still expected based on feedback and observations. Releases are tagged.
+The project remains under active development. The API surface may still shift as feedback and observations arrive. Each release carries a tag.
 
 ## Quick start
 
@@ -76,7 +76,7 @@ renderer := vuego.New()
 err = renderer.New().Fill(data).RenderString(r.Context(), w, `<li v-for="item in items">{{ item.title }}</li>`)
 ```
 
-There's more detail around authoring vuego templates, check documentation:
+For more detail on authoring vuego templates, check the documentation:
 
 - [API Reference - docs/api.md](./docs/api.md)
 - [Go Reference - pkg.go.dev](https://pkg.go.dev/github.com/titpetric/vuego)
@@ -89,7 +89,7 @@ With [titpetric/vuego-cli](https://github.com/titpetric/vuego-cli) you can do th
 - `vuego-cli tour <folder>` - load a learning tour of vuego,
 - `vuego-cli docs <folder>` - load a documentation server.
 
-In addition to those learning tools, separate commands are provided to `fmt`, `lint` and `render` files.
+Beside those learning tools, separate commands `fmt`, `lint` and `render` files.
 
 ## Documentation
 
@@ -100,7 +100,7 @@ The Template Syntax reference covers four main areas:
 - **[Components](docs/syntax.md#components)** - `<template include>` and `<template>` tags
 - **[Advanced](docs/syntax.md#advanced)** - Template functions, custom filters, and full documents
 
-Additional resources:
+Further resources:
 
 - **[FuncMap & Filters](docs/funcmap.md)** - Custom template functions and built-in filters
 - **[Components Guide](docs/components.md)** - Detailed component composition examples

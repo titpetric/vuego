@@ -2,7 +2,7 @@
 
 ## Pipeline
 
-The repository is driven by [atkins](https://github.com/titpetric/atkins). `atkins.yml` defines the jobs:
+[atkins](https://github.com/titpetric/atkins) drives the repository. `atkins.yml` defines the jobs:
 
 | Job       | What it runs                                                                                   |
 |-----------|------------------------------------------------------------------------------------------------|
@@ -22,7 +22,7 @@ atkins cover
 
 `Taskfile.yml` carries two extra targets: `task uncover` lists source the last run never reached, and `task bench` runs the benchmarks at 1, 2 and 4 CPUs.
 
-The test job writes two files that are gitignored: `pkg.cov` (the coverage profile) and `test.json` (the `go test -json` stream gotestsum replays).
+The test job writes two gitignored files: `pkg.cov`, the coverage profile, and `test.json`, the `go test -json` stream gotestsum replays.
 
 ## Running tests directly
 
@@ -37,7 +37,7 @@ go test -run TestStack_Push ./
 
 ## Layout
 
-Tests are black box: every test file is in the external test package (`vuego_test`, `markdown_test`, and so on) and reaches only the exported API. Each source file has a `_test.go` file beside it, and `splint --linters pairing` fails when one does not.
+Tests run black box: every test file sits in the external test package, such as `vuego_test` or `markdown_test`, and reaches the exported API and nothing more. Each source file has a `_test.go` file beside it, and `splint --linters pairing` fails when one does not.
 
 Shared helpers live in the test file paired with the source they exercise:
 
@@ -59,13 +59,13 @@ func TestVue_Render(t *testing.T) {
 
 ## Naming
 
-A test is named after the symbol it covers, `Test[Receiver_]Function`:
+A test takes the name of the symbol it covers, `Test[Receiver_]Function`:
 
 - methods: `TestVue_Render`, `TestStack_Push`
 - functions: `TestNewVue`, `TestParseFor`
 - unexported functions, named without a receiver: `TestEvalCondition`, `TestConvertValue`
 
-`splint --linters coverage` reports an exported symbol no test references and no test is named after.
+`splint --linters coverage` reports an exported symbol that no test references and no test takes its name from.
 
 ## Fixtures
 

@@ -14,7 +14,7 @@ This document covers component composition in Vuego using the `<template include
 
 ## Component Shorthands
 
-Vuego provides a convenient shorthand syntax for using components without needing to write out the full `<template include>` tag. This allows you to use custom tags that are automatically mapped to component files.
+Vuego carries a shorthand for using a component without writing the full `<template include>` tag. It lets a custom tag stand for a component file, which the loader maps for you.
 
 ### Enabling Component Shorthands
 
@@ -41,7 +41,7 @@ func main() {
 
 ### Default Behavior
 
-If you call `WithComponents()` without any arguments, it automatically loads all components from `components/*.vuego`. Each component file is converted to a kebab-case tag name.
+Calling `WithComponents()` with no arguments loads every component under `components/*.vuego`, turning each filename into a kebab-case tag name.
 
 ### Shorthand Syntax
 
@@ -79,7 +79,7 @@ Component shorthands use custom HTML tags that match your component names (conve
 <button class="btn-primary">Click me</button>
 ```
 
-**Equivalent full syntax:**
+**The same thing written in full:**
 
 ```html
 <template include="components/ButtonPrimary.vuego"></template>
@@ -87,17 +87,17 @@ Component shorthands use custom HTML tags that match your component names (conve
 
 ### How It Works
 
-1. Component files are scanned using glob patterns (e.g., `components/*.vuego`)
-2. The filename (without extension) is converted from PascalCase to kebab-case:
+1. A glob such as `components/*.vuego` collects the component files
+2. The loader turns the filename, minus its extension, from PascalCase into kebab-case:
    - `ButtonPrimary.vuego` becomes `<button-primary>`
    - `AlertBox.vuego` becomes `<alert-box>`
    - `MyComponent.vuego` becomes `<my-component>`
-3. When a shorthand tag is encountered, it's replaced with a `<template include>` directive
-4. Attributes on the tag are passed as context variables to the component
+3. A shorthand tag the renderer meets becomes a `<template include>` directive
+4. Each attribute on the tag reaches the component as a context variable
 
 ### Passing Attributes
 
-Attributes on component shorthand tags are passed as context variables to the component:
+Each attribute on a component shorthand tag reaches the component as a context variable:
 
 **components/Badge.vuego:**
 
@@ -147,7 +147,7 @@ Vuego allows you to compose reusable components using the `<template include>` t
 <template include="path/to/component.vuego"></template>
 ```
 
-The path is relative to the filesystem root passed to `vuego.NewVue()`.
+The path sits relative to the filesystem root handed to `vuego.NewVue()`.
 
 ### Example: Including a Header Component
 
@@ -179,7 +179,7 @@ The path is relative to the filesystem root passed to `vuego.NewVue()`.
 
 ## Slots
 
-A slot is a hole in a component template that the including template fills. Vuego supports default slots, named slots and scoped slots.
+A slot marks a hole in a component template that the including template fills. Vuego carries default slots, named slots and scoped slots.
 
 ### Default Slots
 
@@ -213,7 +213,7 @@ The simplest form of slot - parent content goes into a single unnamed slot:
 
 ### Named Slots
 
-Use multiple slots in a component by giving each a name:
+Give each slot in a component a name to use more than one:
 
 **components/Modal.vuego**
 
@@ -328,7 +328,7 @@ Combine named slots with scoped props:
 
 ### Fallback Content
 
-Provide default content inside a `<slot>` that renders when no content is provided:
+Put fallback content inside a `<slot>`; it renders when the caller supplies none:
 
 **components/Button.vuego**
 
@@ -352,14 +352,14 @@ Provide default content inside a `<slot>` that renders when no content is provid
 
 ## The Template Tag
 
-The `<template>` tag is a wrapper element that gets omitted from the final rendered output. It serves two purposes:
+The `<template>` tag wraps content and leaves no trace in the rendered output. It does two jobs:
 
-1. **Wrapping component content** - Allows multiple root elements in a component
+1. **Wrapping component content** - lets a component carry more than one root element
 2. **Defining component requirements** - Using the `:required` attribute
 
 ### Why Use Template?
 
-Without a template tag, you might have multiple root elements which can complicate component structure. The template tag provides a clean wrapper that disappears during rendering.
+Without a template tag a component can end up with several root elements, which muddles its structure. The template tag wraps them and disappears during rendering.
 
 **Without template (valid but less organized):**
 
@@ -377,11 +377,11 @@ Without a template tag, you might have multiple root elements which can complica
 </template>
 ```
 
-Both produce the same output, but the template version is clearer about component boundaries.
+Both produce the same output; the template version states the component boundary more plainly.
 
 ## Required Attributes
 
-The `:required` (or `:require`) attribute validates that component props are provided when the component is included. This helps catch missing data at render time.
+The `:required` attribute, spelled `:require` too, checks that the caller supplies each prop when it includes the component. It catches missing data at render time.
 
 ### Syntax
 
@@ -391,7 +391,7 @@ The `:required` (or `:require`) attribute validates that component props are pro
 </template>
 ```
 
-You can specify multiple required attributes:
+Name several required attributes at once:
 
 ```html
 <template :require="prop1" :require="prop2" :require="prop3">
@@ -401,10 +401,10 @@ You can specify multiple required attributes:
 
 ### How It Works
 
-1. When a component is included, attributes are passed as props
-2. The template validates that all `:required` props are present
-3. If a required prop is missing, rendering fails with an error
-4. Props are available in the component scope for interpolation and binding
+1. Including a component hands its attributes over as props
+2. The template checks that every `:required` prop arrived
+3. A missing required prop fails the render with an error
+4. The component scope holds each prop for interpolation and binding
 
 ### Example: Button Component with Required Props
 
@@ -441,7 +441,7 @@ Error: `required attribute 'name' not provided`
 
 ## YAML Front-Matter for Single File Components
 
-Vuego supports YAML front-matter at the beginning of `.vuego` files. This allows you to define component data directly in the template file, similar to single-file components (SFCs) in other frameworks.
+Vuego reads YAML front matter at the head of a `.vuego` file, which lets the template file carry its own component data, the way a single-file component does elsewhere.
 
 ### Syntax
 
@@ -465,14 +465,14 @@ items:
 
 ### How It Works
 
-1. Front-matter is extracted and parsed as YAML
-2. Variables are automatically added to the template context
-3. Front-matter values are **authoritative** - they override any data passed to `Render()` or `RenderFragment()`
+1. The loader strips the front matter and parses it as YAML
+2. Each variable joins the template context
+3. Front matter holds **the final say**: it overrides whatever `Render()` or `RenderFragment()` received
 4. Each included component can have its own front-matter
 
 ### Use Cases
 
-Front-matter is useful for:
+Reach for front matter to carry:
 - Defining default/static component data
 - Storing component metadata
 - Simplifying single-purpose components that don't need external data
@@ -518,7 +518,7 @@ YAML keys with hyphens work directly in templates (e.g., `background-image`, `da
 
 ### Front-Matter Overrides Passed Data
 
-When a component is included with attributes, front-matter values take precedence:
+Front matter wins over the attributes an include carries:
 
 **components/Config.vuego**
 
@@ -686,7 +686,7 @@ With JSON data:
 
 6. **Keep components focused** - Each component should have a single, clear responsibility
 
-7. **Remember front-matter is authoritative** - Front-matter values always override passed attributes, so don't use it for optional/overridable data
+7. **Front matter holds the final say** - it overrides the attributes an include carries, so keep data a caller may want to change out of it
 
 ## Component File Structure Example
 

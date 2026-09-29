@@ -21,19 +21,19 @@ Vuego automatically loads YAML configuration files from the template filesystem 
 
 ## How It Works
 
-When `NewFS()` is called, Vuego automatically:
+A call to `NewFS()` makes Vuego:
 
 1. Loads `theme.yml` from the filesystem root (if it exists)
 2. Loads all `.yml` and `.yaml` files from the `data/` directory (if it exists)
 
-The loaded data is merged into the template's initial context, making it available to all templates as top-level variables.
+Vuego merges the loaded data into the template's initial context, so every template reaches it through top-level variables.
 
 ```go
 // Config loading is implicit, no extra options needed
 renderer := vuego.NewFS(os.DirFS("templates"))
 ```
 
-This is equivalent to calling `Fill()` with the merged YAML data before any `Load()` or `New()` call.
+That amounts to calling `Fill()` with the merged YAML data ahead of any `Load()` or `New()` call.
 
 ## Directory Structure
 
@@ -51,18 +51,18 @@ templates/
 └── index.vuego
 ```
 
-Only two locations are checked:
+Vuego checks two locations, and no others:
 
-| Location                    | What's loaded                           |
+| Location                    | What it loads                           |
 |-----------------------------|-----------------------------------------|
 | `theme.yml`                 | Single file at the filesystem root      |
 | `data/*.yml`, `data/*.yaml` | All YAML files in the `data/` directory |
 
-Files that don't exist are silently skipped. Invalid YAML is also skipped silently.
+A file that does not exist raises nothing, and neither does invalid YAML. Vuego skips both.
 
 ## Load Order and Overrides
 
-Files are loaded in this order:
+Vuego loads the files in this order:
 
 1. `theme.yml` (root level)
 2. `data/` directory files (alphabetical order)
@@ -93,7 +93,7 @@ The resulting context will have `theme.header.title` set to `"Custom Title"`.
 
 ## Accessing Loaded Data in Templates
 
-Loaded data is available as top-level variables in every template:
+Every template reaches the loaded data through top-level variables:
 
 **data/site.yml**:
 
@@ -284,15 +284,15 @@ renderer := vuego.NewFS(os.DirFS("my-site"), vuego.WithComponents())
 err := renderer.Load("pages/index.vuego").Render(ctx, w)
 ```
 
-No explicit config loading is needed. The renderer automatically picks up `theme.yml`, `data/menu.yml`, and `data/social.yml`.
+Nothing loads the configuration by hand. The renderer picks up `theme.yml`, `data/menu.yml` and `data/social.yml` on its own.
 
 ## Behavior by Filesystem Type
 
-| Filesystem        | Behavior                                                                                                           |
-|-------------------|--------------------------------------------------------------------------------------------------------------------|
-| `os.DirFS(path)`  | Config is loaded at construction time. Changes to YAML files on disk are reflected when a new renderer is created. |
-| `embed.FS`        | Config is loaded once from the embedded filesystem at construction time.                                           |
-| `vuego.OverlayFS` | Config is loaded from the merged filesystem, with the upper FS taking precedence.                                  |
+| Filesystem        | Behavior                                                                                                      |
+|-------------------|---------------------------------------------------------------------------------------------------------------|
+| `os.DirFS(path)`  | Loads the configuration at construction. A later renderer picks up whatever the YAML files on disk hold then. |
+| `embed.FS`        | Loads the configuration from the embedded filesystem once, at construction.                                   |
+| `vuego.OverlayFS` | Loads the configuration from the merged filesystem, where the upper layer wins.                               |
 
 For development servers that need live reload, create a new renderer instance on each request:
 

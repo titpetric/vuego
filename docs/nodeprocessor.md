@@ -4,12 +4,12 @@ The `NodeProcessor` interface enables custom post-processing of rendered HTML no
 
 ## Overview
 
-After template evaluation completes, any registered `NodeProcessor` implementations are called with the rendered DOM. This happens after all Vue directives and interpolations are processed, allowing you to:
+Once template evaluation ends, Vuego calls each registered `NodeProcessor` with the rendered DOM. By then it has handled every Vue directive and interpolation, which lets a processor:
 
-- Implement custom tags (e.g., `<script type="text/css+less">`)
+- Add custom tags such as `<script type="text/css+less">`
 - Transform HTML nodes based on custom attributes
 - Compile embedded content (CSS, JavaScript, etc.)
-- Modify node structure or attributes in place
+- Change node structure or attributes in place
 
 ## The NodeProcessor Interface
 
@@ -28,7 +28,7 @@ v := vuego.NewVue(templateFS)
 v.RegisterNodeProcessor(myProcessor)
 ```
 
-Processors are applied in order of registration after template evaluation.
+Each processor runs in registration order once template evaluation ends.
 
 ## Example: LESS CSS Compiler
 
@@ -162,15 +162,15 @@ v.RegisterNodeProcessor(&LessProcessor{})
 - Custom node processors (in registration order)
 - HTML rendering
 
-This means processors can assume all Vue directives have been fully evaluated.
+A processor may assume Vuego already evaluated every Vue directive.
 
 ## Best Practices
 
 1. **Recursive Processing**: Always recursively process child nodes
 2. **Error Handling**: Return meaningful errors that include context
-3. **In-Place Modification**: Modify nodes in place rather than reconstructing
+3. **In-place editing**: change nodes where they sit rather than rebuilding them
 4. **Document Node Types**: Check `node.Type == html.ElementNode` before accessing attributes
-5. **Preserve Structure**: When possible, preserve the DOM structure and only modify content
+5. **Keep the structure**: where you can, leave the DOM shape alone and change the content
 
 ## Testing NodeProcessors
 

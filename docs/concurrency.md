@@ -1,10 +1,10 @@
 # Concurrency Safety
 
-A `*Vue` is safe for concurrent use once it is configured, and a `Template` returned by `New` or `NewFS` is too: `Load` copies the base stack rather than writing to it.
+Goroutines may share a `*Vue` concurrently once configuration ends, and they may share a `Template` from `New` or `NewFS` as well: `Load` copies the base stack rather than writing to it.
 
 ## What each render owns
 
-`Vue` holds the template filesystem, the loader, the funcmap, the registered node processors and the component map, all read-only after setup. The parsed-template cache is the one mutable field and is guarded by a `sync.RWMutex`.
+`Vue` holds the template filesystem, the loader, the funcmap, the registered node processors and the component map, none of which change after setup. The parsed-template cache alone mutates, and a `sync.RWMutex` guards it.
 
 Every call to `Render` or `RenderFragment` builds its own `VueContext` with its own `Stack`, so no two renders share evaluation state:
 
@@ -23,7 +23,7 @@ type VueContext struct {
 }
 ```
 
-Each registered `NodeProcessor` is allocated per render through its `New` method, so a processor may keep per-render state on itself.
+Every render calls `New` on each registered `NodeProcessor` for a fresh allocation, so a processor may keep per-render state on itself.
 
 ## Examples
 
@@ -84,7 +84,7 @@ func renderPages(ctx context.Context, tpl vuego.Template, pages []Page) []string
 - `Vue.Render` and `Vue.RenderFragment`
 - `Template.Load`, and the `Fill`, `Assign` and `Render` calls on the value it returns
 - `Template.RenderFile`, `RenderString`, `RenderByte` and `RenderReader`
-- every function in the FuncMap, as long as the function itself is
+- every function in the FuncMap, so long as the function itself allows it
 - reading from the template filesystem
 
 ## Not safe concurrently
@@ -120,11 +120,11 @@ go tpl.Load("b.vuego").Fill(dataB).Render(ctx, w2)
 
 ## Allocation
 
-A render allocates a `VueContext`, a `Stack` holding the flattened data, and a deep clone of the parsed DOM. The parse itself is cached per filename and invalidated on the file's modification time. `internal/helpers` pools `html.Node` values and `Stack` pools the maps `Push` and `Pop` move, so a render reuses rather than allocating each scope.
+A render allocates a `VueContext`, a `Stack` holding the flattened data, and a deep clone of the parsed DOM. Vuego caches the parse per filename and drops the entry when the file's modification time moves. `internal/helpers` pools `html.Node` values and `Stack` pools the maps `Push` and `Pop` move, so a render reuses each scope rather than allocating one.
 
 ## Testing
 
-The concurrency tests are in `tests/`: `concurrent_test.go`, `concurrent_bench_test.go` and `template_nested_includes_test.go`.
+The concurrency tests live in `tests/`: `concurrent_test.go`, `concurrent_bench_test.go` and `template_nested_includes_test.go`.
 
 ```bash
 go test -race ./...

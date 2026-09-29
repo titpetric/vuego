@@ -1,6 +1,6 @@
 # Theme Structuring Guide
 
-This guide covers best practices for structuring themes in Vuego, including layout organization, naming conventions, and directory structures. These patterns are informed by established conventions from Hugo, Jekyll, Eleventy (11ty), and Astro.
+This guide covers how to structure a theme in Vuego: layout organisation, naming conventions and directory structures. The patterns follow the conventions Hugo, Jekyll, Eleventy and Astro settled on.
 
 ## Table of Contents
 
@@ -160,7 +160,7 @@ title: About Us
 
 Vuego resolves layouts in the following order:
 
-1. **Explicit path** with `.vuego` extension: Used as-is (relative to current file)
+1. **Explicit path** with a `.vuego` extension: taken unchanged, relative to the current file
 2. **Relative path**: Checked relative to the current template directory
 3. **Layouts directory**: Falls back to `layouts/[name].vuego`
 
@@ -448,7 +448,7 @@ layout: base
 
 ## Front Matter
 
-Front matter is YAML at the top of a template that defines metadata and the layout chain.
+Front matter opens a template with YAML that carries metadata and the layout chain.
 
 ### Common Front Matter Fields
 
@@ -627,7 +627,7 @@ assets/css/
 
 Adopt naming patterns from established SSGs:
 
-| Convention           | Source   | Vuego Equivalent        |
+| Convention           | Source   | Vuego counterpart       |
 |----------------------|----------|-------------------------|
 | `_layouts/`          | Jekyll   | `layouts/`              |
 | `_includes/`         | Jekyll   | `partials/`             |

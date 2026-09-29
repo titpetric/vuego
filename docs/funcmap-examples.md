@@ -102,7 +102,7 @@ Template:
 
 ### Error Handling
 
-Functions can return errors; they're silently ignored:
+A function may return an error, which Vuego drops without a word:
 
 ```go
 vue := vuego.NewVue(templateFS).Funcs(vuego.FuncMap{

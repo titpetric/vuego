@@ -1,6 +1,6 @@
 # FuncMap: template functions
 
-Vuego supports template functions similar to Go's `text/template` and `html/template` packages. Functions can be used in interpolations with pipe-based chaining and in `v-if` conditions.
+Vuego carries template functions the way Go's `text/template` and `html/template` do. An interpolation calls them through a pipe chain, and so does a `v-if` condition.
 
 ## Basic Usage
 
@@ -24,7 +24,7 @@ vue.Funcs(vuego.FuncMap{
 
 #### Pipe Syntax in Interpolation
 
-Functions can be chained using the `|` (pipe) operator:
+The `|` operator chains functions:
 
 ```html
 <!-- Single filter -->
@@ -92,7 +92,7 @@ Vuego comes with several built-in utility functions:
 
 ### Utility Functions
 
-- `default(fallback)` - Returns fallback value if input is nil or empty
+- `default(fallback)` - Returns the fallback for an input holding nil or an empty string
 
   ```html
   {{ name | default("Anonymous") }}
@@ -105,13 +105,13 @@ Vuego comes with several built-in utility functions:
   <div v-if="len(items)">Has items</div>
   ```
 
-- `escape` - HTML-escapes the value. Interpolation already escapes outside `script` and `style`, so this is for the raw contexts where it does not
+- `escape` - HTML-escapes the value. Interpolation already escapes outside `script` and `style`, so reach for this in the raw contexts where it does not
 
   ```html
   <script>const s = "{{ userInput | escape }}";</script>
   ```
 
-- `type` - Returns the Go type of the value, written as `%T`
+- `type` - Returns the value's Go type, written as `%T`
 
   ```html
   {{ items | type }}  <!-- []string -->
@@ -145,9 +145,9 @@ Vuego comes with several built-in utility functions:
 
 ### Date and time functions
 
-Both require a layout argument and accept a `time.Time` or an RFC3339 string as the value. A value of any other type is returned unchanged.
+Both require a layout argument and accept a `time.Time` or an RFC3339 string as the value. A value of any other type comes back unchanged.
 
-- `formatTime(layout)` - Formats with the given Go layout. A layout that is not a string falls back to `2006-01-02 15:04:05`
+- `formatTime(layout)` - Formats with the given Go layout. A non-string layout falls back to `2006-01-02 15:04:05`
 
   ```html
   {{ timestamp | formatTime("2006-01-02 15:04:05") }}
@@ -160,11 +160,11 @@ Both require a layout argument and accept a `time.Time` or an RFC3339 string as 
   {{ timestamp | formatDate("Jan 2 2006") }}
   ```
 
-An argument that parses as a number is passed as a number, so a layout made only of digits does not reach the formatter and the fallback is used instead: `formatDate("2006")` prints `2024-03-01`, not `2024`. Give the layout a non-digit character, as in `formatDate("Jan 2006")`.
+An argument that parses as a number arrives as a number, so a layout of nothing but digits never reaches the formatter and the fallback takes over: `formatDate("2006")` prints `2024-03-01`, not `2024`. Give the layout a non-digit character, as in `formatDate("Jan 2006")`.
 
 ### File functions
 
-Each reads from the template filesystem. The argument is a filename, or the name of a variable holding one.
+Each reads from the template filesystem. The argument names a file, or names a variable holding a filename.
 
 - `file(name)` - Returns the file contents as a string
 
@@ -185,7 +185,7 @@ Each reads from the template filesystem. The argument is a filename, or the name
   {{ path | yamlFile }}
   ```
 
-A call cannot be the left side of a pipe, so `jsonFile("config.json") | len` does not resolve. Pipe the filename into the function instead, as above, or render the value whole.
+A call cannot sit on the left side of a pipe, so `jsonFile("config.json") | len` does not resolve. Pipe the filename into the function instead, as above, or render the value whole.
 
 ## Custom Function Examples
 
@@ -238,7 +238,7 @@ vue.Funcs(vuego.FuncMap{
 <p>{{ price | currency }}</p>
 ```
 
-### Combining Multiple Custom Functions
+### Combining several custom functions
 
 ```go
 vue.Funcs(vuego.FuncMap{
@@ -262,7 +262,7 @@ vue.Funcs(vuego.FuncMap{
 
 Vuego uses reflection to support arbitrary function signatures, matching `text/template` behavior.
 
-Functions can accept any number and type of arguments:
+A function takes any number of arguments, of any types:
 
 ```go
 func(string) string                      // Single typed argument
@@ -274,9 +274,9 @@ func(v any) any                          // Generic any type
 ```
 
 **Type Conversion:**
-- Arguments are automatically converted when possible (e.g., string "42" to int 42)
-- String literals in templates are parsed as their natural type (numbers, bools, strings)
-- Values from template data retain their original types (*time.Time, custom structs, etc.)
+- A conversion happens where one exists, turning the string "42" into the int 42
+- A literal in a template arrives as its natural type: a number, a bool or a string
+- A value from the template data keeps its own type, such as *time.Time or a custom struct
 
 **Error Handling:** When a function returns an error (second return value), template rendering fails with a descriptive error message including the template filename and function name.
 
@@ -297,11 +297,11 @@ The error includes:
 
 ## Notes
 
-- Functions are resolved from left to right in a pipe chain
-- The first value in a pipe chain is resolved from template data
+- A pipe chain resolves its functions left to right
+- The template data supplies the first value in a pipe chain
 - Each function receives the output of the previous function as its first argument
-- Additional arguments can be passed using function call syntax: `fn(arg1, arg2)`
-- Arguments can be string literals (quoted) or variable references
-- In `v-if` conditions, functions can be called directly: `v-if="len(items)"`
+- Function call syntax carries further arguments: `fn(arg1, arg2)`
+- An argument reads as a quoted string literal or as a variable reference
+- A `v-if` condition calls a function outright: `v-if="len(items)"`
 - Template rendering fails with an error if a function doesn't exist or has type mismatches
-- All interpolated values are HTML-escaped by default for security
+- The renderer HTML-escapes every interpolated value

@@ -88,15 +88,15 @@ title: My Page
 </article>
 ```
 
-The Template API is particularly useful for:
+Reach for the Template API to carry:
 - Accessing layout information from front-matter
 - Building composite layouts (render page, then wrap in layout template)
-- Stateful template workflows where you load once and render multiple times with different data
-- Safe output buffering that guarantees the writer is unmodified on rendering errors
+- Stateful template workflows that load once and render again over different data
+- Output buffering that leaves the writer untouched when a render fails
 
 ### Using Typed Values (Structs)
 
-Vuego supports passing typed values directly to `Render` and `RenderFragment`. Struct fields are accessible directly by their field names or JSON tags, without requiring the `data.` prefix.
+Vuego takes typed values straight into `Render` and `RenderFragment`. A template reaches a struct field by its field name or its JSON tag, with no `data.` prefix.
 
 ```go
 type AppConfig struct {

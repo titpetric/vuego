@@ -9,7 +9,7 @@ Vuego evaluates `v-if` conditions and interpolations with [expr-lang/expr](https
 - arithmetic: `+`, `-`, `*`, `/`, `%`
 - ternary: `? :`
 
-`===` and `!==` are coalesced to `==` and `!=` before the expression reaches the evaluator, so a template written in JavaScript style works unchanged.
+Vuego coalesces `===` and `!==` to `==` and `!=` before the expression reaches the evaluator, so a template in JavaScript style works unchanged.
 
 ## Values
 
@@ -77,18 +77,18 @@ Simple references, filter chains and negation all read the same way:
 {{ len(items) }}
 ```
 
-## How a condition is evaluated
+## How Vuego evaluates a condition
 
-1. `===` and `!==` are coalesced to `==` and `!=`.
-2. The expression is compiled and run by expr. A result of any type is read for truthiness.
-3. When compilation fails and the expression starts with `!`, the inner expression is evaluated and the result negated. This is what makes `!item.primary` work for an item that has no `primary` key: expr cannot negate nil.
-4. When compilation still fails, the whole text is resolved as a variable name against the stack. A name that does not resolve is false, so a template with an unparsable condition renders without the element rather than failing.
+1. Vuego coalesces `===` and `!==` to `==` and `!=`.
+2. expr compiles and runs the expression. Vuego reads the result of any type for truthiness.
+3. When compilation fails and the expression starts with `!`, Vuego evaluates the inner expression and negates the result. That makes `!item.primary` work for an item carrying no `primary` key, which expr cannot negate.
+4. When compilation still fails, Vuego resolves the whole text as a variable name against the stack. A name that fails to resolve counts as false, so a template with an unparsable condition renders without the element rather than failing.
 
-Compiled programs are cached per expression text in the `ExprEvaluator`, keyed on the text alone, so the same condition with different data reuses the program. The cache grows with the number of distinct expressions in a template set; `ExprEvaluator.ClearCache` empties it.
+The `ExprEvaluator` caches each compiled program under its expression text, so the same condition over different data reuses the program. The cache grows with the count of distinct expressions in a template set; `ExprEvaluator.ClearCache` empties it.
 
 ## Names expr already uses
 
-A variable named after an expr built-in shadows nothing: the built-in wins and the variable is unreachable. `len` is the one this hits in practice, so `v-if="len > 0"` never matches. Name the variable `total` or `length` instead.
+A variable named after an expr built-in shadows nothing: the built-in wins and nothing reaches the variable. In practice this hits `len`, so `v-if="len > 0"` never matches. Name the variable `total` or `length` instead.
 
 ## ExprEvaluator
 
@@ -103,12 +103,12 @@ result, err := eval.Eval("x > 5 && y < 10", map[string]any{
 eval.ClearCache()
 ```
 
-An undefined name evaluates to nil rather than raising an error, which is why a condition can be written against a key that may be absent.
+An undefined name evaluates to nil rather than raising an error, so a condition may name a key that never arrives.
 
 ## Limits
 
-- A Go function is callable only when it is in the FuncMap; nothing else from the host program is reachable.
-- A call cannot be the left side of a pipe. `jsonFile("config.json") | len` does not resolve; pipe the argument into the function instead.
+- A template calls a Go function when the FuncMap holds it, and reaches nothing else in the host program.
+- A call cannot sit on the left side of a pipe. `jsonFile("config.json") | len` does not resolve; pipe the argument into the function instead.
 
 ## References
 
