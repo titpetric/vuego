@@ -40,9 +40,9 @@ func WithProcessor(processor NodeProcessor) LoadOption {
 	}
 }
 
-// WithComponents returns a LoadOption that registers all component shorthands.
-// It recursively loads all .vuego files from the components folder and subfolders.
-// File paths are mapped to kebab-case tag names using directory path and filename.
+// WithComponents returns a LoadOption that registers every component shorthand.
+// It walks the components folder and its subfolders for .vuego files, turning
+// each path into a kebab-case tag name from the directory and the filename.
 func WithComponents() LoadOption {
 	return func(vue *Vue) {
 		// Nothing to walk without a filesystem; New() builds a Vue with none.

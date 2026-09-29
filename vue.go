@@ -46,8 +46,8 @@ type Vue struct {
 	initialData map[string]any
 }
 
-// NewVue creates a new Vue backed by the given filesystem.
-// The returned Vue is safe for concurrent use by multiple goroutines.
+// NewVue creates a Vue over the given filesystem.
+// Goroutines may share the returned Vue concurrently once it stops changing.
 func NewVue(templateFS fs.FS) *Vue {
 	v := &Vue{
 		templateFS:    templateFS,
@@ -70,8 +70,8 @@ func (v *Vue) Funcs(funcMap FuncMap) *Vue {
 	return v
 }
 
-// DefaultFuncMap returns the built-in template functions. The keys are
-// documented in docs/funcmap.md.
+// DefaultFuncMap returns the built-in template functions.
+// docs/funcmap.md documents every key.
 func (v *Vue) DefaultFuncMap() FuncMap {
 	return FuncMap{
 		"type":       typeFunc,
@@ -95,7 +95,7 @@ func (v *Vue) DefaultFuncMap() FuncMap {
 }
 
 // RegisterNodeProcessor adds a custom node processor to the Vue instance.
-// Processors are applied in order after template evaluation completes.
+// Each processor runs in registration order once template evaluation ends.
 func (v *Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue {
 	if v.nodeProcessors == nil {
 		v.nodeProcessors = make([]NodeProcessor, 0)
@@ -104,8 +104,8 @@ func (v *Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue {
 	return v
 }
 
-// RegisterComponent registers a component shorthand mapping.
-// The tagName (e.g., "button-primary") will be resolved to the given filename (e.g., "components/ButtonPrimary.vuego").
+// RegisterComponent registers a component shorthand mapping, so a tagName of
+// "button-primary" resolves to a filename of "components/ButtonPrimary.vuego".
 func (v *Vue) RegisterComponent(tagName, filename string) *Vue {
 	v.componentMap[tagName] = filename
 	return v
@@ -161,8 +161,8 @@ func toMapData(data any) map[string]any {
 }
 
 // Render processes a full-page template file and writes the output to w.
-// Front-matter data in the template is authoritative and overrides passed data.
-// Render is safe to call concurrently from multiple goroutines.
+// Front matter in the template wins over the data the caller hands in.
+// Goroutines may call Render concurrently.
 func (v *Vue) Render(ctx context.Context, w io.Writer, filename string, data any) error {
 	frontMatter, dom, err := v.loadCachedWithFrontMatter(filename)
 	if err != nil {
@@ -246,8 +246,8 @@ func assignSeenAttrs(ctx *VueContext, node *html.Node) {
 }
 
 // RenderFragment processes a template fragment file and writes the output to w.
-// Front-matter data in the template is authoritative and overrides passed data.
-// RenderFragment is safe to call concurrently from multiple goroutines.
+// Front matter in the template wins over the data the caller hands in.
+// Goroutines may call RenderFragment concurrently.
 func (v *Vue) RenderFragment(ctx context.Context, w io.Writer, filename string, data any) error {
 	frontMatter, templateBytes, err := v.loader.loadFragment(filename)
 	if err != nil {

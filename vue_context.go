@@ -102,7 +102,8 @@ func (ctx *VueContext) PopTag() {
 	}
 }
 
-// CurrentTag returns the current parent tag, or empty string if no tag is on the stack.
+// CurrentTag returns the current parent tag, or the empty string when the tag
+// stack holds none.
 func (ctx VueContext) CurrentTag() string {
 	if len(ctx.TagStack) == 0 {
 		return ""
@@ -115,8 +116,9 @@ func (ctx VueContext) Context() context.Context {
 	return ctx.ctx
 }
 
-// ExprEnv returns the env map for expr evaluation, wrapping any functions whose
-// first parameter is context.Context so the context is injected automatically.
+// ExprEnv returns the env map for expr evaluation. It wraps each function
+// taking a context.Context first, so a template calls it without one and the
+// wrapper supplies the render context.
 func (ctx VueContext) ExprEnv() map[string]any {
 	env := ctx.stack.EnvMap()
 	ctx.bindContextFuncs(env)

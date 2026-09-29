@@ -48,7 +48,7 @@ func (lp *LessProcessor) New() NodeProcessor {
 	}
 }
 
-// PreProcess currently does nothing.
+// PreProcess does nothing. PostProcess carries the compile.
 func (lp *LessProcessor) PreProcess(nodes []*html.Node) error {
 	return nil
 }

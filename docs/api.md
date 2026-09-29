@@ -422,7 +422,7 @@ type VueContextOptions struct {
 
 ### GetSlotName
 
-GetSlotName extracts the slot name from a v-slot directive. Returns "default" if no name is specified.
+GetSlotName extracts the slot name from a v-slot directive. A directive naming none yields "default".
 
 ```go
 func GetSlotName(attr string) string
@@ -430,7 +430,7 @@ func GetSlotName(attr string) string
 
 ### New
 
-New creates a new Template for rendering strings, bytes, or readers without a filesystem. Use this when templates are provided as strings/bytes rather than loaded from files. To render from files, use NewFS(fs) or New(WithFS(fs)) instead. The returned Template can be used for variable assignment and rendering.
+New creates a Template that renders strings, bytes or readers without a filesystem. Call NewFS(fs) or New(WithFS(fs)) to render files instead. The returned Template holds assigned variables and renders them.
 
 ```go
 func New(opts ...LoadOption) Template
@@ -446,7 +446,7 @@ func NewExprEvaluator() *ExprEvaluator
 
 ### NewFS
 
-NewFS creates a new Template with access to the given filesystem and optional configurations. The returned Template can be used to render files, strings, or bytes with variable assignment.
+NewFS creates a Template over the given filesystem, applying each option in order. The returned Template renders files, strings or bytes and holds assigned variables.
 
 ```go
 func NewFS(templateFS fs.FS, opts ...LoadOption) Template
@@ -494,7 +494,7 @@ func NewSlotScope() *SlotScope
 
 ### NewStack
 
-NewStack constructs a Stack with an optional initial root map (nil allowed). The originalData parameter is the original value passed to Render (for struct field fallback).
+NewStack constructs a Stack over an optional root map; nil yields an empty one. It records no original data, so it carries no struct field fallback.
 
 ```go
 func NewStack(root map[string]any) *Stack
@@ -510,7 +510,7 @@ func NewStackWithData(root map[string]any, originalData any) *Stack
 
 ### NewVue
 
-NewVue creates a new Vue backed by the given filesystem. The returned Vue is safe for concurrent use by multiple goroutines.
+NewVue creates a Vue over the given filesystem. Goroutines may share the returned Vue concurrently once it stops changing.
 
 ```go
 func NewVue(templateFS fs.FS) *Vue
@@ -526,7 +526,7 @@ func NewVueContext(ctx context.Context, fromFilename string, options *VueContext
 
 ### View
 
-View is a type safety shim to bind a template file to a data model type. The returned template should be rendered and discarded.
+View binds a template file to a data model type. Render the returned template once, then discard it.
 
 ```go
 func View(renderer Template, filename string, data V) Template
@@ -534,7 +534,7 @@ func View(renderer Template, filename string, data V) Template
 
 ### WithComponents
 
-WithComponents returns a LoadOption that registers all component shorthands. It recursively loads all .vuego files from the components folder and subfolders. File paths are mapped to kebab-case tag names using directory path and filename.
+WithComponents returns a LoadOption that registers every component shorthand. It walks the components folder and its subfolders for .vuego files, turning each path into a kebab-case tag name from the directory and the filename.
 
 ```go
 func WithComponents() LoadOption
@@ -611,7 +611,7 @@ func (*LessProcessor) PostProcess(nodes []*html.Node) error
 
 ### PreProcess
 
-PreProcess currently does nothing.
+PreProcess does nothing. PostProcess carries the compile.
 
 ```go
 func (*LessProcessor) PreProcess(nodes []*html.Node) error
@@ -635,7 +635,7 @@ func (*Loader) Load(filename string) ([]*html.Node, error)
 
 ### LoadFragment
 
-LoadFragment parses a template fragment; if the file is a full document, it falls back to Load. Front-matter is extracted and discarded; use loadFragment to access it.
+LoadFragment parses a template fragment, falling back to Load for a full document. It strips the front matter and drops it; loadFragment returns it.
 
 ```go
 func (*Loader) LoadFragment(filename string) ([]*html.Node, error)
@@ -691,9 +691,9 @@ func (*SlotScope) SetSlot(name string, content *SlotContent)
 
 ### Copy
 
-Copy returns a copy of the stack that can be discarded. The root data is retained as is, the envmap is a copy.
+Copy returns a throwaway copy of the stack. It keeps the root data and flattens the scopes into a fresh map.
 
-Copy flattens without touching envCache. A base template's stack is shared by every goroutine that calls Load on it, and writing the cache there is a data race.
+Copy flattens without touching envCache. Every goroutine calling Load on a base template reads that template's stack, so a write to the cache there races.
 
 ```go
 func (*Stack) Copy() *Stack
@@ -701,9 +701,9 @@ func (*Stack) Copy() *Stack
 
 ### EnvMap
 
-EnvMap converts the Stack to a map[string]any for expr evaluation. Includes all accessible values from stack and struct fields. The result is cached and reused until the stack is mutated via Push/Pop/Set.
+EnvMap converts the Stack to a map[string]any for expr evaluation, holding every value the scopes and the struct fields reach. It caches the result and hands the same map back until Push, Pop or Set invalidates it.
 
-EnvMap is for a request-scoped stack, which one goroutine owns; the cache carries no mutex. Use Copy to read a stack another goroutine may hold.
+EnvMap serves a request-scoped stack, which one goroutine owns; the cache carries no mutex. Call Copy to read a stack another goroutine may hold.
 
 ```go
 func (*Stack) EnvMap() map[string]any
@@ -711,7 +711,7 @@ func (*Stack) EnvMap() map[string]any
 
 ### ForEach
 
-ForEach iterates over a collection at the given expr and calls fn(index,value). Supports slices/arrays and map[string]any (iteration order for maps is unspecified). If fn returns an error iteration is stopped and the error passed through.
+ForEach walks the collection at expr and calls fn(index, value) for each element. It accepts slices, arrays and maps; a map walks in no set order. An error from fn stops the walk and reaches the caller unchanged.
 
 ```go
 func (*Stack) ForEach(expr string, fn func(index int, value any) error) error
@@ -759,7 +759,7 @@ func (*Stack) Lookup(name string) (any, bool)
 
 ### Pop
 
-Pop the top-most Stack. If only root remains it still pops to empty slice safely. Returns pooled maps to reduce GC pressure.
+Pop discards the top-most scope. Popping the last one leaves an empty scope behind rather than an empty slice. The discarded map returns to the pool.
 
 ```go
 func (*Stack) Pop()
@@ -767,7 +767,7 @@ func (*Stack) Pop()
 
 ### Push
 
-Push a new map as a top-most Stack. If m is nil, an empty map is obtained from the pool.
+Push adds m as the top-most scope. A nil m takes an empty map from the pool instead.
 
 ```go
 func (*Stack) Push(m map[string]any)
@@ -797,7 +797,7 @@ func (*Stack) Set(key string, val any)
 
 ### DefaultFuncMap
 
-DefaultFuncMap returns the built-in template functions. The keys are documented in docs/funcmap.md.
+DefaultFuncMap returns the built-in template functions. docs/funcmap.md documents every key.
 
 ```go
 func (*Vue) DefaultFuncMap() FuncMap
@@ -821,7 +821,7 @@ func (*Vue) GetComponentFile(tagName string) (string, bool)
 
 ### RegisterComponent
 
-RegisterComponent registers a component shorthand mapping. The tagName (e.g., "button-primary") will be resolved to the given filename (e.g., "components/ButtonPrimary.vuego").
+RegisterComponent registers a component shorthand mapping, so a tagName of "button-primary" resolves to a filename of "components/ButtonPrimary.vuego".
 
 ```go
 func (*Vue) RegisterComponent(tagName, filename string) *Vue
@@ -829,7 +829,7 @@ func (*Vue) RegisterComponent(tagName, filename string) *Vue
 
 ### RegisterNodeProcessor
 
-RegisterNodeProcessor adds a custom node processor to the Vue instance. Processors are applied in order after template evaluation completes.
+RegisterNodeProcessor adds a custom node processor to the Vue instance. Each processor runs in registration order once template evaluation ends.
 
 ```go
 func (*Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue
@@ -837,7 +837,7 @@ func (*Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue
 
 ### Render
 
-Render processes a full-page template file and writes the output to w. Front-matter data in the template is authoritative and overrides passed data. Render is safe to call concurrently from multiple goroutines.
+Render processes a full-page template file and writes the output to w. Front matter in the template wins over the data the caller hands in. Goroutines may call Render concurrently.
 
 ```go
 func (*Vue) Render(ctx context.Context, w io.Writer, filename string, data any) error
@@ -845,7 +845,7 @@ func (*Vue) Render(ctx context.Context, w io.Writer, filename string, data any) 
 
 ### RenderFragment
 
-RenderFragment processes a template fragment file and writes the output to w. Front-matter data in the template is authoritative and overrides passed data. RenderFragment is safe to call concurrently from multiple goroutines.
+RenderFragment processes a template fragment file and writes the output to w. Front matter in the template wins over the data the caller hands in. Goroutines may call RenderFragment concurrently.
 
 ```go
 func (*Vue) RenderFragment(ctx context.Context, w io.Writer, filename string, data any) error
@@ -877,7 +877,7 @@ func (VueContext) Context() context.Context
 
 ### CurrentTag
 
-CurrentTag returns the current parent tag, or empty string if no tag is on the stack.
+CurrentTag returns the current parent tag, or the empty string when the tag stack holds none.
 
 ```go
 func (VueContext) CurrentTag() string
@@ -885,7 +885,7 @@ func (VueContext) CurrentTag() string
 
 ### ExprEnv
 
-ExprEnv returns the env map for expr evaluation, wrapping any functions whose first parameter is context.Context so the context is injected automatically.
+ExprEnv returns the env map for expr evaluation. It wraps each function taking a context.Context first, so a template calls it without one and the wrapper supplies the render context.
 
 ```go
 func (VueContext) ExprEnv() map[string]any

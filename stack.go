@@ -21,8 +21,8 @@ type Stack struct {
 	envCache map[string]any
 }
 
-// NewStack constructs a Stack with an optional initial root map (nil allowed).
-// The originalData parameter is the original value passed to Render (for struct field fallback).
+// NewStack constructs a Stack over an optional root map; nil yields an empty
+// one. It records no original data, so it carries no struct field fallback.
 func NewStack(root map[string]any) *Stack {
 	return NewStackWithData(root, nil)
 }
@@ -45,18 +45,18 @@ var mapPool = sync.Pool{
 	},
 }
 
-// Copy returns a copy of the stack that can be discarded.
-// The root data is retained as is, the envmap is a copy.
+// Copy returns a throwaway copy of the stack. It keeps the root data and
+// flattens the scopes into a fresh map.
 //
-// Copy flattens without touching envCache. A base template's stack is shared
-// by every goroutine that calls Load on it, and writing the cache there is a
-// data race.
+// Copy flattens without touching envCache. Every goroutine calling Load on a
+// base template reads that template's stack, so a write to the cache there
+// races.
 func (s *Stack) Copy() *Stack {
 	return NewStackWithData(s.flatten(), s.rootData)
 }
 
-// Push a new map as a top-most Stack.
-// If m is nil, an empty map is obtained from the pool.
+// Push adds m as the top-most scope.
+// A nil m takes an empty map from the pool instead.
 func (s *Stack) Push(m map[string]any) {
 	if m == nil {
 		m = mapPool.Get().(map[string]any)
@@ -65,8 +65,8 @@ func (s *Stack) Push(m map[string]any) {
 	s.envCache = nil
 }
 
-// Pop the top-most Stack. If only root remains it still pops to empty slice safely.
-// Returns pooled maps to reduce GC pressure.
+// Pop discards the top-most scope. Popping the last one leaves an empty scope
+// behind rather than an empty slice. The discarded map returns to the pool.
 func (s *Stack) Pop() {
 	if len(s.stack) == 0 {
 		return
@@ -261,12 +261,12 @@ func (s *Stack) GetMap(expr string) (map[string]any, bool) {
 	}
 }
 
-// EnvMap converts the Stack to a map[string]any for expr evaluation.
-// Includes all accessible values from stack and struct fields.
-// The result is cached and reused until the stack is mutated via Push/Pop/Set.
+// EnvMap converts the Stack to a map[string]any for expr evaluation, holding
+// every value the scopes and the struct fields reach. It caches the result and
+// hands the same map back until Push, Pop or Set invalidates it.
 //
-// EnvMap is for a request-scoped stack, which one goroutine owns; the cache
-// carries no mutex. Use Copy to read a stack another goroutine may hold.
+// EnvMap serves a request-scoped stack, which one goroutine owns; the cache
+// carries no mutex. Call Copy to read a stack another goroutine may hold.
 func (s *Stack) EnvMap() map[string]any {
 	if s.envCache != nil {
 		return s.envCache
@@ -292,9 +292,9 @@ func (s *Stack) flatten() map[string]any {
 	return result
 }
 
-// ForEach iterates over a collection at the given expr and calls fn(index,value).
-// Supports slices/arrays and map[string]any (iteration order for maps is unspecified).
-// If fn returns an error iteration is stopped and the error passed through.
+// ForEach walks the collection at expr and calls fn(index, value) for each
+// element. It accepts slices, arrays and maps; a map walks in no set order.
+// An error from fn stops the walk and reaches the caller unchanged.
 func (s *Stack) ForEach(expr string, fn func(index int, value any) error) error {
 	v, ok := s.Resolve(expr)
 	if !ok {

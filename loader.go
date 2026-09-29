@@ -69,8 +69,8 @@ func extractFrontMatter(content []byte) (map[string]any, []byte, error) {
 	return data, remainingContent, nil
 }
 
-// LoadFragment parses a template fragment; if the file is a full document, it falls back to Load.
-// Front-matter is extracted and discarded; use loadFragment to access it.
+// LoadFragment parses a template fragment, falling back to Load for a full
+// document. It strips the front matter and drops it; loadFragment returns it.
 func (l *Loader) LoadFragment(filename string) ([]*html.Node, error) {
 	_, templateBytes, err := l.loadFragment(filename)
 	if err != nil {

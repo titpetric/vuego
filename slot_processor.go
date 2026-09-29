@@ -25,7 +25,7 @@ func hasVSlot(node *html.Node) bool {
 }
 
 // GetSlotName extracts the slot name from a v-slot directive.
-// Returns "default" if no name is specified.
+// A directive naming none yields "default".
 func GetSlotName(attr string) string {
 	if attr == "" {
 		return "default"

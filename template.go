@@ -10,16 +10,15 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-// New creates a new Template for rendering strings, bytes, or readers without a filesystem.
-// Use this when templates are provided as strings/bytes rather than loaded from files.
-// To render from files, use NewFS(fs) or New(WithFS(fs)) instead.
-// The returned Template can be used for variable assignment and rendering.
+// New creates a Template that renders strings, bytes or readers without a
+// filesystem. Call NewFS(fs) or New(WithFS(fs)) to render files instead.
+// The returned Template holds assigned variables and renders them.
 func New(opts ...LoadOption) Template {
 	return NewFS(nil, opts...)
 }
 
-// View is a type safety shim to bind a template file to a data model type.
-// The returned template should be rendered and discarded.
+// View binds a template file to a data model type.
+// Render the returned template once, then discard it.
 func View[V any](renderer Template, filename string, data V) Template {
 	return renderer.Load(filename).Fill(data)
 }
@@ -75,8 +74,9 @@ type template struct {
 
 var _ Template = &template{}
 
-// NewFS creates a new Template with access to the given filesystem and optional configurations.
-// The returned Template can be used to render files, strings, or bytes with variable assignment.
+// NewFS creates a Template over the given filesystem, applying each option in
+// order. The returned Template renders files, strings or bytes and holds
+// assigned variables.
 func NewFS(templateFS fs.FS, opts ...LoadOption) Template {
 	vue := NewVue(templateFS)
 
