@@ -110,68 +110,165 @@ func TestSignificantChildren(t *testing.T) {
 }
 
 func TestCompareHTML(t *testing.T) {
-	t.Run("identical simple HTML matches", func(t *testing.T) {
-		html := []byte("<div><p>text</p></div>")
-		tb := &testing.T{}
-		assert.EqualHTML(tb, html, html, nil, nil)
+	tests := []struct {
+		name string
+		want string
+		got  string
+		same bool
+	}{
+		{
+			name: "identical simple HTML",
+			want: "<div><p>text</p></div>",
+			got:  "<div><p>text</p></div>",
+			same: true,
+		},
+		{
+			name: "whitespace in text nodes is ignored",
+			want: "<p>hello</p>",
+			got:  "<p>  hello  </p>",
+			same: true,
+		},
+		{
+			name: "attribute order is ignored",
+			want: `<div class="a" id="x"></div>`,
+			got:  `<div id="x" class="a"></div>`,
+			same: true,
+		},
+		{
+			name: "class order is ignored",
+			want: `<div class="a b c"></div>`,
+			got:  `<div class="c a b"></div>`,
+			same: true,
+		},
+		{
+			name: "style property order is ignored",
+			want: `<div style="color: red; margin: 0"></div>`,
+			got:  `<div style="margin: 0; color: red"></div>`,
+			same: true,
+		},
+		{
+			name: "nested structures match recursively",
+			want: "<div><p><span>text</span></p></div>",
+			got:  "<div><p><span>text</span></p></div>",
+			same: true,
+		},
+		{
+			name: "whitespace-only text nodes are ignored",
+			want: "<div></div>",
+			got:  "<div>   </div>",
+			same: true,
+		},
+		{
+			name: "comment content is ignored",
+			want: "<div><!-- comment1 --><p>text</p></div>",
+			got:  "<div><!-- comment2 --><p>text</p></div>",
+			same: true,
+		},
+		{
+			name: "full document compares against fragment",
+			want: "<html><body><p>text</p></body></html>",
+			got:  "<p>text</p>",
+			same: true,
+		},
+		{
+			name: "different tag name",
+			want: "<div>text</div>",
+			got:  "<span>text</span>",
+			same: false,
+		},
+		{
+			name: "different text content",
+			want: "<p>hello</p>",
+			got:  "<p>goodbye</p>",
+			same: false,
+		},
+		{
+			name: "different attribute value",
+			want: `<div id="a"></div>`,
+			got:  `<div id="b"></div>`,
+			same: false,
+		},
+		{
+			name: "extra attribute",
+			want: `<div id="a"></div>`,
+			got:  `<div id="a" class="c"></div>`,
+			same: false,
+		},
+		{
+			name: "missing attribute key",
+			want: `<div id="a"></div>`,
+			got:  `<div class="a"></div>`,
+			same: false,
+		},
+		{
+			name: "different class count",
+			want: `<div class="a b"></div>`,
+			got:  `<div class="a"></div>`,
+			same: false,
+		},
+		{
+			name: "different class names",
+			want: `<div class="a b"></div>`,
+			got:  `<div class="a c"></div>`,
+			same: false,
+		},
+		{
+			name: "different style value",
+			want: `<div style="color: red"></div>`,
+			got:  `<div style="color: blue"></div>`,
+			same: false,
+		},
+		{
+			name: "different style property count",
+			want: `<div style="color: red; margin: 0"></div>`,
+			got:  `<div style="color: red"></div>`,
+			same: false,
+		},
+		{
+			name: "extra child element",
+			want: "<div><p>a</p></div>",
+			got:  "<div><p>a</p><p>b</p></div>",
+			same: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.same, diff.CompareHTML([]byte(test.want), []byte(test.got)))
+		})
+	}
+}
+
+func TestCountChildren(t *testing.T) {
+	t.Run("nil node counts zero", func(t *testing.T) {
+		assert.Equal(t, 0, diff.CountChildren(nil))
 	})
 
-	t.Run("whitespace in text nodes is ignored", func(t *testing.T) {
-		tb := &testing.T{}
-		assert.EqualHTML(tb, []byte("<p>hello</p>"), []byte("<p>  hello  </p>"), nil, nil)
+	t.Run("childless node counts zero", func(t *testing.T) {
+		assert.Equal(t, 0, diff.CountChildren(&html.Node{Type: html.ElementNode, Data: "div"}))
 	})
 
-	t.Run("attribute order doesn't matter", func(t *testing.T) {
-		tb := &testing.T{}
-		assert.EqualHTML(
-			tb,
-			[]byte(`<div class="a" id="x"></div>`),
-			[]byte(`<div id="x" class="a"></div>`),
-			nil,
-			nil,
-		)
+	t.Run("counts every child including whitespace", func(t *testing.T) {
+		n := &html.Node{Type: html.ElementNode, Data: "div"}
+		n.AppendChild(&html.Node{Type: html.TextNode, Data: "  "})
+		n.AppendChild(&html.Node{Type: html.ElementNode, Data: "p"})
+		n.AppendChild(&html.Node{Type: html.CommentNode, Data: "c"})
+
+		assert.Equal(t, 3, diff.CountChildren(n))
 	})
 
-	t.Run("nested structures match recursively", func(t *testing.T) {
-		tb := &testing.T{}
-		html := []byte("<div><p><span>text</span></p></div>")
-		assert.EqualHTML(tb, html, html, nil, nil)
-	})
+	t.Run("counts direct children only", func(t *testing.T) {
+		doc, err := html.Parse(bytes.NewReader([]byte("<html><body><div><p><span>a</span></p><p>b</p></div></body></html>")))
+		assert.NoError(t, err)
 
-	t.Run("empty text nodes are ignored", func(t *testing.T) {
-		tb := &testing.T{}
-		assert.EqualHTML(tb, []byte("<div></div>"), []byte("<div>   </div>"), nil, nil)
-	})
+		// html.Parse always inserts a head, so SignificantChildren returns
+		// head and body rather than unwrapping body.
+		children := diff.SignificantChildren(doc)
+		assert.Len(t, children, 2)
+		assert.Equal(t, "body", children[1].Data)
 
-	t.Run("matching HTML with different comments", func(t *testing.T) {
-		tb := &testing.T{}
-		// Both have same structure, just different comment content
-		assert.EqualHTML(
-			tb,
-			[]byte("<div><!-- comment1 --><p>text</p></div>"),
-			[]byte("<div><!-- comment2 --><p>text</p></div>"),
-			nil,
-			nil,
-		)
-	})
-
-	t.Run("mixed attributes and nesting", func(t *testing.T) {
-		tb := &testing.T{}
-		html1 := []byte(`<div data-test="1" class="c"><p>content</p></div>`)
-		html2 := []byte(`<div class="c" data-test="1"><p>content</p></div>`)
-		assert.EqualHTML(tb, html1, html2, nil, nil)
-	})
-
-	t.Run("complex document structures match", func(t *testing.T) {
-		tb := &testing.T{}
-		html := []byte(`
-			<div class="container">
-				<h1>Title</h1>
-				<p id="para">
-					<strong>bold</strong> text
-				</p>
-			</div>
-		`)
-		assert.EqualHTML(tb, html, html, nil, nil)
+		div := children[1].FirstChild
+		assert.Equal(t, "div", div.Data)
+		assert.Equal(t, 2, diff.CountChildren(div))
 	})
 }
