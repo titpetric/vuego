@@ -2,7 +2,7 @@ package vuego
 
 import (
 	"fmt"
-	"html"
+	stdhtml "html"
 	"io"
 	"strings"
 	"sync"
@@ -100,13 +100,13 @@ func (v *Vue) interpolateToWriter(ctx VueContext, w io.Writer, input string) err
 				}
 			} else {
 				// Skip escaping if the string doesn't contain special characters
-				// (avoids allocation in html.EscapeString for most cases)
+				// (avoids allocation in stdhtml.EscapeString for most cases)
 				if !helpers.NeedsHTMLEscape(valStr) {
 					if _, err := io.WriteString(w, valStr); err != nil {
 						return err
 					}
 				} else {
-					if _, err := io.WriteString(w, html.EscapeString(valStr)); err != nil {
+					if _, err := io.WriteString(w, stdhtml.EscapeString(valStr)); err != nil {
 						return err
 					}
 				}

@@ -1,556 +1,299 @@
 package vuego_test
 
 import (
-	"bytes"
-	"fmt"
 	"testing"
-	"testing/fstest"
 
-	"github.com/titpetric/vuego"
 	"github.com/titpetric/vuego/tests/assert"
 )
 
-func TestVue_EvalAttributes_BoundAndInterpolated(t *testing.T) {
+// Sample model types the typed-passthrough table binds.
+type (
+	Article struct {
+		Title string
+		Body  string
+	}
+
+	BlogPost struct {
+		ID        int
+		Title     string
+		Content   string
+		Tags      []string
+		Published bool
+	}
+)
+
+func TestVue_EvalAttributes(t *testing.T) {
 	tests := []struct {
-		name     string
-		template string
-		data     map[string]any
-		expected string
+		name   string
+		source string
+		data   map[string]any
+		want   string
 	}{
+		// Binding syntax.
 		{
-			name:     "colon prefix binding",
-			template: `<div :id="id"></div>`,
-			data:     map[string]any{"id": "test-div"},
-			expected: `<div id="test-div"></div>`,
+			name:   "colon prefix",
+			source: `<div :id="id"></div>`,
+			data:   map[string]any{"id": "test-div"},
+			want:   `<div id="test-div"></div>`,
 		},
 		{
-			name:     "colon prefix binding escape",
-			template: `<div [:id]="id"></div>`,
-			data:     map[string]any{"id": "test-div"},
-			expected: `<div :id="id"></div>`,
+			name:   "v-bind prefix",
+			source: `<div v-bind:class="class"></div>`,
+			data:   map[string]any{"class": "active"},
+			want:   `<div class="active"></div>`,
 		},
 		{
-			name:     "colon prefix binding escape with interpolation",
-			template: `<div [:field]="{{ field | json }}"></div>`,
-			data: map[string]any{
-				"field": map[string]any{"id": "test-div"},
-			},
-			expected: `<div :field="{&#34;id&#34;:&#34;test-div&#34;}"></div>`,
+			name:   "brackets escape the binding syntax",
+			source: `<div [:id]="id"></div>`,
+			data:   map[string]any{"id": "test-div"},
+			want:   `<div :id="id"></div>`,
 		},
 		{
-			name:     "v-bind prefix binding",
-			template: `<div v-bind:class="class"></div>`,
-			data:     map[string]any{"class": "active"},
-			expected: `<div class="active"></div>`,
+			name:   "brackets keep the attribute but still interpolate",
+			source: `<div [:field]="{{ field | json }}"></div>`,
+			data:   map[string]any{"field": map[string]any{"id": "test-div"}},
+			want:   `<div :field="{&#34;id&#34;:&#34;test-div&#34;}"></div>`,
+		},
+
+		// Truthiness decides whether a bound attribute is written at all.
+		{
+			name:   "false drops the attribute",
+			source: `<button :disabled="disabled"></button>`,
+			data:   map[string]any{"disabled": false},
+			want:   `<button></button>`,
 		},
 		{
-			name:     "bound attribute with falsey value",
-			template: `<button :disabled="disabled"></button>`,
-			data:     map[string]any{"disabled": false},
-			expected: `<button></button>`,
+			name:   "true writes the attribute",
+			source: `<button :disabled="disabled"></button>`,
+			data:   map[string]any{"disabled": true},
+			want:   `<button disabled="true"></button>`,
 		},
 		{
-			name:     "bound attribute with truthy value",
-			template: `<button :disabled="disabled"></button>`,
-			data:     map[string]any{"disabled": true},
-			expected: `<button disabled="true"></button>`,
+			name:   "an empty string drops the attribute",
+			source: `<input :required="value" />`,
+			data:   map[string]any{"value": ""},
+			want:   `<input />`,
 		},
 		{
-			name:     "normal attribute with interpolation",
-			template: `<div class="item-{{ id }}"></div>`,
-			data:     map[string]any{"id": "123"},
-			expected: `<div class="item-123"></div>`,
+			name:   "zero drops the attribute",
+			source: `<span :data-count="counter"></span>`,
+			data:   map[string]any{"counter": 0},
+			want:   `<span></span>`,
 		},
 		{
-			name:     "normal attribute without interpolation",
-			template: `<div class="static"></div>`,
-			data:     map[string]any{},
-			expected: `<div class="static"></div>`,
+			name:   "a non-zero number writes the attribute",
+			source: `<span :data-count="counter"></span>`,
+			data:   map[string]any{"counter": 5},
+			want:   `<span data-count="5"></span>`,
 		},
 		{
-			name:     "bound attribute missing variable",
-			template: `<div :title="missing"></div>`,
-			data:     map[string]any{},
-			expected: `<div></div>`,
+			name:   "a missing variable drops the attribute",
+			source: `<div :title="missing"></div>`,
+			data:   map[string]any{},
+			want:   `<div></div>`,
+		},
+
+		// Static attributes and interpolation.
+		{
+			name:   "a static attribute is left alone",
+			source: `<div class="static"></div>`,
+			data:   map[string]any{},
+			want:   `<div class="static"></div>`,
 		},
 		{
-			name:     "empty string is falsey",
-			template: `<input :required="value" />`,
-			data:     map[string]any{"value": ""},
-			expected: `<input />`,
+			name:   "a static attribute is interpolated",
+			source: `<div class="item-{{ id }}"></div>`,
+			data:   map[string]any{"id": "123"},
+			want:   `<div class="item-123"></div>`,
 		},
 		{
-			name:     "zero is falsey",
-			template: `<span :data-count="counter"></span>`,
-			data:     map[string]any{"counter": 0},
-			expected: `<span></span>`,
+			name:   "interpolation can sit between literals",
+			source: `<div data-info="prefix-{{ value }}-suffix"></div>`,
+			data:   map[string]any{"value": "middle"},
+			want:   `<div data-info="prefix-middle-suffix"></div>`,
+		},
+
+		// A bound value is used as-is: its contents are not re-evaluated.
+		{
+			name:   "a bound value holding mustaches is not interpolated",
+			source: `<div :title="content"></div>`,
+			data:   map[string]any{"content": "{{ name }}", "name": "Alice"},
+			want:   `<div title="{{ name }}"></div>`,
 		},
 		{
-			name:     "non-zero is truthy",
-			template: `<span :data-count="counter"></span>`,
-			data:     map[string]any{"counter": 5},
-			expected: `<span data-count="5"></span>`,
+			name:   "a bound value holding a pipe is not filtered",
+			source: `<div :title="text"></div>`,
+			data:   map[string]any{"text": "a | b"},
+			want:   `<div title="a | b"></div>`,
+		},
+		{
+			name:   "a bound value holding shell syntax is escaped, not evaluated",
+			source: `<span :data-code="code"></span>`,
+			data:   map[string]any{"code": `echo "${{ version }}"`},
+			want:   `<span data-code="echo &#34;${{ version }}&#34;"></span>`,
+		},
+		{
+			name:   "bound and interpolated agree for a plain string",
+			source: `<div :title="msg" data-alt="{{ msg }}"></div>`,
+			data:   map[string]any{"msg": "hello"},
+			want:   `<div title="hello" data-alt="hello"></div>`,
+		},
+
+		// Several bindings on one element.
+		{
+			name:   "several bound attributes",
+			source: `<button :id="id" :class="btnClass" :disabled="disabled"></button>`,
+			data:   map[string]any{"id": "submit-btn", "btnClass": "primary", "disabled": false},
+			want:   `<button id="submit-btn" class="primary"></button>`,
+		},
+		{
+			name:   "bound attributes beside static ones",
+			source: `<input type="text" :value="name" :placeholder="hint" class="form-input" />`,
+			data:   map[string]any{"name": "John", "hint": "Enter your name"},
+			want:   `<input type="text" value="John" placeholder="Enter your name" class="form-input" />`,
+		},
+		{
+			name:   "several v-bind attributes",
+			source: `<a v-bind:href="url" v-bind:target="target" v-bind:title="title">Link</a>`,
+			data:   map[string]any{"url": "/page", "target": "_blank", "title": "External"},
+			want:   `<a href="/page" target="_blank" title="External">Link</a>`,
 		},
 	}
 
-	for idx, tc := range tests {
-		t.Run(fmt.Sprintf("%d: %s", idx, tc.name), func(t *testing.T) {
-			template := []byte(tc.template)
-			fs := fstest.MapFS{
-				"test.vuego": &fstest.MapFile{Data: template},
-			}
-			vue := vuego.NewVue(fs)
-
-			var buf bytes.Buffer
-			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			assert.NoError(t, err)
-			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assertRenderHTML(t, test.source, test.data, test.want)
 		})
 	}
 }
 
-func TestVue_ObjectBinding_Class(t *testing.T) {
+func TestVue_EvalBoundAttribute(t *testing.T) {
 	tests := []struct {
-		name     string
-		template string
-		data     map[string]any
-		expected string
+		name   string
+		source string
+		data   map[string]any
+		want   string
 	}{
 		{
-			name:     "object binding with truthy values",
-			template: `<div :class="{active: true, disabled: false}"></div>`,
-			data:     map[string]any{},
-			expected: `<div class="active"></div>`,
+			name:   "a variable reference",
+			source: `<div :data-value="id"></div>`,
+			data:   map[string]any{"id": "123"},
+			want:   `<div data-value="123"></div>`,
 		},
 		{
-			name:     "object binding with truthy values, quoted",
-			template: `<div :class="{'active': true, 'disabled': false}"></div>`,
-			data:     map[string]any{},
-			expected: `<div class="active"></div>`,
+			name:   "a path reference",
+			source: `<a :href="post.url"></a>`,
+			data:   map[string]any{"post": map[string]any{"url": "/posts/42"}},
+			want:   `<a href="/posts/42"></a>`,
 		},
 		{
-			name:     "object binding with variable values",
-			template: `<div :class="{active: isActive, error: hasError}"></div>`,
-			data:     map[string]any{"isActive": true, "hasError": false},
-			expected: `<div class="active"></div>`,
+			name:   "a function call",
+			source: `<div :title="len(items)"></div>`,
+			data:   map[string]any{"items": []int{1, 2, 3}},
+			want:   `<div title="3"></div>`,
 		},
 		{
-			name:     "all classes included when truthy",
-			template: `<div :class="{btn: true, primary: true, large: true}"></div>`,
-			data:     map[string]any{},
-			expected: `<div class="btn primary large"></div>`,
+			name:   "a nested function call",
+			source: `<p :data-text="trim(text)"></p>`,
+			data:   map[string]any{"text": "  spaces  "},
+			want:   `<p data-text="spaces"></p>`,
 		},
 		{
-			name:     "no classes when all falsey",
-			template: `<div :class="{active: false, disabled: false}"></div>`,
-			data:     map[string]any{},
-			expected: `<div></div>`,
+			name:   "a filter with an argument",
+			source: `<div :title="message | default('no title')"></div>`,
+			data:   map[string]any{},
+			want:   `<div title="no title"></div>`,
 		},
 		{
-			name:     "class object with static class",
-			template: `<div class="static-class" :class="{dynamic: true}"></div>`,
-			data:     map[string]any{},
-			expected: `<div class="static-class dynamic"></div>`,
+			name:   "a filter on a missing variable",
+			source: `<span :data-value="missing | default('fallback')"></span>`,
+			data:   map[string]any{},
+			want:   `<span data-value="fallback"></span>`,
 		},
 		{
-			name:     "class object with zero is falsey",
-			template: `<div :class="{active: count}"></div>`,
-			data:     map[string]any{"count": 0},
-			expected: `<div></div>`,
+			name:   "a comparison expression",
+			source: `<div :data-big="count > 2"></div>`,
+			data:   map[string]any{"count": 5},
+			want:   `<div data-big="true"></div>`,
 		},
 		{
-			name:     "class object with non-zero is truthy",
-			template: `<div :class="{active: count}"></div>`,
-			data:     map[string]any{"count": 1},
-			expected: `<div class="active"></div>`,
-		},
-		{
-			name:     "true is true",
-			template: `<div :class="{active: status, inactive: !status}"></div>`,
-			data:     map[string]any{"status": true},
-			expected: `<div class="active"></div>`,
-		},
-		{
-			name:     "!true is false",
-			template: `<div :class="{active: status, inactive: !status}"></div>`,
-			data:     map[string]any{"status": false},
-			expected: `<div class="inactive"></div>`,
-		},
-		{
-			name:     "!nil is true",
-			template: `<div :class="{active: status?, inactive: !(type(status) == 'bool' && status)}"></div>`,
-			data:     map[string]any{},
-			expected: `<div class="inactive"></div>`,
+			name:   "an interpolated bound value",
+			source: `<div :title="Hi {{ name }}"></div>`,
+			data:   map[string]any{"name": "Alice"},
+			want:   `<div title="Hi Alice"></div>`,
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			template := []byte(tc.template)
-			fs := fstest.MapFS{
-				"test.vuego": &fstest.MapFile{Data: template},
-			}
-			vue := vuego.NewVue(fs)
-
-			var buf bytes.Buffer
-			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			assert.NoError(t, err)
-			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assertRenderHTML(t, test.source, test.data, test.want)
 		})
 	}
 }
 
-func TestVue_ObjectBinding_Style(t *testing.T) {
+func TestVue_TypedAttributePassthrough(t *testing.T) {
+	// A bound attribute keeps the Go type of its value across a template
+	// include, so filters like type and len see the original value.
 	tests := []struct {
 		name     string
-		template string
+		parent   string
+		child    string
 		data     map[string]any
-		expected string
+		contains []string
 	}{
 		{
-			name:     "style object with string values",
-			template: `<div :style="{display: 'block', color: 'red'}"></div>`,
-			data:     map[string]any{},
-			expected: `<div style="display:block;color:red;"></div>`,
+			name:     "slice of structs",
+			parent:   `<template include="child.vuego" :articles="articles"></template>`,
+			child:    `<template>{{ articles | type }}</template>`,
+			data:     map[string]any{"articles": []Article{{Title: "Article 1"}, {Title: "Article 2"}}},
+			contains: []string{"[]vuego_test.Article"},
 		},
 		{
-			name:     "style object with variable values",
-			template: `<div :style="{color: textColor, fontSize: size}"></div>`,
-			data:     map[string]any{"textColor": "blue", "size": "16px"},
-			expected: `<div style="color:blue;font-size:16px;"></div>`,
+			name:     "struct value",
+			parent:   `<template include="child.vuego" :article="article"></template>`,
+			child:    `<template>{{ article | type }}</template>`,
+			data:     map[string]any{"article": Article{Title: "Test", Body: "Test body"}},
+			contains: []string{"vuego_test.Article"},
 		},
 		{
-			name:     "style object with single property",
-			template: `<div :style="{display: 'none'}"></div>`,
-			data:     map[string]any{},
-			expected: `<div style="display:none;"></div>`,
+			name:     "map",
+			parent:   `<template include="child.vuego" :data="myMap"></template>`,
+			child:    `<template>{{ data | type }}</template>`,
+			data:     map[string]any{"myMap": map[string]string{"key": "value"}},
+			contains: []string{"map[string]string"},
 		},
 		{
-			name:     "style object combined with static style",
-			template: `<div style="padding: 10px;" :style="{color: 'red'}"></div>`,
-			data:     map[string]any{},
-			expected: `<div style="padding:10px;color:red;"></div>`,
+			name:     "int",
+			parent:   `<template include="child.vuego" :count="count"></template>`,
+			child:    `<template>{{ count | type }}</template>`,
+			data:     map[string]any{"count": 42},
+			contains: []string{"int"},
 		},
 		{
-			name:     "style object with numeric values",
-			template: `<div :style="{width: '100px', height: '50px'}"></div>`,
-			data:     map[string]any{},
-			expected: `<div style="width:100px;height:50px;"></div>`,
+			name:   "slice of structs stays countable",
+			parent: `<template include="child.vuego" :posts="posts"></template>`,
+			child:  "<template>\nType: {{ posts | type }}\nCount: {{ posts | len }}\n</template>",
+			data: map[string]any{"posts": []BlogPost{
+				{ID: 1, Title: "Post 1", Tags: []string{"go", "testing"}},
+				{ID: 2, Title: "Post 2", Tags: []string{"go", "types"}},
+			}},
+			contains: []string{"Type: []vuego_test.BlogPost", "Count: 2"},
 		},
 		{
-			name:     "style object overwrites conflicting static style",
-			template: `<div style="color: blue;" :style="{color: 'red'}"></div>`,
-			data:     map[string]any{},
-			expected: `<div style="color:red;"></div>`,
-		},
-		{
-			name:     "camelCase properties converted to kebab-case",
-			template: `<div :style="{fontSize: '16px', backgroundColor: 'blue', marginTop: '10px'}"></div>`,
-			data:     map[string]any{},
-			expected: `<div style="font-size:16px;background-color:blue;margin-top:10px;"></div>`,
-		},
-		{
-			name:     "camelCase with variable values",
-			template: `<div :style="{fontSize: size, fontWeight: weight}"></div>`,
-			data:     map[string]any{"size": "14px", "weight": "bold"},
-			expected: `<div style="font-size:14px;font-weight:bold;"></div>`,
+			name:     "string slice stays countable",
+			parent:   `<template include="child.vuego" :tags="tags"></template>`,
+			child:    "<template>\nType: {{ tags | type }}\nCount: {{ tags | len }}\n</template>",
+			data:     map[string]any{"tags": []string{"go", "template", "testing"}},
+			contains: []string{"Type: []string", "Count: 3"},
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			template := []byte(tc.template)
-			fs := fstest.MapFS{
-				"test.vuego": &fstest.MapFile{Data: template},
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := renderInclude(t, test.parent, map[string]string{"child.vuego": test.child}, test.data)
+			for _, want := range test.contains {
+				assert.Contains(t, got, want, "output: %s", got)
 			}
-			vue := vuego.NewVue(fs)
-
-			var buf bytes.Buffer
-			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			assert.NoError(t, err)
-			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
-		})
-	}
-}
-
-func TestVue_CombinedStyleAttributes(t *testing.T) {
-	tests := []struct {
-		name     string
-		template string
-		data     map[string]any
-		expected string
-	}{
-		{
-			name:     "static style with bound style",
-			template: `<div style="color: red;" :style="{fontSize: size}"></div>`,
-			data:     map[string]any{"size": "14px"},
-			expected: `<div style="color:red;font-size:14px;"></div>`,
-		},
-		{
-			name:     "v-show with static class",
-			template: `<div v-show="visible" class="box"></div>`,
-			data:     map[string]any{"visible": false},
-			expected: `<div class="box" style="display:none;"></div>`,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			template := []byte(tc.template)
-			fs := fstest.MapFS{
-				"test.vuego": &fstest.MapFile{Data: template},
-			}
-			vue := vuego.NewVue(fs)
-
-			var buf bytes.Buffer
-			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			assert.NoError(t, err)
-			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
-		})
-	}
-}
-
-func TestVue_EvalBoundAttribute_WithComplexExpressions(t *testing.T) {
-	tests := []struct {
-		name     string
-		template string
-		data     map[string]any
-		expected string
-	}{
-		{
-			name:     "bound attribute with direct expression",
-			template: `<div :data-value="id"></div>`,
-			data:     map[string]any{"id": "123"},
-			expected: `<div data-value="123"></div>`,
-		},
-		{
-			name:     "bound attribute with piped filter",
-			template: `<a :href="url"></a>`,
-			data:     map[string]any{"url": "/posts/42"},
-			expected: `<a href="/posts/42"></a>`,
-		},
-		{
-			name:     "bound attribute with default filter",
-			template: `<div :title="message | default('no title')"></div>`,
-			data:     map[string]any{},
-			expected: `<div title="no title"></div>`,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			template := []byte(tc.template)
-			fs := fstest.MapFS{
-				"test.vuego": &fstest.MapFile{Data: template},
-			}
-			vue := vuego.NewVue(fs)
-
-			var buf bytes.Buffer
-			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			assert.NoError(t, err)
-			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
-		})
-	}
-}
-
-func TestVue_EvalBoundAttribute_WithFunctionCalls(t *testing.T) {
-	tests := []struct {
-		name     string
-		template string
-		data     map[string]any
-		expected string
-	}{
-		{
-			name:     "bound attribute with function call",
-			template: `<div :title="len(items)"></div>`,
-			data:     map[string]any{"items": []int{1, 2, 3}},
-			expected: `<div title="3"></div>`,
-		},
-		{
-			name:     "bound attribute with nested function",
-			template: `<p :data-text="trim(text)"></p>`,
-			data:     map[string]any{"text": "  spaces  "},
-			expected: `<p data-text="spaces"></p>`,
-		},
-		{
-			name:     "bound attribute with default filter",
-			template: `<span :data-value="missing | default('fallback')"></span>`,
-			data:     map[string]any{},
-			expected: `<span data-value="fallback"></span>`,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			template := []byte(tc.template)
-			fs := fstest.MapFS{
-				"test.vuego": &fstest.MapFile{Data: template},
-			}
-			vue := vuego.NewVue(fs)
-
-			var buf bytes.Buffer
-			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			assert.NoError(t, err)
-			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
-		})
-	}
-}
-
-func TestVue_ParseObjectPairs_EdgeCases(t *testing.T) {
-	tests := []struct {
-		name     string
-		template string
-		data     map[string]any
-		expected string
-	}{
-		{
-			name:     "class object empty",
-			template: `<div :class="{}"></div>`,
-			data:     map[string]any{},
-			expected: `<div></div>`,
-		},
-		{
-			name:     "style object empty",
-			template: `<div :style="{}"></div>`,
-			data:     map[string]any{},
-			expected: `<div></div>`,
-		},
-		{
-			name:     "class object with spaces around colons",
-			template: `<div :class="{ active : isActive , error : hasError }"></div>`,
-			data:     map[string]any{"isActive": true, "hasError": false},
-			expected: `<div class="active"></div>`,
-		},
-		{
-			name:     "style with numeric string values",
-			template: `<div :style="{margin: '0', padding: '10px'}"></div>`,
-			data:     map[string]any{},
-			expected: `<div style="margin:0;padding:10px;"></div>`,
-		},
-		{
-			name:     "class object with variable values",
-			template: `<div :class="{btn: true, active: isActive, disabled: hasError}"></div>`,
-			data:     map[string]any{"isActive": true, "hasError": false},
-			expected: `<div class="btn active"></div>`,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			template := []byte(tc.template)
-			fs := fstest.MapFS{
-				"test.vuego": &fstest.MapFile{Data: template},
-			}
-			vue := vuego.NewVue(fs)
-
-			var buf bytes.Buffer
-			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			assert.NoError(t, err)
-			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
-		})
-	}
-}
-
-func TestVue_EvalAttributes_BoundVsInterpolated(t *testing.T) {
-	tests := []struct {
-		name     string
-		template string
-		data     map[string]any
-		expected string
-	}{
-		{
-			name:     "bound attr does not re-interpolate value",
-			template: `<div :title="content"></div>`,
-			data:     map[string]any{"content": "{{ name }}", "name": "Alice"},
-			expected: `<div title="{{ name }}"></div>`,
-		},
-		{
-			name:     "interpolated attr evaluates mustache syntax",
-			template: `<div title="{{ content }}"></div>`,
-			data:     map[string]any{"content": "hello"},
-			expected: `<div title="hello"></div>`,
-		},
-		{
-			name:     "bound attr preserves interpolation-like syntax in value",
-			template: `<span :data-code="code"></span>`,
-			data:     map[string]any{"code": `echo "${{ version }}"`},
-			expected: `<span data-code="echo &#34;${{ version }}&#34;"></span>`,
-		},
-		{
-			name:     "interpolated attr evaluates nested interpolation",
-			template: `<div data-info="prefix-{{ value }}-suffix"></div>`,
-			data:     map[string]any{"value": "middle"},
-			expected: `<div data-info="prefix-middle-suffix"></div>`,
-		},
-		{
-			name:     "bound attr with pipe-like value is not filtered",
-			template: `<div :title="text"></div>`,
-			data:     map[string]any{"text": "a | b"},
-			expected: `<div title="a | b"></div>`,
-		},
-		{
-			name:     "bound and interpolated produce same result for simple string",
-			template: `<div :title="msg" data-alt="{{ msg }}"></div>`,
-			data:     map[string]any{"msg": "hello"},
-			expected: `<div title="hello" data-alt="hello"></div>`,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			template := []byte(tc.template)
-			fs := fstest.MapFS{
-				"test.vuego": &fstest.MapFile{Data: template},
-			}
-			vue := vuego.NewVue(fs)
-
-			var buf bytes.Buffer
-			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			assert.NoError(t, err)
-			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
-		})
-	}
-}
-
-func TestVue_EvalAttributes_MultipleBindings(t *testing.T) {
-	tests := []struct {
-		name     string
-		template string
-		data     map[string]any
-		expected string
-	}{
-		{
-			name:     "multiple bound attributes",
-			template: `<button :id="id" :class="btnClass" :disabled="disabled"></button>`,
-			data:     map[string]any{"id": "submit-btn", "btnClass": "primary", "disabled": false},
-			expected: `<button id="submit-btn" class="primary"></button>`,
-		},
-		{
-			name:     "bound attributes mixed with static",
-			template: `<input type="text" :value="name" :placeholder="hint" class="form-input" />`,
-			data:     map[string]any{"name": "John", "hint": "Enter your name"},
-			expected: `<input type="text" value="John" placeholder="Enter your name" class="form-input" />`,
-		},
-		{
-			name:     "v-bind shorthand with multiple attributes",
-			template: `<a v-bind:href="url" v-bind:target="target" v-bind:title="title">Link</a>`,
-			data:     map[string]any{"url": "/page", "target": "_blank", "title": "External"},
-			expected: `<a href="/page" target="_blank" title="External">Link</a>`,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			template := []byte(tc.template)
-			fs := fstest.MapFS{
-				"test.vuego": &fstest.MapFile{Data: template},
-			}
-			vue := vuego.NewVue(fs)
-
-			var buf bytes.Buffer
-			err := vue.RenderFragment(t.Context(), &buf, "test.vuego", tc.data)
-			assert.NoError(t, err)
-			assert.EqualHTML(t, []byte(tc.expected), buf.Bytes(), nil, nil)
 		})
 	}
 }

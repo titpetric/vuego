@@ -2,43 +2,105 @@ package vuego_test
 
 import (
 	"errors"
+	"sync"
 	"testing"
 
 	"github.com/titpetric/vuego"
 	"github.com/titpetric/vuego/tests/assert"
 )
 
+// Test helper structs for struct resolution tests.
+type (
+	testUser struct {
+		FirstName string `json:"first_name"`
+		LastName  string `json:"last_name"`
+	}
+)
+
 func TestNewStack(t *testing.T) {
-	t.Run("with nil root", func(t *testing.T) {
+	t.Run("a nil root is an empty scope", func(t *testing.T) {
 		s := vuego.NewStack(nil)
 		assert.NotNil(t, s)
+
 		_, ok := s.Lookup("nonexistent")
 		assert.False(t, ok)
 	})
 
-	t.Run("with initial data", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"key": "value"})
-		val, ok := s.Lookup("key")
+	t.Run("the root map is the bottom scope", func(t *testing.T) {
+		val, ok := vuego.NewStack(map[string]any{"key": "value"}).Lookup("key")
 		assert.True(t, ok)
 		assert.Equal(t, "value", val)
+	})
+
+	t.Run("no original data means no struct fallback", func(t *testing.T) {
+		_, ok := vuego.NewStack(map[string]any{}).Lookup("FirstName")
+		assert.False(t, ok)
+	})
+}
+
+func TestNewStackWithData(t *testing.T) {
+	user := &testUser{FirstName: "Alice", LastName: "Smith"}
+
+	t.Run("the map is the bottom scope", func(t *testing.T) {
+		val, ok := vuego.NewStackWithData(map[string]any{"key": "value"}, user).Lookup("key")
+		assert.True(t, ok)
+		assert.Equal(t, "value", val)
+	})
+
+	t.Run("a struct field is the fallback for an unknown name", func(t *testing.T) {
+		val, ok := vuego.NewStackWithData(map[string]any{}, user).Lookup("FirstName")
+		assert.True(t, ok)
+		assert.Equal(t, "Alice", val)
+	})
+
+	t.Run("a json tag also resolves", func(t *testing.T) {
+		val, ok := vuego.NewStackWithData(map[string]any{}, user).Lookup("first_name")
+		assert.True(t, ok)
+		assert.Equal(t, "Alice", val)
+	})
+
+	t.Run("the map wins over the struct field", func(t *testing.T) {
+		val, ok := vuego.NewStackWithData(map[string]any{"FirstName": "Override"}, user).Lookup("FirstName")
+		assert.True(t, ok)
+		assert.Equal(t, "Override", val)
+	})
+
+	t.Run("a nil root map is allowed", func(t *testing.T) {
+		val, ok := vuego.NewStackWithData(nil, user).Lookup("LastName")
+		assert.True(t, ok)
+		assert.Equal(t, "Smith", val)
 	})
 }
 
 func TestStack_Push(t *testing.T) {
-	s := vuego.NewStack(map[string]any{"base": "value"})
+	t.Run("the new scope is searched first", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"base": "value", "key": "parent"})
+		s.Push(map[string]any{"top": "data", "key": "child"})
 
-	s.Push(map[string]any{"top": "data"})
-	val, ok := s.Lookup("top")
-	assert.True(t, ok)
-	assert.Equal(t, "data", val)
+		for name, want := range map[string]string{"top": "data", "base": "value", "key": "child"} {
+			val, ok := s.Lookup(name)
+			assert.True(t, ok, name)
+			assert.Equal(t, want, val)
+		}
+	})
 
-	val, ok = s.Lookup("base")
-	assert.True(t, ok)
-	assert.Equal(t, "value", val)
+	t.Run("a nil map pushes an empty scope", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"base": "value"})
+		s.Push(nil)
+		s.Set("added", 1)
+
+		val, ok := s.Lookup("added")
+		assert.True(t, ok)
+		assert.Equal(t, 1, val)
+
+		s.Pop()
+		_, ok = s.Lookup("added")
+		assert.False(t, ok)
+	})
 }
 
 func TestStack_Pop(t *testing.T) {
-	t.Run("pop to root", func(t *testing.T) {
+	t.Run("the top scope is discarded", func(t *testing.T) {
 		s := vuego.NewStack(map[string]any{"base": "value"})
 		s.Push(map[string]any{"top": "data"})
 		s.Pop()
@@ -51,7 +113,7 @@ func TestStack_Pop(t *testing.T) {
 		assert.Equal(t, "value", val)
 	})
 
-	t.Run("pop on empty stack creates empty root", func(t *testing.T) {
+	t.Run("popping past the root leaves an empty scope", func(t *testing.T) {
 		s := vuego.NewStack(map[string]any{"key": "value"})
 		s.Pop()
 		s.Pop()
@@ -67,845 +129,255 @@ func TestStack_Pop(t *testing.T) {
 }
 
 func TestStack_Set(t *testing.T) {
-	s := vuego.NewStack(map[string]any{"existing": "old"})
+	t.Run("adds and replaces in the top scope", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"existing": "old"})
 
-	s.Set("new", "value")
-	val, ok := s.Lookup("new")
-	assert.True(t, ok)
-	assert.Equal(t, "value", val)
+		s.Set("new", "value")
+		val, ok := s.Lookup("new")
+		assert.True(t, ok)
+		assert.Equal(t, "value", val)
 
-	s.Set("existing", "updated")
-	val, ok = s.Lookup("existing")
-	assert.True(t, ok)
-	assert.Equal(t, "updated", val)
+		s.Set("existing", "updated")
+		val, ok = s.Lookup("existing")
+		assert.True(t, ok)
+		assert.Equal(t, "updated", val)
+	})
+
+	t.Run("a write to a pushed scope does not reach the root", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"key": "root"})
+		s.Push(nil)
+		s.Set("key", "pushed")
+		s.Pop()
+
+		val, ok := s.Lookup("key")
+		assert.True(t, ok)
+		assert.Equal(t, "root", val)
+	})
 }
 
 func TestStack_Lookup(t *testing.T) {
-	t.Run("finds in top scope", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"base": "bottom"})
-		s.Push(map[string]any{"key": "top"})
+	t.Run("searches from the top down", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"parent": "value", "key": "bottom"})
+		s.Push(map[string]any{"child": "data", "key": "top"})
 
-		val, ok := s.Lookup("key")
-		assert.True(t, ok)
-		assert.Equal(t, "top", val)
+		for name, want := range map[string]string{"key": "top", "parent": "value", "child": "data"} {
+			val, ok := s.Lookup(name)
+			assert.True(t, ok, name)
+			assert.Equal(t, want, val)
+		}
 	})
 
-	t.Run("finds in parent scope", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"parent": "value"})
-		s.Push(map[string]any{"child": "data"})
-
-		val, ok := s.Lookup("parent")
-		assert.True(t, ok)
-		assert.Equal(t, "value", val)
-	})
-
-	t.Run("top scope shadows parent", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"key": "parent"})
-		s.Push(map[string]any{"key": "child"})
-
-		val, ok := s.Lookup("key")
-		assert.True(t, ok)
-		assert.Equal(t, "child", val)
-	})
-
-	t.Run("not found", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"key": "value"})
-		_, ok := s.Lookup("nonexistent")
+	t.Run("an unknown name is not found", func(t *testing.T) {
+		_, ok := vuego.NewStack(map[string]any{"key": "value"}).Lookup("nonexistent")
 		assert.False(t, ok)
 	})
 }
 
-func TestStack_Resolve(t *testing.T) {
-	t.Run("simple key", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"name": "Alice"})
-		val, ok := s.Resolve("name")
+func TestStack_Copy(t *testing.T) {
+	t.Run("carries the flattened values", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"root": "value"})
+		s.Push(map[string]any{"pushed": "data"})
+
+		copied := s.Copy()
+		for name, want := range map[string]string{"root": "value", "pushed": "data"} {
+			val, ok := copied.Lookup(name)
+			assert.True(t, ok, name)
+			assert.Equal(t, want, val)
+		}
+	})
+
+	t.Run("writes to the copy do not reach the original", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"key": "original"})
+
+		copied := s.Copy()
+		copied.Set("key", "copied")
+		copied.Set("added", 1)
+
+		val, _ := s.Lookup("key")
+		assert.Equal(t, "original", val)
+
+		_, ok := s.Lookup("added")
+		assert.False(t, ok)
+	})
+
+	t.Run("the struct fallback is retained", func(t *testing.T) {
+		copied := vuego.NewStackWithData(nil, &testUser{FirstName: "Alice"}).Copy()
+
+		val, ok := copied.Lookup("FirstName")
 		assert.True(t, ok)
 		assert.Equal(t, "Alice", val)
 	})
 
-	t.Run("nested map dot notation", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"user": map[string]any{"name": "Bob"},
-		})
-		val, ok := s.Resolve("user.name")
-		assert.True(t, ok)
-		assert.Equal(t, "Bob", val)
-	})
+	t.Run("concurrent copies of one stack do not race", func(t *testing.T) {
+		// A base template's stack is shared by every goroutine calling Load,
+		// which copies it. Copy must not write the env cache.
+		s := vuego.NewStackWithData(map[string]any{"root": "value"}, &testUser{FirstName: "Alice"})
 
-	t.Run("array index", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"items": []any{"first", "second", "third"},
-		})
-		val, ok := s.Resolve("items[1]")
-		assert.True(t, ok)
-		assert.Equal(t, "second", val)
-	})
+		var wg sync.WaitGroup
+		for i := 0; i < 32; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
 
-	t.Run("nested array and map", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"items": []any{
-				map[string]any{"title": "First"},
-				map[string]any{"title": "Second"},
-			},
-		})
-		val, ok := s.Resolve("items[0].title")
-		assert.True(t, ok)
-		assert.Equal(t, "First", val)
-	})
-
-	t.Run("map[string]string support", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"config": map[string]string{"host": "localhost"},
-		})
-		val, ok := s.Resolve("config.host")
-		assert.True(t, ok)
-		assert.Equal(t, "localhost", val)
-	})
-
-	t.Run("struct field by name", func(t *testing.T) {
-		cfg := &testConfig{Name: "MyApp", Port: 8080}
-		s := vuego.NewStack(map[string]any{"config": cfg})
-		val, ok := s.Resolve("config.Name")
-		assert.True(t, ok)
-		assert.Equal(t, "MyApp", val)
-
-		val, ok = s.Resolve("config.Port")
-		assert.True(t, ok)
-		assert.Equal(t, 8080, val)
-	})
-
-	t.Run("deeply nested struct with multiple levels", func(t *testing.T) {
-		cfg := &testConfig{
-			Name: "ProductionApp",
-			Database: &testDatabase{
-				Host: "db.prod.local",
-				Port: 5432,
-				Name: "maindb",
-				Options: &testDatabaseOptions{
-					SSL:      true,
-					PoolSize: 50,
-					Timeout:  30,
-				},
-			},
+				copied := s.Copy()
+				if val, ok := copied.Lookup("root"); !ok || val != "value" {
+					t.Errorf("copied stack lost root: %v %v", val, ok)
+				}
+			}()
 		}
-		s := vuego.NewStack(map[string]any{"config": cfg})
-
-		val, ok := s.Resolve("config.Database.Host")
-		assert.True(t, ok)
-		assert.Equal(t, "db.prod.local", val)
-
-		val, ok = s.Resolve("config.Database.Options.PoolSize")
-		assert.True(t, ok)
-		assert.Equal(t, 50, val)
-
-		val, ok = s.Resolve("config.Database.Options.SSL")
-		assert.True(t, ok)
-		assert.Equal(t, true, val)
+		wg.Wait()
 	})
 
-	t.Run("slice of structs indexing", func(t *testing.T) {
-		cfg := &testConfig{
-			Name: "MyApp",
-			Database: &testDatabase{
-				Host: "localhost",
-				Replicas: []*testReplica{
-					{Host: "replica1.local", Port: 5433, Region: "us-east-1", Status: "active"},
-					{Host: "replica2.local", Port: 5433, Region: "us-west-1", Status: "active"},
-					{Host: "replica3.local", Port: 5433, Region: "eu-west-1", Status: "standby"},
-				},
-			},
-		}
-		s := vuego.NewStack(map[string]any{"config": cfg})
+	t.Run("the copy starts with one scope", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"root": "value"})
+		s.Push(map[string]any{"pushed": "data"})
 
-		// Access slice through nested path and index
-		val, ok := s.Resolve("config.Database.Replicas")
-		assert.True(t, ok)
-		replicas := val.([]*testReplica)
-		assert.Len(t, replicas, 3)
+		copied := s.Copy()
+		copied.Pop()
 
-		// Index into the slice
-		val, ok = s.Resolve("config.Database.Replicas[0]")
-		assert.True(t, ok)
-		replica := val.(*testReplica)
-		assert.Equal(t, "replica1.local", replica.Host)
-
-		// Access field of indexed struct
-		val, ok = s.Resolve("config.Database.Replicas[1].Region")
-		assert.True(t, ok)
-		assert.Equal(t, "us-west-1", val)
-
-		val, ok = s.Resolve("config.Database.Replicas[2].Status")
-		assert.True(t, ok)
-		assert.Equal(t, "standby", val)
-	})
-
-	t.Run("string slice indexing", func(t *testing.T) {
-		cfg := &testConfig{
-			Name:   "MyApp",
-			Admins: []string{"alice@example.com", "bob@example.com", "charlie@example.com"},
-		}
-		s := vuego.NewStack(map[string]any{"config": cfg})
-
-		val, ok := s.Resolve("config.Admins[0]")
-		assert.True(t, ok)
-		assert.Equal(t, "alice@example.com", val)
-
-		val, ok = s.Resolve("config.Admins[2]")
-		assert.True(t, ok)
-		assert.Equal(t, "charlie@example.com", val)
-
-		_, ok = s.Resolve("config.Admins[10]")
-		assert.False(t, ok)
-	})
-
-	t.Run("nested struct with multiple slice fields", func(t *testing.T) {
-		cfg := &testConfig{
-			Name: "DistributedApp",
-			Cache: &testCache{
-				Type: "redis",
-				Host: "cache.local",
-				Port: 6379,
-				Servers: []*testCacheServer{
-					{Address: "cache1:6379", Weight: 100, Active: true},
-					{Address: "cache2:6379", Weight: 50, Active: true},
-					{Address: "cache3:6379", Weight: 25, Active: false},
-				},
-			},
-			Services: []*testService{
-				{
-					Name:    "AuthService",
-					URL:     "http://auth:3000",
-					Timeout: 5,
-					Enabled: true,
-					Config: &testServiceConfig{
-						APIKey:    "secret-key-123",
-						RateLimit: 1000,
-						Endpoints: []string{"/login", "/logout", "/verify"},
-					},
-				},
-				{
-					Name:    "PaymentService",
-					URL:     "http://payment:3001",
-					Timeout: 10,
-					Enabled: true,
-					Config: &testServiceConfig{
-						APIKey:    "payment-key-456",
-						RateLimit: 500,
-						Endpoints: []string{"/charge", "/refund", "/status"},
-					},
-				},
-			},
-		}
-		s := vuego.NewStack(map[string]any{"config": cfg})
-
-		// Cache server indexing
-		val, ok := s.Resolve("config.Cache.Servers[1].Address")
-		assert.True(t, ok)
-		assert.Equal(t, "cache2:6379", val)
-
-		// Service indexing
-		val, ok = s.Resolve("config.Services[0].Name")
-		assert.True(t, ok)
-		assert.Equal(t, "AuthService", val)
-
-		// Service config with JSON tags
-		val, ok = s.Resolve("config.Services[1].Config.api_key")
-		assert.True(t, ok)
-		assert.Equal(t, "payment-key-456", val)
-
-		// Service config endpoints slice
-		val, ok = s.Resolve("config.Services[0].Config.Endpoints")
-		assert.True(t, ok)
-		endpoints := val.([]string)
-		assert.Equal(t, []string{"/login", "/logout", "/verify"}, endpoints)
-	})
-
-	t.Run("JSON tag resolution in deeply nested structure", func(t *testing.T) {
-		cfg := &testConfig{
-			Name:        "MyApp",
-			SecretKey:   "supersecret",
-			Environment: "production",
-			Database: &testDatabase{
-				Host: "localhost",
-				Options: &testDatabaseOptions{
-					PoolSize:      100,
-					RetryAttempts: 5,
-				},
-			},
-		}
-		s := vuego.NewStack(map[string]any{"config": cfg})
-
-		val, ok := s.Resolve("config.secret_key")
-		assert.True(t, ok)
-		assert.Equal(t, "supersecret", val)
-
-		val, ok = s.Resolve("config.env")
-		assert.True(t, ok)
-		assert.Equal(t, "production", val)
-
-		val, ok = s.Resolve("config.Database.Options.pool_size")
-		assert.True(t, ok)
-		assert.Equal(t, 100, val)
-
-		val, ok = s.Resolve("config.Database.Options.retry_attempts")
-		assert.True(t, ok)
-		assert.Equal(t, 5, val)
-
-		val, ok = s.Resolve("config.Database.max_connections")
-		assert.True(t, ok)
-		assert.Equal(t, 0, val) // Default zero value
-	})
-
-	t.Run("struct with JSON tags", func(t *testing.T) {
-		user := &testUser{FirstName: "Alice", LastName: "Smith"}
-		s := vuego.NewStack(map[string]any{"user": user})
-
-		val, ok := s.Resolve("user.first_name")
-		assert.True(t, ok)
-		assert.Equal(t, "Alice", val)
-
-		val, ok = s.Resolve("user.last_name")
-		assert.True(t, ok)
-		assert.Equal(t, "Smith", val)
-	})
-
-	t.Run("struct field as fallback", func(t *testing.T) {
-		user := &testUser{FirstName: "Bob"}
-		s := vuego.NewStack(map[string]any{"user": user})
-
-		// Should resolve by field name even though JSON tag exists
-		val, ok := s.Resolve("user.FirstName")
-		assert.True(t, ok)
-		assert.Equal(t, "Bob", val)
-	})
-
-	t.Run("typed slices", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"strings": []string{"a", "b"},
-			"ints":    []int{10, 20},
-			"floats":  []float64{1.5, 2.5},
-			"maps":    []map[string]any{{"key": "val"}},
-		})
-
-		val, ok := s.Resolve("strings[0]")
-		assert.True(t, ok)
-		assert.Equal(t, "a", val)
-
-		val, ok = s.Resolve("ints[1]")
-		assert.True(t, ok)
-		assert.Equal(t, 20, val)
-
-		val, ok = s.Resolve("floats[0]")
-		assert.True(t, ok)
-		assert.Equal(t, 1.5, val)
-
-		val, ok = s.Resolve("maps[0].key")
-		assert.True(t, ok)
-		assert.Equal(t, "val", val)
-	})
-
-	t.Run("invalid index", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []any{"one"}})
-		_, ok := s.Resolve("items[5]")
-		assert.False(t, ok)
-	})
-
-	t.Run("nil intermediate value", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"user": nil})
-		_, ok := s.Resolve("user.name")
-		assert.False(t, ok)
-	})
-
-	t.Run("nonexistent key", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"user": map[string]any{}})
-		_, ok := s.Resolve("user.missing")
+		// Popping the only scope leaves an empty one, so both keys are gone.
+		_, ok := copied.Lookup("root")
 		assert.False(t, ok)
 	})
 }
 
-func TestStack_GetString(t *testing.T) {
-	t.Run("string value", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"name": "Alice"})
-		val, ok := s.GetString("name")
-		assert.True(t, ok)
-		assert.Equal(t, "Alice", val)
+func TestStack_EnvMap(t *testing.T) {
+	t.Run("flattens the scopes with the top winning", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"a": 1, "shared": "root"})
+		s.Push(map[string]any{"b": 2, "shared": "pushed"})
+
+		env := s.EnvMap()
+		assert.Equal(t, 1, env["a"])
+		assert.Equal(t, 2, env["b"])
+		assert.Equal(t, "pushed", env["shared"])
 	})
 
-	t.Run("int to string", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"a": 42,
-			"b": int8(8),
-			"c": int64(100),
-		})
-		val, ok := s.GetString("a")
-		assert.True(t, ok)
-		assert.Equal(t, "42", val)
+	t.Run("struct fields are keyed by json tag", func(t *testing.T) {
+		env := vuego.NewStackWithData(map[string]any{}, &testUser{FirstName: "Alice", LastName: "Smith"}).EnvMap()
+
+		assert.Equal(t, "Alice", env["first_name"])
+		assert.Equal(t, "Smith", env["last_name"])
 	})
 
-	t.Run("float to string", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"pi": 3.14})
-		val, ok := s.GetString("pi")
-		assert.True(t, ok)
-		assert.Contains(t, val, "3.14")
+	t.Run("struct fields override the stack values", func(t *testing.T) {
+		env := vuego.NewStackWithData(
+			map[string]any{"first_name": "FromMap"},
+			&testUser{FirstName: "FromStruct"},
+		).EnvMap()
+
+		assert.Equal(t, "FromStruct", env["first_name"])
 	})
 
-	t.Run("bool to string", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"flag": true})
-		val, ok := s.GetString("flag")
-		assert.True(t, ok)
-		assert.Equal(t, "true", val)
+	t.Run("the result is cached until the stack is mutated", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"a": 1})
+
+		first := s.EnvMap()
+		assert.Equal(t, first, s.EnvMap())
+
+		s.Set("b", 2)
+		assert.Equal(t, 2, s.EnvMap()["b"])
 	})
 
-	t.Run("nil value", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"key": nil})
-		_, ok := s.GetString("key")
+	t.Run("Push and Pop invalidate the cache", func(t *testing.T) {
+		s := vuego.NewStack(map[string]any{"a": 1})
+		_ = s.EnvMap()
+
+		s.Push(map[string]any{"b": 2})
+		assert.Equal(t, 2, s.EnvMap()["b"])
+
+		s.Pop()
+		_, ok := s.EnvMap()["b"]
 		assert.False(t, ok)
 	})
 
-	t.Run("missing key", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{})
-		_, ok := s.GetString("missing")
-		assert.False(t, ok)
-	})
-}
-
-func TestStack_GetInt(t *testing.T) {
-	t.Run("int value", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"count": 42})
-		val, ok := s.GetInt("count")
-		assert.True(t, ok)
-		assert.Equal(t, 42, val)
-	})
-
-	t.Run("various int types", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"i8":  int8(8),
-			"i16": int16(16),
-			"i32": int32(32),
-			"i64": int64(64),
-			"u":   uint(100),
-		})
-
-		val, ok := s.GetInt("i8")
-		assert.True(t, ok)
-		assert.Equal(t, 8, val)
-
-		val, ok = s.GetInt("i64")
-		assert.True(t, ok)
-		assert.Equal(t, 64, val)
-	})
-
-	t.Run("float to int", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"f": 3.7})
-		val, ok := s.GetInt("f")
-		assert.True(t, ok)
-		assert.Equal(t, 3, val)
-	})
-
-	t.Run("string to int", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"str": "123"})
-		val, ok := s.GetInt("str")
-		assert.True(t, ok)
-		assert.Equal(t, 123, val)
-	})
-
-	t.Run("invalid string", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"str": "not-a-number"})
-		_, ok := s.GetInt("str")
-		assert.False(t, ok)
-	})
-
-	t.Run("nil value", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"key": nil})
-		_, ok := s.GetInt("key")
-		assert.False(t, ok)
-	})
-}
-
-func TestStack_GetSlice(t *testing.T) {
-	t.Run("[]any", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []any{1, "two", 3.0}})
-		val, ok := s.GetSlice("items")
-		assert.True(t, ok)
-		assert.Len(t, val, 3)
-		assert.Equal(t, 1, val[0])
-	})
-
-	t.Run("[]string", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []string{"a", "b"}})
-		val, ok := s.GetSlice("items")
-		assert.True(t, ok)
-		assert.Len(t, val, 2)
-		assert.Equal(t, "a", val[0])
-	})
-
-	t.Run("[]int", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []int{10, 20}})
-		val, ok := s.GetSlice("items")
-		assert.True(t, ok)
-		assert.Len(t, val, 2)
-		assert.Equal(t, 10, val[0])
-	})
-
-	t.Run("[]float64", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []float64{1.5, 2.5}})
-		val, ok := s.GetSlice("items")
-		assert.True(t, ok)
-		assert.Len(t, val, 2)
-		assert.Equal(t, 1.5, val[0])
-	})
-
-	t.Run("[]map[string]any", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"items": []map[string]any{{"key": "val"}},
-		})
-		val, ok := s.GetSlice("items")
-		assert.True(t, ok)
-		assert.Len(t, val, 1)
-	})
-
-	t.Run("not a slice", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"key": "value"})
-		_, ok := s.GetSlice("key")
-		assert.False(t, ok)
-	})
-
-	t.Run("nil value", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"key": nil})
-		_, ok := s.GetSlice("key")
-		assert.False(t, ok)
-	})
-}
-
-func TestStack_GetMap(t *testing.T) {
-	t.Run("map[string]any", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"obj": map[string]any{"key": "value"},
-		})
-		val, ok := s.GetMap("obj")
-		assert.True(t, ok)
-		assert.Equal(t, "value", val["key"])
-	})
-
-	t.Run("map[string]string", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"obj": map[string]string{"key": "value"},
-		})
-		val, ok := s.GetMap("obj")
-		assert.True(t, ok)
-		assert.Equal(t, "value", val["key"])
-	})
-
-	t.Run("not a map", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"key": "value"})
-		_, ok := s.GetMap("key")
-		assert.False(t, ok)
-	})
-
-	t.Run("nil value", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"key": nil})
-		_, ok := s.GetMap("key")
-		assert.False(t, ok)
+	t.Run("an empty stack yields an empty map", func(t *testing.T) {
+		assert.Len(t, vuego.NewStack(nil).EnvMap(), 0)
 	})
 }
 
 func TestStack_ForEach(t *testing.T) {
-	t.Run("[]any", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []any{"a", "b", "c"}})
-		var results []string
-		err := s.ForEach("items", func(i int, v any) error {
-			results = append(results, v.(string))
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, []string{"a", "b", "c"}, results)
+	s := vuego.NewStack(map[string]any{
+		"any":       []any{"a", "b", "c"},
+		"strings":   []string{"x", "y"},
+		"ints":      []int{1, 2, 3},
+		"mapSlice":  []map[string]any{{"id": 1}, {"id": 2}},
+		"anyMap":    map[string]any{"a": 1, "b": 2},
+		"stringMap": map[string]string{"host": "localhost", "port": "8080"},
+		"emptyAny":  []any{},
+		"emptyMap":  map[string]any{},
+		"scalar":    "string",
+		"boolean":   true,
+		"number":    42,
 	})
 
-	t.Run("[]string", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []string{"x", "y"}})
-		var results []string
-		err := s.ForEach("items", func(i int, v any) error {
-			results = append(results, v.(string))
-			return nil
+	counts := []struct {
+		expr string
+		want int
+	}{
+		{expr: "any", want: 3},
+		{expr: "strings", want: 2},
+		{expr: "ints", want: 3},
+		{expr: "mapSlice", want: 2},
+		{expr: "anyMap", want: 2},
+		{expr: "stringMap", want: 2},
+		{expr: "emptyAny", want: 0},
+		{expr: "emptyMap", want: 0},
+		// A non-collection is a no-op rather than an error.
+		{expr: "scalar", want: 0},
+		{expr: "boolean", want: 0},
+		{expr: "number", want: 0},
+		{expr: "missing", want: 0},
+	}
+
+	for _, test := range counts {
+		t.Run(test.expr, func(t *testing.T) {
+			count := 0
+			assert.NoError(t, s.ForEach(test.expr, func(int, any) error {
+				count++
+				return nil
+			}))
+			assert.Equal(t, test.want, count)
 		})
-		assert.NoError(t, err)
-		assert.Equal(t, []string{"x", "y"}, results)
+	}
+
+	t.Run("values arrive in slice order", func(t *testing.T) {
+		var got []string
+		assert.NoError(t, s.ForEach("any", func(_ int, v any) error {
+			got = append(got, v.(string))
+			return nil
+		}))
+		assert.Equal(t, []string{"a", "b", "c"}, got)
 	})
 
-	t.Run("[]int", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"nums": []int{1, 2, 3}})
-		sum := 0
-		err := s.ForEach("nums", func(i int, v any) error {
-			sum += v.(int)
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 6, sum)
+	t.Run("indices count up from zero", func(t *testing.T) {
+		for _, expr := range []string{"ints", "anyMap"} {
+			var indices []int
+			assert.NoError(t, s.ForEach(expr, func(i int, _ any) error {
+				indices = append(indices, i)
+				return nil
+			}))
+			assert.Equal(t, []int{0, 1, 2}[:len(indices)], indices)
+		}
 	})
 
-	t.Run("[]map[string]any", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"items": []map[string]any{{"id": 1}, {"id": 2}},
+	// An error from fn stops the walk and is passed through.
+	stops := []string{"any", "strings", "ints", "anyMap"}
+
+	for _, expr := range stops {
+		t.Run("an error stops the walk over "+expr, func(t *testing.T) {
+			stop := errors.New("stop")
+
+			count := 0
+			err := s.ForEach(expr, func(int, any) error {
+				count++
+				if count == 2 {
+					return stop
+				}
+				return nil
+			})
+
+			assert.ErrorIs(t, err, stop)
+			assert.Equal(t, 2, count)
 		})
-		count := 0
-		err := s.ForEach("items", func(i int, v any) error {
-			count++
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 2, count)
-	})
-
-	t.Run("map[string]any", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"obj": map[string]any{"a": 1, "b": 2},
-		})
-		count := 0
-		err := s.ForEach("obj", func(i int, v any) error {
-			count++
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 2, count)
-	})
-
-	t.Run("map[string]string", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"config": map[string]string{"host": "localhost", "port": "8080"},
-		})
-		count := 0
-		err := s.ForEach("config", func(i int, v any) error {
-			count++
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 2, count)
-	})
-
-	t.Run("tracks correct indices for []any", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []any{10, 20, 30}})
-		var indices []int
-		err := s.ForEach("items", func(i int, v any) error {
-			indices = append(indices, i)
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, []int{0, 1, 2}, indices)
-	})
-
-	t.Run("tracks correct indices for map[string]any", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"obj": map[string]any{"a": 1, "b": 2, "c": 3},
-		})
-		count := 0
-		var indices []int
-		err := s.ForEach("obj", func(i int, v any) error {
-			indices = append(indices, i)
-			count++
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 3, count)
-		assert.Equal(t, []int{0, 1, 2}, indices)
-	})
-
-	t.Run("error stops iteration", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []any{1, 2, 3}})
-		count := 0
-		testErr := errors.New("stop")
-		err := s.ForEach("items", func(i int, v any) error {
-			count++
-			if count == 2 {
-				return testErr
-			}
-			return nil
-		})
-		assert.ErrorIs(t, err, testErr)
-		assert.Equal(t, 2, count)
-	})
-
-	t.Run("error stops iteration on []string", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []string{"a", "b", "c"}})
-		count := 0
-		testErr := errors.New("abort")
-		err := s.ForEach("items", func(i int, v any) error {
-			count++
-			if count == 2 {
-				return testErr
-			}
-			return nil
-		})
-		assert.ErrorIs(t, err, testErr)
-		assert.Equal(t, 2, count)
-	})
-
-	t.Run("error stops iteration on []int", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"nums": []int{10, 20, 30}})
-		sum := 0
-		testErr := errors.New("calc error")
-		err := s.ForEach("nums", func(i int, v any) error {
-			sum += v.(int)
-			if sum > 25 {
-				return testErr
-			}
-			return nil
-		})
-		assert.ErrorIs(t, err, testErr)
-		assert.Equal(t, 30, sum)
-	})
-
-	t.Run("error stops iteration on map", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{
-			"obj": map[string]any{"a": 1, "b": 2, "c": 3},
-		})
-		count := 0
-		testErr := errors.New("map error")
-		err := s.ForEach("obj", func(i int, v any) error {
-			count++
-			if count == 2 {
-				return testErr
-			}
-			return nil
-		})
-		assert.ErrorIs(t, err, testErr)
-		assert.Equal(t, 2, count)
-	})
-
-	t.Run("missing key is no-op", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{})
-		callCount := 0
-		err := s.ForEach("missing", func(i int, v any) error {
-			callCount++
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 0, callCount)
-	})
-
-	t.Run("unsupported type is no-op", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"key": "string"})
-		callCount := 0
-		err := s.ForEach("key", func(i int, v any) error {
-			callCount++
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 0, callCount)
-	})
-
-	t.Run("boolean type is no-op", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"flag": true})
-		callCount := 0
-		err := s.ForEach("flag", func(i int, v any) error {
-			callCount++
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 0, callCount)
-	})
-
-	t.Run("numeric type is no-op", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"count": 42})
-		callCount := 0
-		err := s.ForEach("count", func(i int, v any) error {
-			callCount++
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 0, callCount)
-	})
-
-	t.Run("empty []any", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"items": []any{}})
-		count := 0
-		err := s.ForEach("items", func(i int, v any) error {
-			count++
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 0, count)
-	})
-
-	t.Run("empty map[string]any", func(t *testing.T) {
-		s := vuego.NewStack(map[string]any{"obj": map[string]any{}})
-		count := 0
-		err := s.ForEach("obj", func(i int, v any) error {
-			count++
-			return nil
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, 0, count)
-	})
-}
-
-// Test helper structs for struct resolution tests
-
-type testConfig struct {
-	Name        string
-	Version     string
-	Port        int
-	Database    *testDatabase
-	Cache       *testCache
-	Services    []*testService
-	SecretKey   string `json:"secret_key"`
-	Environment string `json:"env"`
-	Debug       bool
-	Admins      []string
-	Tags        map[string]string
-}
-
-type testDatabase struct {
-	Host     string
-	Port     int
-	Name     string
-	Replicas []*testReplica
-	Options  *testDatabaseOptions
-	MaxConns int `json:"max_connections"`
-}
-
-type testReplica struct {
-	Host   string
-	Port   int
-	Region string
-	Status string
-}
-
-type testDatabaseOptions struct {
-	SSL           bool
-	Timeout       int
-	PoolSize      int `json:"pool_size"`
-	RetryAttempts int `json:"retry_attempts"`
-}
-
-type testCache struct {
-	Type    string
-	Host    string
-	Port    int
-	Servers []*testCacheServer
-	TTL     int
-}
-
-type testCacheServer struct {
-	Address string
-	Weight  int
-	Active  bool
-}
-
-type testService struct {
-	Name    string
-	URL     string
-	Timeout int
-	Enabled bool
-	Config  *testServiceConfig
-}
-
-type testServiceConfig struct {
-	APIKey    string `json:"api_key"`
-	RateLimit int    `json:"rate_limit"`
-	Endpoints []string
-}
-
-type testUser struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+	}
 }

@@ -11,7 +11,7 @@ import (
 
 	"github.com/titpetric/vuego/internal/helpers"
 	"github.com/titpetric/vuego/internal/parser"
-	"github.com/titpetric/vuego/internal/reflect"
+	ireflect "github.com/titpetric/vuego/internal/reflect"
 )
 
 // templateCacheEntry stores cached template data with modification tracking.
@@ -70,6 +70,54 @@ func (v *Vue) Funcs(funcMap FuncMap) *Vue {
 	return v
 }
 
+// DefaultFuncMap returns the built-in template functions. The keys are
+// documented in docs/funcmap.md.
+func (v *Vue) DefaultFuncMap() FuncMap {
+	return FuncMap{
+		"type":       typeFunc,
+		"upper":      upperFunc,
+		"lower":      lowerFunc,
+		"title":      titleFunc,
+		"formatTime": formatTimeFunc,
+		"formatDate": formatDateFunc,
+		"default":    defaultFunc,
+		"len":        lenFunc,
+		"trim":       trimFunc,
+		"escape":     escapeFunc,
+		"int":        intFunc,
+		"string":     stringFunc,
+		"json":       jsonFunc,
+		"jsonPretty": jsonPrettyFunc,
+		"file":       fileFunc(v),
+		"jsonFile":   jsonFileFunc(v),
+		"yamlFile":   yamlFileFunc(v),
+	}
+}
+
+// RegisterNodeProcessor adds a custom node processor to the Vue instance.
+// Processors are applied in order after template evaluation completes.
+func (v *Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue {
+	if v.nodeProcessors == nil {
+		v.nodeProcessors = make([]NodeProcessor, 0)
+	}
+	v.nodeProcessors = append(v.nodeProcessors, processor)
+	return v
+}
+
+// RegisterComponent registers a component shorthand mapping.
+// The tagName (e.g., "button-primary") will be resolved to the given filename (e.g., "components/ButtonPrimary.vuego").
+func (v *Vue) RegisterComponent(tagName, filename string) *Vue {
+	v.componentMap[tagName] = filename
+	return v
+}
+
+// GetComponentFile looks up a component file by its kebab-case tag name.
+// Returns the filename and true if found, otherwise returns empty string and false.
+func (v *Vue) GetComponentFile(tagName string) (string, bool) {
+	filename, ok := v.componentMap[tagName]
+	return filename, ok
+}
+
 // renderNodesWithContext is an internal method that evaluates and renders nodes with a pre-configured context.
 func (v *Vue) renderNodesWithContext(ctx VueContext, w io.Writer, nodes []*html.Node) error {
 	nodeCopy := make([]*html.Node, 0, len(nodes))
@@ -105,7 +153,7 @@ func toMapData(data any) map[string]any {
 		return m
 	}
 	// Try to convert struct to map using JSON tags
-	if m := reflect.StructToMap(data); len(m) > 0 {
+	if m := ireflect.StructToMap(data); len(m) > 0 {
 		return m
 	}
 	// Return empty map; fields will be accessible via Stack.rootData fallback

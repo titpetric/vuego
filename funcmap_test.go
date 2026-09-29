@@ -1,1678 +1,185 @@
 package vuego_test
 
 import (
-	"bytes"
-	"context"
-	"fmt"
 	"net/http"
-	"strings"
 	"testing"
-	"testing/fstest"
 	"time"
 
 	"github.com/titpetric/vuego"
 	"github.com/titpetric/vuego/tests/assert"
 )
 
-func TestVue_Funcs_PipeChaining(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ name | upper }}</p>`),
-		},
-	}
+func TestFuncMap(t *testing.T) {
+	t.Run("a declared FuncMap is callable", func(t *testing.T) {
+		var funcs vuego.FuncMap = map[string]any{
+			"greet": func(v any) any { return "Hello, " + v.(string) },
+		}
 
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"name": "john doe",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "JOHN DOE")
-}
-
-func TestVue_Funcs_MultiplePipes(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ name | lower | title }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"name": "JOHN DOE",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "John Doe")
-}
-
-func TestVue_Funcs_PipeWithArgs(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ value | default("fallback") }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"value": "",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "fallback")
-}
-
-func TestVue_Funcs_CustomFunc(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ name | greet }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-		"greet": func(v any) any {
-			return "Hello, " + v.(string)
-		},
+		got, err := renderFuncs(t,
+			map[string]string{"test.vuego": `<p>{{ name | greet }}</p>`},
+			map[string]any{"name": "Alice"},
+			funcs,
+		)
+		assert.NoError(t, err)
+		assert.Contains(t, got, "Hello, Alice")
 	})
 
-	data := map[string]any{
-		"name": "Alice",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "Hello, Alice")
-}
-
-func TestVue_Funcs_FormatTime(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ timestamp | formatTime("2006-01-02") }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	now := time.Now()
-	data := map[string]any{
-		"timestamp": now,
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), now.Format("2006-01-02"))
-}
-
-func TestVue_Funcs_LenFilter(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ items | len }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"items": []*http.Request{nil, nil, nil},
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "3")
-}
-
-func TestVue_Funcs_TrimFilter(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ text | trim }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"text": "  hello world  ",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "hello world")
-	assert.NotContains(t, buf.String(), "  hello world  ")
-}
-
-func TestVue_Funcs_IntFilter(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ value | int }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"value": "42",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "42")
-}
-
-func TestVue_Funcs_ComplexChain(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ text | trim | lower | title }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"text": "  HELLO WORLD  ",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "Hello World")
-}
-
-func TestVue_Funcs_VIfWithFunction(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<div v-if="len(items)"><p>Has items</p></div>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"items": []string{"a", "b", "c"},
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "Has items")
-}
-
-func TestVue_Funcs_VIfWithFunctionFalse(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<div v-if="len(items)"><p>Has items</p></div>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"items": []string{},
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.NotContains(t, buf.String(), "Has items")
-}
-
-func TestVue_Funcs_NestedData(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ user.name | upper }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"user": map[string]any{
-			"name": "alice",
-		},
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "ALICE")
-}
-
-func TestVue_Funcs_DefaultWithValue(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ name | default("Anonymous") }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"name": "Bob",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "Bob")
-	assert.NotContains(t, buf.String(), "Anonymous")
-}
-
-func TestVue_Funcs_ChainWithDefault(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ name | default("guest") | upper }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"name": "",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "GUEST")
-}
-
-func TestVue_Funcs_CustomFuncWithArgs(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ value | multiply(3) }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-		"multiply": func(v int, multiplier int) int {
-			return v * multiplier
-		},
+	t.Run("an unknown filter is an error naming the filter", func(t *testing.T) {
+		_, err := renderFuncs(t,
+			map[string]string{"test.vuego": `<p>{{ name | nonexistent }}</p>`},
+			map[string]any{"name": "test"},
+			nil,
+		)
+		assert.Error(t, err)
+		assert.Equal(t, "in test.vuego: in expression '{{ name | nonexistent }}': function 'nonexistent' not found", err.Error())
 	})
-
-	data := map[string]any{
-		"value": 5,
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "15")
 }
 
-func TestVue_Funcs_StringFilter(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ count | string }}</p>`),
-		},
+func TestBuiltinFilters(t *testing.T) {
+	// Each built-in filter is applied to a value and its output read back out
+	// of the rendered text.
+	tests := []struct {
+		name     string
+		source   string
+		data     map[string]any
+		contains string
+		absent   string
+	}{
+		{name: "type", source: `<p>{{ value | type }}</p>`, data: map[string]any{"value": 42}, contains: "int"},
+		{name: "upper", source: `<p>{{ name | upper }}</p>`, data: map[string]any{"name": "john doe"}, contains: "JOHN DOE"},
+		{name: "lower", source: `<p>{{ name | lower }}</p>`, data: map[string]any{"name": "JOHN DOE"}, contains: "john doe"},
+		{name: "title", source: `<p>{{ name | title }}</p>`, data: map[string]any{"name": "john doe"}, contains: "John Doe"},
+		{name: "upper leaves a non-string alone", source: `<p>{{ value | upper }}</p>`, data: map[string]any{"value": 42}, contains: "42"},
+		{name: "trim", source: `<p>{{ text | trim }}</p>`, data: map[string]any{"text": "  hello world  "}, contains: "hello world", absent: "  hello world  "},
+		{name: "len of a slice", source: `<p>{{ items | len }}</p>`, data: map[string]any{"items": []*http.Request{nil, nil, nil}}, contains: "3"},
+		{name: "len of a string", source: `<p>{{ text | len }}</p>`, data: map[string]any{"text": "abcd"}, contains: "4"},
+		{name: "len of a map", source: `<p>{{ obj | len }}</p>`, data: map[string]any{"obj": map[string]any{"a": 1, "b": 2}}, contains: "2"},
+		{name: "len of a scalar is zero", source: `<p>{{ value | len }}</p>`, data: map[string]any{"value": 42}, contains: "0"},
+		{name: "int from a string", source: `<p>{{ value | int }}</p>`, data: map[string]any{"value": "42"}, contains: "42"},
+		{name: "int from a float truncates", source: `<p>{{ value | int }}</p>`, data: map[string]any{"value": 3.9}, contains: "3"},
+		{name: "int from a non-number is zero", source: `<p>{{ value | int }}</p>`, data: map[string]any{"value": "words"}, contains: "0"},
+		{name: "string from a number", source: `<p>{{ count | string }}</p>`, data: map[string]any{"count": 42}, contains: "42"},
+		{name: "default fills an empty value", source: `<p>{{ value | default("fallback") }}</p>`, data: map[string]any{"value": ""}, contains: "fallback"},
+		{name: "default leaves a set value", source: `<p>{{ name | default("Anonymous") }}</p>`, data: map[string]any{"name": "Bob"}, contains: "Bob", absent: "Anonymous"},
+		// escape exists for raw contexts: inside a script tag the renderer
+		// does not escape, so the filter is what produces the entities.
+		{name: "escape in a script tag", source: `<script>const s = "{{ value | escape }}";</script>`, data: map[string]any{"value": "<b>"}, contains: "&lt;b&gt;"},
+		{name: "json", source: `<script>const v = {{ value | json }};</script>`, data: map[string]any{"value": map[string]any{"a": 1}}, contains: `{"a":1}`},
+		{name: "jsonPretty", source: `<script>const v = {{ value | jsonPretty }};</script>`, data: map[string]any{"value": map[string]any{"a": 1}}, contains: `"a": 1`},
+
+		// Chains apply left to right.
+		{name: "two filters", source: `<p>{{ name | lower | title }}</p>`, data: map[string]any{"name": "JOHN DOE"}, contains: "John Doe"},
+		{name: "three filters", source: `<p>{{ text | trim | lower | title }}</p>`, data: map[string]any{"text": "  HELLO WORLD  "}, contains: "Hello World"},
+		{name: "default then upper", source: `<p>{{ name | default("guest") | upper }}</p>`, data: map[string]any{"name": ""}, contains: "GUEST"},
+
+		// Filters apply to path expressions and inside v-for.
+		{name: "a path expression", source: `<p>{{ user.name | upper }}</p>`, data: map[string]any{"user": map[string]any{"name": "alice"}}, contains: "ALICE"},
 	}
 
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"count": 42,
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "42")
-}
-
-func TestVue_Funcs_MissingFilter(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ name | nonexistent }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"name": "test",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.Error(t, err)
-	assert.Equal(t, "in test.vuego: in expression '{{ name | nonexistent }}': function 'nonexistent' not found", err.Error())
-}
-
-func TestVue_Funcs_VForWithFilters(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(strings.TrimSpace(`
-<ul>
-  <li v-for="item in items">{{ item.name | upper }}</li>
-</ul>
-			`)),
-		},
-	}
-
-	vue := vuego.NewVue(fs)
-	data := map[string]any{
-		"items": []map[string]any{
-			{"name": "apple"},
-			{"name": "banana"},
-		},
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "APPLE")
-	assert.Contains(t, buf.String(), "BANANA")
-}
-
-func TestVue_Funcs_TypedArguments(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ timestamp | formatDate }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-		"formatDate": func(t *time.Time) string {
-			if t == nil {
-				return ""
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := renderPage(t, test.source, test.data)
+			assert.Contains(t, got, test.contains)
+			if test.absent != "" {
+				assert.NotContains(t, got, test.absent)
 			}
-			return t.Format("2006-01-02")
-		},
-	})
-
-	now := time.Now()
-	data := map[string]any{
-		"timestamp": &now,
+		})
 	}
 
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), now.Format("2006-01-02"))
-}
-
-func TestVue_Funcs_TypedMultipleArgs(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ add(5, 3) }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-		"add": func(a int, b int) int {
-			return a + b
-		},
+	t.Run("formatTime uses the layout it is given", func(t *testing.T) {
+		now := time.Now()
+		got := renderPage(t, `<p>{{ timestamp | formatTime("2006-01-02") }}</p>`, map[string]any{"timestamp": now})
+		assert.Contains(t, got, now.Format("2006-01-02"))
 	})
 
-	data := map[string]any{}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "8")
-}
-
-func TestVue_Funcs_StringToIntConversion(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ multiply("10", 5) }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-		"multiply": func(a int, b int) int {
-			return a * b
-		},
+	t.Run("formatTime parses an RFC3339 string", func(t *testing.T) {
+		got := renderPage(t, `<p>{{ timestamp | formatTime("2006-01-02") }}</p>`, map[string]any{"timestamp": "2024-03-01T10:00:00Z"})
+		assert.Contains(t, got, "2024-03-01")
 	})
 
-	data := map[string]any{}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "50")
-}
-
-func TestVue_Funcs_VariadicFunction(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ join("a", "b", "c") }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-		"join": func(parts ...string) string {
-			return strings.Join(parts, ",")
-		},
+	t.Run("formatDate takes a layout too", func(t *testing.T) {
+		now := time.Now()
+		got := renderPage(t, `<p>{{ timestamp | formatDate("Jan 2 2006") }}</p>`, map[string]any{"timestamp": now})
+		assert.Contains(t, got, now.Format("Jan 2 2006"))
 	})
 
-	data := map[string]any{}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.Contains(t, buf.String(), "a,b,c")
-}
-
-func TestVue_Funcs_ErrorReturn(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ divide(10, 0) }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-		"divide": func(a, b int) (int, error) {
-			if b == 0 {
-				return 0, fmt.Errorf("division by zero")
-			}
-			return a / b, nil
-		},
+	t.Run("a filter runs per v-for item", func(t *testing.T) {
+		got := renderPage(t,
+			"<ul>\n  <li v-for=\"item in items\">{{ item.name | upper }}</li>\n</ul>",
+			map[string]any{"items": []map[string]any{{"name": "apple"}, {"name": "banana"}}},
+		)
+		assert.Contains(t, got, "APPLE")
+		assert.Contains(t, got, "BANANA")
 	})
 
-	data := map[string]any{}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.Error(t, err)
-	assert.Equal(t, "in test.vuego: in expression '{{ divide(10, 0) }}': divide(): division by zero", err.Error())
-}
-
-func TestVue_Funcs_NoReturnValue(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ name | noop }}</p>`),
-		},
-	}
-
-	called := false
-	vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-		"noop": func(v string) {
-			called = true
-		},
-	})
-
-	data := map[string]any{
-		"name": "test",
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.NoError(t, err)
-	assert.True(t, called)
-}
-
-func TestVue_Funcs_TypeConversionError(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{
-			Data: []byte(`<p>{{ items | double }}</p>`),
-		},
-	}
-
-	vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-		"double": func(n int) int {
-			return n * 2
-		},
-	})
-
-	data := map[string]any{
-		"items": []string{"a", "b", "c"},
-	}
-
-	var buf bytes.Buffer
-	err := vue.Render(t.Context(), &buf, "test.vuego", data)
-	assert.Error(t, err)
-	assert.Equal(t, "in test.vuego: in expression '{{ items | double }}': double(): cannot convert argument 0 from []string to int", err.Error())
-}
-
-func TestVue_Funcs_StringToIntConversionVariations(t *testing.T) {
-	t.Run("string to int8", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("42") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(n int8) int8 {
-				return n
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "42")
-	})
-
-	t.Run("string to int16", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("1000") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(n int16) int16 {
-				return n
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "1000")
-	})
-
-	t.Run("string to int32", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("100000") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(n int32) int32 {
-				return n
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "100000")
-	})
-
-	t.Run("string to int64", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("9223372036854775806") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(n int64) int64 {
-				return n
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "9223372036854775806")
-	})
-
-	t.Run("string to uint", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("42") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(n uint) uint {
-				return n
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "42")
-	})
-
-	t.Run("string to uint8", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("200") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(n uint8) uint8 {
-				return n
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "200")
-	})
-
-	t.Run("string to uint16", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("50000") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(n uint16) uint16 {
-				return n
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "50000")
-	})
-
-	t.Run("string to uint32", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("4000000000") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(n uint32) uint32 {
-				return n
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "4000000000")
-	})
-
-	t.Run("string to uint64", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("9223372036854775806") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(n uint64) uint64 {
-				return n
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "9223372036854775806")
-	})
-
-	t.Run("string to float32", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("3.14") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(f float32) float32 {
-				return f
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "3.14")
-	})
-
-	t.Run("string to float64", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("2.71828") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(f float64) float64 {
-				return f
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "2.71828")
-	})
-
-	t.Run("string to bool", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("true") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(b bool) string {
-				return fmt.Sprintf("%v", b)
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "true")
-	})
-
-	t.Run("int to string via function", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ toStr(42) }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"toStr": func(n int) string {
-				return fmt.Sprintf("%d", n)
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "42")
-	})
-
-	t.Run("float to string via function", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ toStr(3.14159) }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"toStr": func(f float64) string {
-				return fmt.Sprintf("%v", f)
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "3.14159")
-	})
-
-	t.Run("bool to string via function", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ toStr(true) }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"toStr": func(b bool) string {
-				return fmt.Sprintf("%v", b)
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "true")
-	})
-
-	t.Run("invalid string to int", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("not-a-number") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(n int) int {
-				return n
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.Error(t, err)
-		assert.Equal(t, "in test.vuego: in expression '{{ convert(\"not-a-number\") }}': convert(): cannot convert argument 0 from string to int", err.Error())
-	})
-
-	t.Run("invalid string to float", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("not-a-float") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(f float64) float64 {
-				return f
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.Error(t, err)
-		assert.Equal(t, "in test.vuego: in expression '{{ convert(\"not-a-float\") }}': convert(): cannot convert argument 0 from string to float64", err.Error())
-	})
-
-	t.Run("invalid string to bool", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ convert("maybe") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"convert": func(b bool) bool {
-				return b
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.Error(t, err)
-		assert.Equal(t, "in test.vuego: in expression '{{ convert(\"maybe\") }}': convert(): cannot convert argument 0 from string to bool", err.Error())
+	t.Run("a filter can drive v-if", func(t *testing.T) {
+		assert.Contains(t,
+			renderPage(t, `<div v-if="len(items)"><p>Has items</p></div>`, map[string]any{"items": []string{"a", "b", "c"}}),
+			"Has items",
+		)
+		assert.NotContains(t,
+			renderPage(t, `<div v-if="len(items)"><p>Has items</p></div>`, map[string]any{"items": []string{}}),
+			"Has items",
+		)
 	})
 }
 
-func TestVue_Funcs_JsonFilter(t *testing.T) {
-	t.Run("simple object in script tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const data = {{ user | jsonPretty }};</script>`),
-			},
-		}
+func TestBuiltinFilters_JSONEscaping(t *testing.T) {
+	// JSON is written raw inside a script tag and HTML-escaped everywhere else.
+	data := map[string]any{"data": map[string]any{"status": "active", "count": 42}}
 
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"user": map[string]any{
-				"name": "Alice",
-				"age":  30,
-			},
-		}
+	raw := []struct {
+		name   string
+		source string
+	}{
+		{name: "script with json", source: `<script>const d = {{ data | json }};</script>`},
+		{name: "script with jsonPretty", source: `<script>const d = {{ data | jsonPretty }};</script>`},
+	}
 
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// JSON is not HTML-escaped inside script tags
-		assert.Contains(t, output, `"age": 30`)
-		assert.Contains(t, output, `"name": "Alice"`)
-		assert.NotContains(t, output, `&#34;`)
+	for _, test := range raw {
+		t.Run(test.name, func(t *testing.T) {
+			got := renderPage(t, test.source, data)
+			assert.Contains(t, got, `"status"`)
+			assert.Contains(t, got, `"active"`)
+			assert.NotContains(t, got, "&#34;")
+		})
+	}
+
+	escaped := []struct {
+		name   string
+		source string
+	}{
+		{name: "code tag", source: `<code>{{ data | json }}</code>`},
+		{name: "pre tag", source: `<pre>{{ data | json }}</pre>`},
+		{name: "pre and code", source: `<pre><code>{{ data | json }}</code></pre>`},
+		{name: "div", source: `<div>{{ data | json }}</div>`},
+	}
+
+	for _, test := range escaped {
+		t.Run(test.name, func(t *testing.T) {
+			got := renderPage(t, test.source, data)
+			assert.Contains(t, got, "&#34;status&#34;")
+			assert.Contains(t, got, "&#34;active&#34;")
+			assert.NotContains(t, got, `"status": "active"`)
+		})
+	}
+
+	t.Run("a fragment escapes JSON too", func(t *testing.T) {
+		got := renderFragment(t, `{{ data | json }}`, map[string]any{"data": map[string]any{"key": "value"}})
+		assert.Contains(t, got, "&#34;key&#34;")
+		assert.Contains(t, got, "&#34;value&#34;")
 	})
 
-	t.Run("array in script tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const items = {{ items | json }};</script>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"items": []string{"apple", "banana", "cherry"},
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		assert.Contains(t, output, `"apple"`)
-		assert.Contains(t, output, `"banana"`)
-		assert.Contains(t, output, `"cherry"`)
-		assert.NotContains(t, output, `&#34;`)
-	})
-
-	t.Run("string value in script tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const name = {{ name | json }};</script>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"name": "Bob",
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		assert.Contains(t, output, `"Bob"`)
-		assert.NotContains(t, output, `&#34;`)
-	})
-
-	t.Run("number value in script tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const count = {{ count | json }};</script>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"count": 42,
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		// Numbers don't need escaping
-		assert.Contains(t, buf.String(), `42`)
-	})
-
-	t.Run("nested structure in script tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const payload = {{ payload | jsonPretty }};</script>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"payload": map[string]any{
-				"user": map[string]any{
-					"name": "Charlie",
-					"tags": []string{"admin", "user"},
-				},
+	t.Run("a nested structure keeps its keys", func(t *testing.T) {
+		got := renderPage(t,
+			`<script>const payload = {{ payload | jsonPretty }};</script>`,
+			map[string]any{"payload": map[string]any{
+				"user":   map[string]any{"name": "Charlie", "tags": []string{"admin", "user"}},
 				"status": "active",
-			},
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// Check unescaped JSON
-		assert.Contains(t, output, `"name": "Charlie"`)
-		assert.Contains(t, output, `"status": "active"`)
-		assert.NotContains(t, output, `&#34;`)
-	})
-
-	t.Run("fragment still escapes JSON outside script tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`{{ data | json }}`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"data": map[string]any{"key": "value"},
-		}
-
-		var buf bytes.Buffer
-		err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// JSON is HTML-escaped in fragments (not in script tags)
-		assert.Contains(t, output, `&#34;key&#34;`)
-		assert.Contains(t, output, `&#34;value&#34;`)
-	})
-
-	t.Run("JSON escaped in code tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<code>{{ data | json }}</code>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"data": map[string]any{"key": "value"},
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// JSON should be HTML-escaped inside code tags
-		assert.Contains(t, output, `&#34;key&#34;`)
-		assert.Contains(t, output, `&#34;value&#34;`)
-		assert.NotContains(t, output, `"key": "value"`)
-	})
-
-	t.Run("JSON escaped in pre tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<pre>{{ data | json }}</pre>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"data": map[string]any{
-				"name": "Alice",
-				"age":  30,
-			},
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// JSON should be HTML-escaped inside pre tags
-		assert.Contains(t, output, `&#34;name&#34;`)
-		assert.Contains(t, output, `&#34;Alice&#34;`)
-		assert.Contains(t, output, `&#34;age&#34;`)
-		assert.NotContains(t, output, `"name": "Alice"`)
-	})
-
-	t.Run("JSON escaped in pre+code tags", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<pre><code>{{ data | json }}</code></pre>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"data": map[string]any{
-				"status": "active",
-				"count":  42,
-			},
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// JSON should be HTML-escaped inside pre+code tags
-		assert.Contains(t, output, `&#34;status&#34;`)
-		assert.Contains(t, output, `&#34;active&#34;`)
-		assert.Contains(t, output, `&#34;count&#34;`)
-		assert.NotContains(t, output, `"status": "active"`)
-	})
-
-	t.Run("JSON unescaped in script tag (comparison)", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const data = {{ data | jsonPretty }};</script>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"data": map[string]any{
-				"status": "active",
-				"count":  42,
-			},
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// JSON should NOT be escaped inside script tags
-		assert.Contains(t, output, `"status": "active"`)
-		assert.Contains(t, output, `"count": 42`)
-		assert.NotContains(t, output, `&#34;`)
-	})
-}
-
-func TestVue_Funcs_FileWithVueContext(t *testing.T) {
-	t.Run("file function resolves variable expressions", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const config = {{ file(configPath) }};</script>`),
-			},
-			"config.json": &fstest.MapFile{
-				Data: []byte(`{"name": "test"}`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"configPath": "config.json",
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), `"name": "test"`)
-	})
-
-	t.Run("file function with expression.field notation", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ file(config.path) }}</div>`),
-			},
-			"data.txt": &fstest.MapFile{
-				Data: []byte(`file content`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"config": map[string]any{
-				"path": "data.txt",
-			},
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "file content")
-	})
-
-	t.Run("file function in v-html with variable", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div v-html="file(html.path)"></div>`),
-			},
-			"snippet.html": &fstest.MapFile{
-				Data: []byte(`<span>html snippet</span>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"html": map[string]any{
-				"path": "snippet.html",
-			},
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "<span>html snippet</span>")
-	})
-
-	t.Run("file function in attribute binding with variable", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div :data-content="file(dataPath)"></div>`),
-			},
-			"data.txt": &fstest.MapFile{
-				Data: []byte(`attribute value`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"dataPath": "data.txt",
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), `data-content="attribute value"`)
-	})
-}
-
-func TestVue_Funcs_LoadSVG(t *testing.T) {
-	t.Run("loadSVG returns file content as string", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ loadSVG("icons/star.svg") }}</div>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"loadSVG": func(path string) (string, error) {
-				return "svg content", nil
-			},
-		})
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "svg content")
-	})
-
-	t.Run("loadSVG breaks rendering on missing file", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ loadSVG("missing.svg") }}</div>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"loadSVG": func(path string) (string, error) {
-				return "", fmt.Errorf("failed to load SVG file '%s'", path)
-			},
-		})
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.Error(t, err)
-		assert.Equal(t, "in test.vuego: in expression '{{ loadSVG(\"missing.svg\") }}': loadSVG(): failed to load SVG file 'missing.svg'", err.Error())
-	})
-
-	t.Run("loadSVG error propagates through pipe", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ path | loadSVG }}</div>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"loadSVG": func(path string) (string, error) {
-				return "", fmt.Errorf("failed to load SVG file '%s'", path)
-			},
-		})
-		data := map[string]any{
-			"path": "icons/check.svg",
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.Error(t, err)
-		assert.Equal(t, "in test.vuego: in expression '{{ path | loadSVG }}': loadSVG(): failed to load SVG file 'icons/check.svg'", err.Error())
-	})
-
-	t.Run("loadSVG error context includes template name", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ loadSVG("icons/nonexistent.svg") }}</div>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"loadSVG": func(path string) (string, error) {
-				return "", fmt.Errorf("failed to load SVG file '%s'", path)
-			},
-		})
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.Error(t, err)
-		assert.Equal(t, "in test.vuego: in expression '{{ loadSVG(\"icons/nonexistent.svg\") }}': loadSVG(): failed to load SVG file 'icons/nonexistent.svg'", err.Error())
-	})
-}
-
-func TestVue_Funcs_WithContextParameter(t *testing.T) {
-	t.Run("function with VueContext parameter", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ getContext() }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"getContext": func(ctx *vuego.VueContext) string {
-				if ctx != nil {
-					return "has-context"
-				}
-				return "no-context"
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "has-context")
-	})
-
-	t.Run("function with context and additional parameters", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ greetWithContext("Alice") }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"greetWithContext": func(ctx *vuego.VueContext, name string) string {
-				if ctx == nil {
-					return "no context"
-				}
-				return "Hello, " + name
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "Hello, Alice")
-	})
-
-	t.Run("context function can access template info", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ getTemplateName() }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"getTemplateName": func(ctx *vuego.VueContext) string {
-				if ctx == nil {
-					return "no context"
-				}
-				return ctx.FromFilename
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "test.vuego")
-	})
-
-	t.Run("context function with error return", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<p>{{ requireContext() }}</p>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs).Funcs(vuego.FuncMap{
-			"requireContext": func(ctx *vuego.VueContext) (string, error) {
-				if ctx == nil {
-					return "", fmt.Errorf("context is required")
-				}
-				return "success", nil
-			},
-		})
-
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "success")
-	})
-}
-
-func TestVue_InterpolateUnescapedInScriptTag(t *testing.T) {
-	t.Run("plain string with quotes in script tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const msg = "{{ message }}";</script>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"message": "hello world",
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// Interpolated values inside script tags should be unescaped
-		assert.Contains(t, output, `const msg = "hello world";`)
-	})
-
-	t.Run("string with HTML entities in script tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const value = "{{ htmlContent }}";</script>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"htmlContent": `<div class="test">content</div>`,
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// Should NOT be HTML-escaped inside script tags
-		assert.Contains(t, output, `<div class="test">content</div>`)
-		assert.NotContains(t, output, `&lt;`)
-		assert.NotContains(t, output, `&gt;`)
-		assert.NotContains(t, output, `&#34;`)
-	})
-
-	t.Run("string with special chars in script tag", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<script>const val = '{{ val }}';</script>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"val": `test & check < > " '`,
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// Should NOT be HTML-escaped inside script tags
-		assert.Contains(t, output, `test & check < > " '`)
-		assert.NotContains(t, output, `&amp;`)
-		assert.NotContains(t, output, `&lt;`)
-		assert.NotContains(t, output, `&gt;`)
-	})
-
-	t.Run("escaping still applies outside script tags", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ value }}</div>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"value": `<script>alert('xss')</script>`,
-		}
-
-		var buf bytes.Buffer
-		err := vue.RenderFragment(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		output := buf.String()
-		// Should still be HTML-escaped outside script tags
-		assert.Contains(t, output, `&lt;script&gt;`)
-		assert.NotContains(t, output, `<script>`)
-	})
-}
-
-func TestFileFunc(t *testing.T) {
-	t.Run("file function loads file content", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ file("content.txt") }}</div>`),
-			},
-			"content.txt": &fstest.MapFile{
-				Data: []byte("Hello from file"),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "Hello from file")
-	})
-
-	t.Run("file function with variable reference", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ file(filename) }}</div>`),
-			},
-			"data.txt": &fstest.MapFile{
-				Data: []byte("Variable file content"),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{
-			"filename": "data.txt",
-		}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "Variable file content")
-	})
-
-	t.Run("file function with nested path", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ file("nested/content.txt") }}</div>`),
-			},
-			"nested/content.txt": &fstest.MapFile{
-				Data: []byte("Nested file content"),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "Nested file content")
-	})
-
-	t.Run("file function missing file error", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ file("missing.txt") }}</div>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "file")
-	})
-
-	t.Run("file function empty filename", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ file("") }}</div>`),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.Error(t, err)
-	})
-
-	t.Run("file function in template context", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>Content: {{ file("data.txt") }}</div>`),
-			},
-			"data.txt": &fstest.MapFile{
-				Data: []byte("important data"),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "important data")
-	})
-
-	t.Run("file function with HTML content", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{
-				Data: []byte(`<div>{{ file("snippet.html") }}</div>`),
-			},
-			"snippet.html": &fstest.MapFile{
-				Data: []byte("<strong>Bold text</strong>"),
-			},
-		}
-
-		vue := vuego.NewVue(fs)
-		data := map[string]any{}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		// Content from file function is escaped by default
-		assert.Contains(t, buf.String(), "&lt;strong&gt;")
-	})
-}
-
-type showKey struct{}
-
-type testCallFuncContext struct{}
-
-func (c *testCallFuncContext) Show(ctx context.Context) bool {
-	v, _ := ctx.Value(showKey{}).(bool)
-	return v
-}
-
-func TestFuncMap_callFunc(t *testing.T) {
-	tpl := `<div v-if="Show()">visible</div><div v-if="!Show()">hidden</div>`
-
-	t.Run("show set to true", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{Data: []byte(tpl)},
-		}
-
-		obj := &testCallFuncContext{}
-		vue := vuego.NewVue(fs)
-		data := map[string]any{"Show": obj.Show}
-
-		ctx := context.WithValue(t.Context(), showKey{}, true)
-
-		var buf bytes.Buffer
-		err := vue.Render(ctx, &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "visible")
-		assert.NotContains(t, buf.String(), "hidden")
-	})
-
-	t.Run("show unset", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"test.vuego": &fstest.MapFile{Data: []byte(tpl)},
-		}
-
-		obj := &testCallFuncContext{}
-		vue := vuego.NewVue(fs)
-		data := map[string]any{"Show": obj.Show}
-
-		var buf bytes.Buffer
-		err := vue.Render(t.Context(), &buf, "test.vuego", data)
-		assert.NoError(t, err)
-		assert.NotContains(t, buf.String(), "visible")
-		assert.Contains(t, buf.String(), "hidden")
+			}},
+		)
+		assert.Contains(t, got, `"name": "Charlie"`)
+		assert.Contains(t, got, `"status": "active"`)
+		assert.NotContains(t, got, "&#34;")
 	})
 }

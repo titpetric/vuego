@@ -2,6 +2,7 @@ package vuego
 
 import (
 	"fmt"
+	"maps"
 	"reflect"
 	"strconv"
 	"strings"
@@ -9,38 +10,6 @@ import (
 
 	ireflect "github.com/titpetric/vuego/internal/reflect"
 )
-
-// pathCache caches parsed paths to avoid re-parsing frequently-used expressions.
-var pathCache = &struct {
-	sync.RWMutex
-	m map[string][]string
-}{
-	m: make(map[string][]string),
-}
-
-const pathCacheLimit = 256
-
-// getCachedPath returns a cached path or computes and caches it.
-func getCachedPath(expr string) []string {
-	pathCache.RLock()
-	if parts, ok := pathCache.m[expr]; ok {
-		pathCache.RUnlock()
-		return parts
-	}
-	pathCache.RUnlock()
-
-	// Not in cache, compute it
-	parts := splitPathImpl(expr)
-
-	// Cache if under limit
-	if len(pathCache.m) < pathCacheLimit {
-		pathCache.Lock()
-		pathCache.m[expr] = parts
-		pathCache.Unlock()
-	}
-
-	return parts
-}
 
 // Stack provides stack-based variable lookup and convenient typed accessors.
 type Stack struct {
@@ -78,8 +47,12 @@ var mapPool = sync.Pool{
 
 // Copy returns a copy of the stack that can be discarded.
 // The root data is retained as is, the envmap is a copy.
+//
+// Copy flattens without touching envCache. A base template's stack is shared
+// by every goroutine that calls Load on it, and writing the cache there is a
+// data race.
 func (s *Stack) Copy() *Stack {
-	return NewStackWithData(s.EnvMap(), s.rootData)
+	return NewStackWithData(s.flatten(), s.rootData)
 }
 
 // Push a new map as a top-most Stack.
@@ -291,25 +264,31 @@ func (s *Stack) GetMap(expr string) (map[string]any, bool) {
 // EnvMap converts the Stack to a map[string]any for expr evaluation.
 // Includes all accessible values from stack and struct fields.
 // The result is cached and reused until the stack is mutated via Push/Pop/Set.
+//
+// EnvMap is for a request-scoped stack, which one goroutine owns; the cache
+// carries no mutex. Use Copy to read a stack another goroutine may hold.
 func (s *Stack) EnvMap() map[string]any {
 	if s.envCache != nil {
 		return s.envCache
 	}
 
+	s.envCache = s.flatten()
+	return s.envCache
+}
+
+// flatten builds the map EnvMap caches: every scope from bottom to top, with
+// the top winning, then the struct fields of rootData keyed by JSON tag so a
+// path like item.inStock resolves against them.
+func (s *Stack) flatten() map[string]any {
 	result := make(map[string]any)
-	// Iterate through stack from bottom to top, with top overriding bottom
 	for i := 0; i < len(s.stack); i++ {
-		for k, v := range s.stack[i] {
-			result[k] = v
-		}
+		maps.Copy(result, s.stack[i])
 	}
 
-	// Also include struct fields from rootData (if available)
 	if s.rootData != nil {
-		ireflect.PopulateStructFields(result, s.rootData)
+		maps.Copy(result, ireflect.StructToMap(s.rootData))
 	}
 
-	s.envCache = result
 	return result
 }
 
@@ -346,72 +325,4 @@ func (s *Stack) ForEach(expr string, fn func(index int, value any) error) error 
 
 	return nil
 	// return fmt.Errorf("unsupported collection type: %T, expr: %s", v, expr)
-}
-
-// Helpers
-
-// splitPathImpl is the actual implementation of path splitting.
-// Called by getCachedPath which caches the results.
-func splitPathImpl(expr string) []string {
-	expr = strings.TrimSpace(expr)
-	if expr == "" {
-		return nil
-	}
-
-	// Fast path: if no brackets, just split by dots
-	if !strings.Contains(expr, "[") {
-		parts := strings.Split(expr, ".")
-		// Sanitize in-place to avoid extra allocation
-		out := parts[:0]
-		for _, p := range parts {
-			if p = strings.TrimSpace(p); p != "" {
-				out = append(out, p)
-			}
-		}
-		return out
-	}
-
-	// Full parsing with bracket support
-	var b strings.Builder
-	b.Grow(len(expr) + 8)
-	i := 0
-	for i < len(expr) {
-		ch := expr[i]
-		if ch == '[' {
-			j := i + 1
-			for j < len(expr) && expr[j] != ']' {
-				j++
-			}
-			if j >= len(expr) {
-				b.WriteByte(ch)
-				i++
-				continue
-			}
-			inside := strings.TrimSpace(expr[i+1 : j])
-			if len(inside) >= 2 && ((inside[0] == '\'' && inside[len(inside)-1] == '\'') || (inside[0] == '"' && inside[len(inside)-1] == '"')) {
-				inside = inside[1 : len(inside)-1]
-			}
-			if inside != "" {
-				b.WriteByte('.')
-				b.WriteString(inside)
-			}
-			i = j + 1
-		} else {
-			b.WriteByte(ch)
-			i++
-		}
-	}
-
-	builtStr := b.String()
-	parts := strings.Split(builtStr, ".")
-	// Sanitize in-place to avoid extra allocation
-	out := parts[:0]
-	for _, p := range parts {
-		p = strings.TrimSpace(p)
-		if p == "" {
-			continue
-		}
-		out = append(out, p)
-	}
-	return out
 }

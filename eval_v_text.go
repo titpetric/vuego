@@ -2,7 +2,7 @@ package vuego
 
 import (
 	"fmt"
-	"html"
+	stdhtml "html"
 	"strings"
 
 	htmlnode "golang.org/x/net/html"
@@ -38,7 +38,7 @@ func (v *Vue) evalVText(ctx VueContext, n *htmlnode.Node) error {
 
 	// Evaluate v-text expression to its string value and escape for HTML
 	textStr := fmt.Sprint(val)
-	escapedStr := html.EscapeString(textStr)
+	escapedStr := stdhtml.EscapeString(textStr)
 	n.Attr = append(n.Attr, htmlnode.Attribute{Key: "data-v-text-content", Val: escapedStr})
 
 	// Clear children - v-text content will be output directly during rendering

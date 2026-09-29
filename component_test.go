@@ -1,6 +1,8 @@
 package vuego_test
 
 import (
+	"bytes"
+	"errors"
 	"testing"
 	"testing/fstest"
 
@@ -8,86 +10,31 @@ import (
 	"github.com/titpetric/vuego/tests/assert"
 )
 
-func TestNewComponent(t *testing.T) {
-	fs := fstest.MapFS{
-		"test.vuego": &fstest.MapFile{Data: []byte("<div>test</div>")},
-	}
+// errWriteFailed is the sentinel the processor and writer test doubles in this
+// package return.
+var errWriteFailed = errors.New("write failed")
 
-	comp := vuego.NewLoader(fs)
-	assert.NotNil(t, comp)
-}
+// Vue satisfies Component, which is what the interface exists for: a caller
+// can hold a renderer without depending on the concrete type.
+var _ vuego.Component = (*vuego.Vue)(nil)
 
-func TestComponent_Stat(t *testing.T) {
-	fs := fstest.MapFS{
-		"exists.html": &fstest.MapFile{Data: []byte("<div>test</div>")},
-	}
+func TestComponent(t *testing.T) {
+	const filename = "page.vuego"
 
-	comp := vuego.NewLoader(fs)
+	fsys := fstest.MapFS{filename: {Data: []byte(`<h1>{{ title }}</h1>`)}}
 
-	t.Run("file exists", func(t *testing.T) {
-		err := comp.Stat("exists.html")
-		assert.NoError(t, err)
+	t.Run("a Vue renders through the interface", func(t *testing.T) {
+		var component vuego.Component = vuego.NewVue(fsys)
+
+		var buf bytes.Buffer
+		assert.NoError(t, component.Render(t.Context(), &buf, filename, map[string]any{"title": "Hello"}))
+		assert.Contains(t, buf.String(), "Hello")
 	})
 
-	t.Run("file not found", func(t *testing.T) {
-		err := comp.Stat("missing.html")
-		assert.Error(t, err)
-	})
-}
+	t.Run("a render error reaches the caller", func(t *testing.T) {
+		var component vuego.Component = vuego.NewVue(fsys)
 
-func TestComponent_Load(t *testing.T) {
-	fs := fstest.MapFS{
-		"doc.html": &fstest.MapFile{Data: []byte("<html><body><h1>Test</h1></body></html>")},
-	}
-
-	comp := vuego.NewLoader(fs)
-
-	t.Run("valid document", func(t *testing.T) {
-		nodes, err := comp.Load("doc.html")
-		assert.NoError(t, err)
-		assert.NotNil(t, nodes)
-		assert.Greater(t, len(nodes), 0)
-	})
-
-	t.Run("file not found", func(t *testing.T) {
-		_, err := comp.Load("missing.html")
-		assert.Error(t, err)
-	})
-
-	t.Run("invalid html", func(t *testing.T) {
-		fs := fstest.MapFS{
-			"bad.html": &fstest.MapFile{Data: []byte("<<<>>>")},
-		}
-		comp := vuego.NewLoader(fs)
-		nodes, err := comp.Load("bad.html")
-		assert.NoError(t, err)
-		assert.NotNil(t, nodes)
-	})
-}
-
-func TestComponent_LoadFragment(t *testing.T) {
-	fs := fstest.MapFS{
-		"fragment.html": &fstest.MapFile{Data: []byte("<div>content</div>")},
-		"document.html": &fstest.MapFile{Data: []byte("<html><body><div>doc</div></body></html>")},
-	}
-
-	comp := vuego.NewLoader(fs)
-
-	t.Run("fragment without html tag", func(t *testing.T) {
-		nodes, err := comp.LoadFragment("fragment.html")
-		assert.NoError(t, err)
-		assert.NotNil(t, nodes)
-		assert.Greater(t, len(nodes), 0)
-	})
-
-	t.Run("full document falls back to Load", func(t *testing.T) {
-		nodes, err := comp.LoadFragment("document.html")
-		assert.NoError(t, err)
-		assert.NotNil(t, nodes)
-	})
-
-	t.Run("file not found", func(t *testing.T) {
-		_, err := comp.LoadFragment("missing.html")
-		assert.Error(t, err)
+		var buf bytes.Buffer
+		assert.Error(t, component.Render(t.Context(), &buf, "missing.vuego", nil))
 	})
 }

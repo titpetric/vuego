@@ -24,30 +24,6 @@ type NodeProcessor interface {
 	PostProcess(nodes []*html.Node) error
 }
 
-// RegisterNodeProcessor adds a custom node processor to the Vue instance.
-// Processors are applied in order after template evaluation completes.
-func (v *Vue) RegisterNodeProcessor(processor NodeProcessor) *Vue {
-	if v.nodeProcessors == nil {
-		v.nodeProcessors = make([]NodeProcessor, 0)
-	}
-	v.nodeProcessors = append(v.nodeProcessors, processor)
-	return v
-}
-
-// RegisterComponent registers a component shorthand mapping.
-// The tagName (e.g., "button-primary") will be resolved to the given filename (e.g., "components/ButtonPrimary.vuego").
-func (v *Vue) RegisterComponent(tagName, filename string) *Vue {
-	v.componentMap[tagName] = filename
-	return v
-}
-
-// GetComponentFile looks up a component file by its kebab-case tag name.
-// Returns the filename and true if found, otherwise returns empty string and false.
-func (v *Vue) GetComponentFile(tagName string) (string, bool) {
-	filename, ok := v.componentMap[tagName]
-	return filename, ok
-}
-
 // resolveComponentTags replaces component shorthand tags with template include directives.
 // This is called before other node processors to transform component tags.
 func (v *Vue) resolveComponentTags(nodes []*html.Node) error {

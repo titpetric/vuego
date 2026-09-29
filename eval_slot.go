@@ -8,41 +8,6 @@ import (
 	"github.com/titpetric/vuego/internal/helpers"
 )
 
-// SlotContent holds the processed content for a slot along with any scoped props.
-type SlotContent struct {
-	// Nodes contains the rendered content for this slot.
-	Nodes []*html.Node
-	// Props contains any scoped props passed to the slot.
-	Props map[string]any
-	// TemplateNode holds the original template node for processing scoped slots.
-	TemplateNode *html.Node
-}
-
-// SlotScope holds all slot contents indexed by name for a component instance.
-type SlotScope struct {
-	// Slots maps slot names to their content.
-	// Empty string key is the default slot.
-	Slots map[string]*SlotContent
-}
-
-// NewSlotScope creates a new SlotScope for a component.
-func NewSlotScope() *SlotScope {
-	return &SlotScope{
-		Slots: make(map[string]*SlotContent),
-	}
-}
-
-// GetSlot retrieves slot content by name.
-// Returns nil if the slot doesn't exist.
-func (ss *SlotScope) GetSlot(name string) *SlotContent {
-	return ss.Slots[name]
-}
-
-// SetSlot sets the content for a named slot.
-func (ss *SlotScope) SetSlot(name string, content *SlotContent) {
-	ss.Slots[name] = content
-}
-
 // evalSlot processes a <slot> element and inserts the appropriate content.
 // If slot content was provided by the component user, use that.
 // Otherwise, render the fallback content (children of the slot element).
